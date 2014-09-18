@@ -1,0 +1,381 @@
+##
+## Copyright (C) 2011, 2012 Pablo Barenbaum <foones@gmail.com>
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program. If not, see <http://www.gnu.org/licenses/>.
+##
+
+####
+#### Gobstones grammar
+####
+#### Adapted from the official BNF specification,
+#### to make rules right recursive, and avoid some
+#### LL(1) ambiguities.
+####
+#### Some syntax checks are delayed to a later
+#### step. For instance, this grammar conflates
+#### function and procedure bodies, allowing
+#### both to have (or not have) a return clause.
+####
+#### Also, reserved procedures, functions and
+#### constants are made regular (built-in) procedures
+#### and functions.
+####
+#### These checks could be done directly from the BNF,
+#### but having a separate step simplifies the grammar
+#### (a bit) and makes for clearer error-reporting. 
+####
+
+## Note:
+##
+## Gobstones seems NOT to be LL(1) because strings
+## such as this one are conflictive with one token
+## of lookahead:
+##
+##     a := f
+##     (x) := g(y)
+##
+## The parser could predict either
+##
+##     a := f       ; (x) := g(y)   [ok]
+##
+## or
+##
+##     a := f(x)    :=              [fail]
+##
+## There is one first/follow conflict arising from this
+## situation (see XXX).
+##
+## The grammar is written so that it chooses to
+## disambiguate by the second case. The situation is
+## solved by a hack at the lexical level by
+## gbs_parser.GbsLexer._tokenize_solve_conflict
+
+## The language is extended with type declarations that
+## allow polymorphic procedures and functions.
+##
+## A type declaration goes right before the braces in
+## function and procedure declarations:
+##
+##   function f(col1, col2, n) :: (Color, Color, Int) -> (Bool) { ... }
+##   procedure P(d1, d2) :: (Dir, Dir) { ... }
+##
+## Polymorphic functions are declared using type variables.
+## For example:
+##
+##   function distance(x, y) :: (a, a) -> (Int) {
+##     d := 0
+##     foreach i in x..y {
+##       d := d + 1
+##     }
+##     return (d)
+##   }
+##
+
+#### Syntax ####
+
+<start> ::= <gobstones> ;;
+
+## Programs
+
+<gobstones> ::= <imports> <defs> @ program $1 $2 ;;
+
+<defs> ::= <def> <defs> @ ++ [$1] $2
+         | <EMPTY>      @ []
+        ;;
+<def>  ::= function <funcName> <params> <funcTypeDecl> <procFuncBody>
+             @ function  $2 $3 $5 $4
+         | program <procTypeDecl> <procFuncBody>
+             @ entrypoint $1 [] $3 $2
+         | interactive program <procTypeDecl> <interactiveBody>
+             @ entrypoint $1 [] $4 $3
+         | procedure <procName> <params> <procTypeDecl> <procFuncBody>
+             @ procedure $2 $3 $5 $4
+        ;;
+
+<params> ::= <varTuple> ;;
+
+<procFuncBody> ::= { <cmds> <return?> } @ ++ $2 $3 ;;
+<interactiveBody> ::= { <branches> } @ $2 ;;
+
+<return?> ::= <EMPTY>    @ []
+            | <return>   @ [$1]
+           ;;
+<return> ::= return <gexpTuple> <;?>   @ return $2 ;;
+
+## Commands
+
+<blockcmd> ::= { <cmds> }        @ block $2 ;;
+<cmds>   ::= <EMPTY>             @ []
+           | <cmd> <;?> <cmds>   @ ++ [$1] $3
+          ;;
+<cmd> ::= <simplecmd> | <compcmd> ;;
+
+<simplecmd> ::= Skip                        @ Skip None
+              | THROW_ERROR ( string )             @ THROW_ERROR $3
+              | <procCall>
+              | <varName> := <gexp>         @ assignVarName   $1 $3
+              | <varTuple1> := <funcCall>   @ assignVarTuple1 $1 $3
+             ;;
+
+<procCall> ::= <procName> <args> @ procCall $1 $2 ;;
+
+<compcmd> ::= if ( <gexp> ) <then?> <blockcmd> <else?>  @ if $3 $6 $7
+            | switch ( <gexp> ) to <branches>     @ case $3 $6
+            | while ( <gexp> ) <blockcmd>       @ while $3 $5
+            | repeat <gexp> <blockcmd>          @ repeat $2 $3
+            | foreach <varName> in <rangeOrEnum> <blockcmd>
+                @ foreach $2 $4 $5
+            | <blockcmd>
+           ;;
+
+<then?> ::= <EMPTY> 
+		  | then 
+		;;
+		
+<else?> ::= <EMPTY>           @ None
+          | else <blockcmd>   @ $2
+         ;;
+
+<rangeOrEnum> ::= [ <gexp> <,gexp1> <rangeOrEnum1> ] @ rangeOrEnum $2 $5 $3
+              ;;
+<rangeOrEnum1> ::= , <gexps+>    @ ++ [enum] $2
+                 | .. <gexp>     @ range $2
+               ;;
+<,gexp1> ::= <EMPTY> @ None
+           | , <gexp> @ $2
+         ;;
+
+<branches> ::= <branch> <;?> <branches>    @ ++ [$1] $3
+             | <defaultBranch>             @ [$1]
+            ;;
+<branch>        ::= <lits> -> <blockcmd>   @ branch $1 $3 ;;
+<defaultBranch> ::= _ -> <blockcmd>        @ defaultBranch $3 ;;
+
+<lits> ::= <caseLiteral> <lits*>  @ ++ [$1] $2 ;;
+<lits*> ::= <EMPTY>               @ []
+          | , <lits>              @ $2
+         ;;
+
+## Expressions
+
+<gexp> ::= <bexp> ;;
+<bexp> ::= <bterm> <bexp1>      @ INFIXL or ;;   
+<bexp1> ::= <EMPTY>             @ None
+          | || <bexp>           @ OPERATOR $1 $2
+         ;;                                      
+<bterm> ::= <bfact> <bterm1>    @ INFIXL and ;;
+<bterm1> ::= <EMPTY>            @ None
+           | && <bterm>         @ OPERATOR $1 $2
+          ;;                                     
+<bfact> ::= not <batom>         @ not $2
+          | <batom>                              
+         ;;                                      
+<batom> ::= <nexp> <batom1>     @ INFIXL relop ;;
+<batom1> ::= <EMPTY>            @ None
+           | <rop> <nexp>       @ OPERATOR $1 $2    ## nonassoc
+          ;;
+<nexp> ::= <nterm> <nexp1>      @ INFIXL addsub ;;
+<nexp1> ::= <EMPTY>             @ None
+          | <nop> <nexp>        @ OPERATOR $1 $2
+         ;;                                      
+<nterm> ::= <nfactH> <nterm1>   @ INFIXL mul ;;
+<nterm1> ::= <EMPTY>            @ None
+           | * <nterm>          @ OPERATOR $1 $2
+          ;;
+<nfactH> ::= <nfactL> <nfactH1> @ INFIXL divmod ;;
+<nfactH1> ::= <EMPTY>           @ None
+            | <mop> <nfactL>    @ OPERATOR $1 $2    ## nonassoc
+           ;;
+<nfactL> ::= <natom> <nfactL1>  @ INFIXL pow ;;
+<nfactL1> ::= <EMPTY>           @ None
+            | ^ <nfactL>        @ OPERATOR $1 $2
+           ;;
+<natom> ::= - <natom>               @ unaryMinus $2
+          | <varFuncName> <args?>   @ varName/funcCall $1 $2
+          | <literal>               @ literal $1
+          | ( <gexp> )              @ atom $2
+        ##| <list_gexp>             @ LIST $1
+         ;;
+<varFuncName> ::= lowerid ;;
+
+## lists
+## <list_gexp> ::= [ <gexps*> ]        @ $2 ;;
+
+<gexps*>    ::= <EMPTY>             @ []
+              | <gexp+>
+             ;;
+<gexps+>  ::= <gexp> <,gexps*> @ ++ [$1] $2 ;;
+<,gexps*> ::= <EMPTY>          @ []
+            | , <gexps+>       @ $2
+           ;;
+
+## XXX: first/follow conflict
+## in case of conflict, the parser choses the lexically least
+## rule, i.e. <args?-0>
+<args?> ::= <args?-0>
+          | <args?-1>   @ None
+         ;;
+<args?-0> ::= <args> ;;
+<args?-1> ::= <EMPTY> ;;
+
+<rop> ::= == | /= | < | <= | >= | > ;;
+<nop> ::= + | - ;;
+<mop> ::= div | mod ;;
+
+<funcCall> ::= <funcName> <args> @ funcCall $1 $2 ;;
+<args> ::= <gexpTuple> ;;
+
+<literal>     ::= <literN> | <literConst> ;;
+<caseLiteral> ::= <literSignedN> | <literConst> ;;
+<literConst>  ::= upperid ;;
+
+<literN> ::= num ;;
+<literSignedN> ::= num
+                 | - num   @ NEGATE $2
+                ;;
+
+## Auxiliary definitions
+
+<varName>     ::= lowerid ;;
+<funcName>    ::= lowerid ;;
+<procName>    ::= upperid ;;
+
+<varTuple>  ::= ( <varNames*> )         @ $2 ;;
+<varTuple1> ::= ( <varNames+> )         @ $2 ;;
+<varNames*> ::= <EMPTY>                 @ []
+              | <varNames+> ;;
+<varNames+> ::= <varName> <,varNames*>  @ ++ [$1] $2 ;;
+<,varNames*> ::= <EMPTY>                @ []
+               | , <varNames+>          @ $2
+              ;;
+
+<gexpTuple>  ::= ( <gexps*> )           @ $2 ;;
+<gexps*>  ::= <EMPTY>                   @ []
+            | <gexps+> ;;
+<gexps+>  ::= <gexp> <,gexps*>          @ ++ [$1] $2
+           ;;
+<,gexps*> ::= <EMPTY>                   @ []
+            | , <gexps+>                @ $2
+           ;;
+
+<;?> ::= <EMPTY>
+       | ;
+      ;;
+
+<EMPTY> ::= ;;
+
+## Extension: optional type declarations
+
+<procTypeDecl> ::= <EMPTY>         @ None
+                ##| :: <procType>   @ $2
+                ;;
+
+<funcTypeDecl> ::= <EMPTY>         @ None
+                ##| :: <funcType>   @ $2
+                ;;
+
+<procType> ::= <typeTuple>                 @ procType $1 ;;
+<funcType> ::= <typeTuple> -> <typeTuple1> @ funcType $1 $3 ;;
+<typeTuple>  ::= ( <type*> )         @ $2 ;;
+<typeTuple1> ::= ( <type+> )         @ $2 ;;
+<type*> ::= <EMPTY>                  @ []
+          | <type+> ;;
+<type+> ::= <atomicType> <,type*>    @ ++ [$1] $2 ;;
+<,type*> ::= <EMPTY>                 @ []
+           | , <type+>               @ $2
+          ;;
+<atomicType> ::= <basicType> | <typeVar> ;;
+<basicType> ::= upperid <typeArgs?>  @ typeNameTypeCall $1 $2 ;;
+<typeVar> ::= lowerid                @ typeVar $1 ;;
+
+<typeArgs?> ::= <typeArgs?-0>
+              | <typeArgs?-1> @ None
+             ;;
+<typeArgs?-0> ::= <typeTuple> ;;
+<typeArgs?-1> ::= <EMPTY> ;;
+
+## Extension: module imports
+
+<imports> ::= <import> <imports>  @ ++ [$1] $2
+            | <EMPTY>             @ []
+           ;;
+
+<import> ::= from <moduleName> import ( <rtnList*> )   @ import $2 $5 ;;
+
+<moduleName> ::= upperid ;;
+
+<rtnName> ::= upperid | lowerid ;;
+<rtnList*> ::= <EMPTY>               @ []
+             | <rtnList+>
+            ;;
+<rtnList+> ::= <rtnName> <,rtnList*> @ ++ [$1] $2 ;;
+<,rtnList*> ::= , <rtnList+>         @ $2
+              | <EMPTY>              @ []
+             ;;
+
+#### Lexical syntax ####
+
+## Tokens are defined using regular expressions.
+## They are read from top to bottom. The first
+## matching regular expression produces a token.
+
+## Magic token that eats whitespace and comments
+WHITESPACE ::= [ \t\r\n]+ ;;
+COMMENT ::= --[^\n]*
+          | //[^\n]*
+          | #[^\n]*          
+          | {-([^-]|-+[^}-])*-+}
+          | /[*]([^*]|[*]+[^*/])*[*]+/
+          | """([^"]|"[^"]|""[^"])*"""          
+         ;;
+COMMENT_start ::= /[*]([^*]|[*]+[^*/])*
+                | {-([^-]|-+[^}-])*
+                | """([^"]|"[^"]|""[^"])*
+               ;;
+
+num        ::= (0|[1-9][0-9]*) ;;
+string     ::= ["](\\\"|\\[^"]|[^"\\])*["] ;;
+lowerid    ::= [a-z][_a-zA-Z0-9']* ;;
+upperid    ::= [A-Z][_a-zA-Z0-9']* ;;
+operator   ::= _ | -> | := | [.][.] | , | ;
+             | \( | \)
+             | \{ | \}
+             | \[ | \]
+             | \|\| | &&
+             | \+  | \*  | - | \^
+             | == | /= | <=  | >= | < | >
+             | :: ## types
+            ;;
+string_start ::= ["](\\\"|\\[^"]|[^"\\])* ;;
+
+## Magic token that gives a separate type
+## to reserved words and operators.
+RESERVED ::= if | then | else | not
+           | switch | to
+           | while | Skip
+           | THROW_ERROR
+           | repeat
+           | foreach | in
+           | interactive | program | procedure | function | return | define | command | as
+           | from | import
+           | div | mod
+           | -> | := | .. | , | ; | _
+           | ( | )
+           | { | }
+           | [ | ]
+           | || | && 
+           | +  | *  | - | ^
+           | == | /=  | <  | <=  | >=  | >
+           | :: ## types
+          ;;

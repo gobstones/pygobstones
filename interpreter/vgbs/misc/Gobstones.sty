@@ -1,0 +1,197 @@
+
+\NeedsTeXFormat{LaTeX2e}
+\RequirePackage{pstricks,multido}
+\RequirePackage{xifthen}
+\RequirePackage[driver=dvips]{geometry}
+\RequirePackage{xargs}
+
+\ProvidesPackage{Gobstones}[2011/03/29 v0.1 Para dibujar tableros con latex]
+
+%variables para el tamaño del tableros
+\newcount\Tablero@height
+\newcount\Tablero@width
+\newcount\Tablero@colores
+\Tablero@colores=4
+
+%posicion del cabezal, por default: 0
+\newcount\Cabezal@x
+\newcount\Cabezal@y
+\Cabezal@x=0
+\Cabezal@y=0
+
+%Comandos para los colores
+\newcommand{\Azul}{0}
+\newcommand{\Negro}{1}
+\newcommand{\Rojo}{2}
+\newcommand{\Verde}{3}
+
+%
+%Define el tamaño del tablero
+%#1 es el ancho del tableros
+%#2 es el alto del tablero
+%[#3] escala del dibujo
+%
+\newlength{\Paper@height}
+\newlength{\Paper@width}
+\newcommandx{\GbstnTamanho}[3][3=1.2]{%
+  \Tablero@width=#1%
+  \Tablero@height=#2%
+  \psset{unit=#3}%
+  \pssetlength{\Paper@width}{\Tablero@width}%
+  \pssetlength{\Paper@height}{\Tablero@height}%
+  \psaddtolength{\Paper@width}{.1}
+  \psaddtolength{\Paper@height}{.1}
+  \geometry{paperheight=\Paper@height,paperwidth=\Paper@width,margin={0.05cm,0.05cm}}%
+}
+
+
+%
+%Crea el tablero; 
+%
+\newenvironment{GbstnTablero}{%
+  \parindent=0pt%
+  \thispagestyle{empty}%
+  \Vaciar@Tablero%
+  \begin{pspicture}(0,0)(\Tablero@width,\Tablero@height)%
+    \psgrid[gridlabelcolor=white,subgriddiv=0](0,0)(\Tablero@width,\Tablero@height)%
+}{%
+   \Dibujar@Tablero%
+   \end{pspicture}%
+}
+
+%
+%Setea la posicion del cabezal
+%
+% #1=x
+% #2=y
+%
+\newcommand{\GbstnCabezal}[2]{%
+  \Cabezal@x=#1%
+  \Cabezal@y=#2%
+}
+
+%
+%Vacia el tablero, poniendo en 0 todas las cantidades de bolitas
+%#1 es el ancho del tableros
+%#2 es el alto del tablero
+%
+\newcommand{\Vaciar@Tablero}{%
+  \def\setCero##1##2##3{%
+    \GbstnSetValor{##1}{##2}{##3}{0}%
+  }%
+  \ForEach@Celda@Color{\setCero}%
+}
+
+%
+%Devuelve la cantidad de bolitas que aparecen en el tablero
+%#1: fila
+%#2: columna
+%#3: color
+%
+%El valor se devuelve en Valor@Tablero@Result
+\newcount\Get@Valor@Result
+\newcommand{\Get@Valor}[3]{%
+  \Get@Valor@Result=\NameUse{ValorEnX#1Y#2C#3}%
+}
+
+%
+%Setea la cantidad de bolitas que aparecen en el tablero
+%#1: fila
+%#2: columna
+%#3: color
+%#4: valor
+%
+\newcommand{\GbstnSetValor}[4]{%
+  \NameXDef{ValorEnX#1Y#2C#3}{#4}%
+}
+
+%Shortcuts
+\newcommand{\GbstnAzul}[3]{\GbstnSetValor{#1}{#2}{\Azul}{#3}}
+\newcommand{\GbstnNegro}[3]{\GbstnSetValor{#1}{#2}{\Negro}{#3}}
+\newcommand{\GbstnRojo}[3]{\GbstnSetValor{#1}{#2}{\Rojo}{#3}}
+\newcommand{\GbstnVerde}[3]{\GbstnSetValor{#1}{#2}{\Verde}{#3}}
+
+%
+%Dibuja el cabezal
+%#1: posicion x
+%#2: posicion y
+%
+\newlength{\Cabezal@tr@x}
+\newlength{\Cabezal@tr@y}
+\newcommand{\Dibujar@Cabezal}{%
+  \pssetlength{\Cabezal@tr@x}{\Cabezal@x}%
+  \pssetlength{\Cabezal@tr@y}{\Cabezal@y}%
+  \psaddtolength{\Cabezal@tr@x}{1}%
+  \psaddtolength{\Cabezal@tr@y}{1}%
+  \psframe[linecolor=lightgray,linewidth=.05,dimen=middle](\Cabezal@x,\Cabezal@y)(\Cabezal@tr@x,\Cabezal@tr@y)%
+}
+
+%
+%Dibuja la grilla del tableros
+%
+\newcommand{\Dibujar@Tablero}{%
+  \ForEach@Celda@Color{\Dibujar@Celda}%
+  \Dibujar@Cabezal%
+}
+
+%
+% Dibuja una celda.
+% #1: x
+% #2: y
+% #3: color
+%
+\newlength{\Dibujar@Celda@Bola@x}
+\newlength{\Dibujar@Celda@Bola@y}
+\newcommand{\Dibujar@Celda}[3]{%
+  \NameDef{Color\Azul}{blue}%
+  \NameDef{Color\Negro}{black}%
+  \NameDef{Color\Rojo}{red}%
+  \NameDef{Color\Verde}{green}%
+  \NameDef{PosX\Azul}{0.2}\NameDef{PosY\Azul}{0.2}%
+  \NameDef{PosX\Negro}{0.2}\NameDef{PosY\Negro}{0.65}%
+  \NameDef{PosX\Rojo}{0.65}\NameDef{PosY\Rojo}{0.2}%
+  \NameDef{PosX\Verde}{0.65}\NameDef{PosY\Verde}{0.65}%
+  %
+  \pssetlength{\Dibujar@Celda@Bola@x}{#1}%
+  \pssetlength{\Dibujar@Celda@Bola@y}{#2}%
+  \psaddtolength{\Dibujar@Celda@Bola@x}{\NameUse{PosX#3}}%
+  \psaddtolength{\Dibujar@Celda@Bola@y}{\NameUse{PosY#3}}%
+  \Get@Valor{#1}{#2}{#3}%
+  %
+  \ifthenelse{\cnttest{\Get@Valor@Result}=0}{}{%
+    \pscircle*[linecolor=\NameUse{Color#3}](\Dibujar@Celda@Bola@x,\Dibujar@Celda@Bola@y){.1}%
+    \uput{.12}[0](\Dibujar@Celda@Bola@x,\Dibujar@Celda@Bola@y){\small\the\Get@Valor@Result}%
+  }%
+}
+
+%
+% Ejecuta el comando #1, que debe tomar 3 parametros: x, y, color,
+% para cada celda.
+%
+\newcommand{\ForEach@Celda@Color}[1]{%
+  \multido{\ix=0+1}{\Tablero@width}{%  
+    \multido{\iy=0+1}{\Tablero@height}{%
+      \multido{\ic=0+1}{\Tablero@colores}{% 
+        #1{\ix}{\iy}{\ic}
+      }%
+    }%
+  }%
+}
+
+%
+%Auxiliares: permiten definir comandos por nombre
+%
+\newcommand{\NameDef}[2]{%
+  \expandafter\def\csname#1\endcsname{#2}%
+}
+\newcommand{\NameXDef}[2]{%
+  \expandafter\xdef\csname#1\endcsname{#2}%
+}
+
+
+%
+%Auxiliar: permite usar un comando por nombre
+%
+\newcommand{\NameUse}[1]{%
+  \csname#1\endcsname%
+}

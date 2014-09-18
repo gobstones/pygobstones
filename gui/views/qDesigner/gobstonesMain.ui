@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>703</width>
+    <height>607</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QPushButton" name="pushButtonOpenBoardEditor">
+      <property name="text">
+       <string>Abrir Editor de Tableros</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidgetEditors">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tabFile">
+       <attribute name="title">
+        <string>Tab 1</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QPlainTextEdit" name="textEditFile"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tabLibrary">
+       <attribute name="title">
+        <string>Tab 2</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QTextEdit" name="textEditLibrary"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="labelCurrentPath">
+      <property name="text">
+       <string>Directorio Actual de Trabajo</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionNewFile"/>
+   <addaction name="actionOpenFile"/>
+   <addaction name="actionSave"/>
+   <addaction name="separator"/>
+   <addaction name="actionUndo"/>
+   <addaction name="actionRedo"/>
+   <addaction name="separator"/>
+   <addaction name="actionRun"/>
+   <addaction name="actionStop"/>
+   <addaction name="actionCheck"/>
+   <addaction name="separator"/>
+   <addaction name="actionManual"/>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>703</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>Archivo</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionNewFile"/>
+    <addaction name="actionOpenFile"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSaveAs"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Editar</string>
+    </property>
+    <widget class="QMenu" name="menuFontSIze">
+     <property name="title">
+      <string>Tamaño</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuFont">
+     <property name="title">
+      <string>Fuente</string>
+     </property>
+    </widget>
+    <addaction name="separator"/>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+    <addaction name="separator"/>
+    <addaction name="actionCut"/>
+    <addaction name="actionCopy"/>
+    <addaction name="actionPaste"/>
+    <addaction name="actionSelectAll"/>
+    <addaction name="separator"/>
+    <addaction name="actionFind"/>
+    <addaction name="separator"/>
+    <addaction name="menuFont"/>
+    <addaction name="menuFontSIze"/>
+   </widget>
+   <widget class="QMenu" name="menuGobstones">
+    <property name="title">
+     <string>Gobstones</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionRun"/>
+    <addaction name="actionStop"/>
+    <addaction name="actionCheck"/>
+   </widget>
+   <widget class="QMenu" name="menuBoard">
+    <property name="title">
+     <string>Tablero</string>
+    </property>
+    <widget class="QMenu" name="menuSelectResultView">
+     <property name="title">
+      <string>Elegir vista de resultados</string>
+     </property>
+    </widget>
+    <addaction name="separator"/>
+    <addaction name="actionOpenBoardEditor"/>
+    <addaction name="separator"/>
+    <addaction name="menuSelectResultView"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Ayuda</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionManual"/>
+    <addaction name="actionLicense"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuGobstones"/>
+   <addaction name="menuBoard"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <action name="actionNewFile">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/archivo/new.png</normaloff>icons/archivo/new.png</iconset>
+   </property>
+   <property name="text">
+    <string>Nuevo</string>
+   </property>
+   <property name="toolTip">
+    <string>Crea un nuevo archivo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionOpenFile">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/archivo/open.png</normaloff>icons/archivo/open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Abrir</string>
+   </property>
+   <property name="toolTip">
+    <string>Abre un archivo existente</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/archivo/save.png</normaloff>icons/archivo/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Guardar</string>
+   </property>
+   <property name="toolTip">
+    <string>Guarda el archivo actual</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionSaveAs">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/archivo/save-as.png</normaloff>icons/archivo/save-as.png</iconset>
+   </property>
+   <property name="text">
+    <string>Guardar como...</string>
+   </property>
+   <property name="toolTip">
+    <string>Guarda el archivo actual, permite ponerle un nombre y elegir la ubicación</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/archivo/close.png</normaloff>icons/archivo/close.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cerrar</string>
+   </property>
+   <property name="toolTip">
+    <string>Cierra el archivo actual</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/editar/undo.png</normaloff>icons/editar/undo.png</iconset>
+   </property>
+   <property name="text">
+    <string>Deshacer</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/editar/redo.png</normaloff>icons/editar/redo.png</iconset>
+   </property>
+   <property name="text">
+    <string>Rehacer</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Z</string>
+   </property>
+  </action>
+  <action name="actionCut">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/editar/cut.png</normaloff>icons/editar/cut.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cortar</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/editar/copy.png</normaloff>icons/editar/copy.png</iconset>
+   </property>
+   <property name="text">
+    <string>Copiar</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/editar/paste.png</normaloff>icons/editar/paste.png</iconset>
+   </property>
+   <property name="text">
+    <string>Pegar</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionSelectAll">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/editar/select-all.png</normaloff>icons/editar/select-all.png</iconset>
+   </property>
+   <property name="text">
+    <string>Seleccionar todo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionFind">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/editar/find.png</normaloff>icons/editar/find.png</iconset>
+   </property>
+   <property name="text">
+    <string>Buscar</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionRun">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/gobstones/start.png</normaloff>icons/gobstones/start.png</iconset>
+   </property>
+   <property name="text">
+    <string>Ejecutar</string>
+   </property>
+   <property name="toolTip">
+    <string>Ejecuta el programa actual</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
+  <action name="actionStop">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/gobstones/stop.png</normaloff>icons/gobstones/stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Detener</string>
+   </property>
+   <property name="toolTip">
+    <string>Detiene la ejecución del programa actual</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+  <action name="actionCheck">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/gobstones/check.png</normaloff>icons/gobstones/check.png</iconset>
+   </property>
+   <property name="text">
+    <string>Chequear</string>
+   </property>
+   <property name="toolTip">
+    <string>Chequea si el programa está bien formado</string>
+   </property>
+   <property name="shortcut">
+    <string>F10</string>
+   </property>
+  </action>
+  <action name="actionManual">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/ayuda/help.png</normaloff>icons/ayuda/help.png</iconset>
+   </property>
+   <property name="text">
+    <string>Manual</string>
+   </property>
+   <property name="toolTip">
+    <string>Abre el manual de Gobstones</string>
+   </property>
+  </action>
+  <action name="actionLicense">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/ayuda/manual.png</normaloff>icons/ayuda/manual.png</iconset>
+   </property>
+   <property name="text">
+    <string>Licencia</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/ayuda/about.png</normaloff>icons/ayuda/about.png</iconset>
+   </property>
+   <property name="text">
+    <string>Acerca de...</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/archivo/exit.png</normaloff>icons/archivo/exit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Salir</string>
+   </property>
+   <property name="toolTip">
+    <string>Cierra la aplicación</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionOpenBoardEditor">
+   <property name="text">
+    <string>Abrir editor de tableros</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

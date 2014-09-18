@@ -1,0 +1,136 @@
+procedure MoverYPonerRot(d1, d2) {
+    foreach d in [d1..d2] {
+        Mover(d)
+        Poner(Verde)
+    }
+}
+
+procedure PonerRot(c1, c2) {
+    foreach c in [c1..c2] { 
+        Poner(c)
+    }
+}
+
+function testSameColorEnum() {
+	TestSetup()
+	
+	x:= Verde
+	foreach c in [x..Verde] {
+		Poner(c)
+	}
+	
+    foreach c in [Verde..Verde] { Poner(c) } 
+    return(nroTotalBolitas() == 2 && nroBolitas(Verde) == 2)
+}
+
+function rangeCount(min, max) {
+	count := 0
+	foreach x in [min..max] { count := count + 1 }
+	return(count)
+}
+
+function testRangeCount(min, max, count) {
+	rcount := rangeCount(min, max)
+	return(rcount == count)
+}
+
+function testValidColorEnum() {
+	TestSetup()
+	return(testFullRangeCount(minColor(), maxColor()))
+}
+
+function testFullRangeCount(minRange, maxRange) {
+	passed := True
+	ordMin := 1
+	foreach xMin in [minRange..maxRange] {
+		ordMax := ordMin
+		foreach xMax in [xMin..maxRange] {
+			passed := passed && testRangeCount(xMin, xMax, (ordMax - ordMin) + 1)
+			ordMax := ordMax + 1
+		}
+		ordMin := ordMin + 1
+	}
+	return(passed)
+}
+
+function testValidDirEnum() {
+	TestSetup()
+	return(testFullRangeCount(minDir(), maxDir()))
+}
+
+function testInvalidColorEnum() {
+	TestSetup()
+	
+    PonerRot(Verde, Azul)
+    PonerRot(Rojo, Negro)
+    PonerRot(Rojo, Azul)
+    PonerRot(Rojo, Azul)
+    return(not nroBolitasTotalTablero() > 0)
+}
+
+function testInvalidDirEnum() {
+	TestSetup()
+	
+	Poner(Rojo)
+    
+    MoverYPonerRot(Este, Norte)
+    MoverYPonerRot(Sur, Norte)
+    MoverYPonerRot(Oeste, Norte)
+    MoverYPonerRot(Sur, Norte)
+    MoverYPonerRot(Sur, Este)
+    MoverYPonerRot(Oeste, Norte)
+    MoverYPonerRot(Oeste, Este)
+    MoverYPonerRot(Oeste, Sur)
+    
+    return(not nroBolitasTablero(Verde) > 0)
+}
+
+function testBoolRange() {
+	TestSetup()
+	
+	foreach b in [minBool()..maxBool()] { Poner(Verde) }
+	foreach b in [maxBool()..minBool()] { Poner(Rojo) }
+	foreach b in [False..False] { Poner(Azul) }
+	foreach b in [True..True] { Poner(Negro) }
+	vs := nroBolitas(Verde)
+	rs := nroBolitas(Rojo)
+	azs := nroBolitas(Azul)
+	ns := nroBolitas(Negro)
+	return(vs + rs + azs + ns == 4)
+}
+
+function testNumRange() {
+
+	count := 0;
+	foreach n in [1..10] { count := count + 1 }
+	
+	fact := 1;
+	foreach n in [1..6] { fact := fact * n }
+	
+	dv := 1;
+	foreach n in [1..8] { dv := dv * 2 }
+	
+	foreach n in [8,7..1] { dv := dv div 2 }
+	
+	foreach n in [8..1] {count := count + 1}
+	
+	return(count == 10 && fact == 720 && dv == 1)
+}
+
+program {
+    TestingStart()
+    
+    Assert(testSameColorEnum())	
+	Assert(testInvalidColorEnum())
+	Assert(testValidColorEnum())
+    Assert(testInvalidDirEnum())
+    Assert(testValidDirEnum())
+    Assert(testBoolRange())
+    Assert(testNumRange())
+    
+    TestingEnd()
+    passed := passedCount()
+    failed := failedCount()
+    return(passed, failed)
+}
+

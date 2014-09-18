@@ -1,0 +1,46 @@
+#dada
+type Persona is record {
+	field dni
+	field casado
+	field direccion
+}
+
+type Propiedad is record {
+	field dueno
+	field direccion1
+}
+
+type Rec4 is record {
+    field rec_3
+}
+
+type Rec3 is record {
+    field rec_2
+}
+
+type Rec2 is record {
+    field rec_1
+}
+
+type Rec1 is record {
+    field id
+}
+
+t.program {
+	p := Persona(dni <- 200, casado <- True, direccion <- Este)
+	p.dni := 100
+	p.casado := False
+	p.direccion := Oeste
+	prop := Propiedad(dueno <- Persona(dni <- 222,
+									   casado <- False,
+									   direccion <- Oeste),
+					  direccion1 <- Norte)
+	prop.dueno.dni := 223
+    prop.direccion1 := 33
+	prop.dueno := p
+    
+    r := Rec4(rec_3 <- Rec3(rec_2 <- Rec2(rec_1 <- Rec1(id <- 1))))
+    r.rec_3.rec_2.rec_1.id := 2
+    
+	return(prop, r)
+}

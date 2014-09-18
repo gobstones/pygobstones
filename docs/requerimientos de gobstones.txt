@@ -1,0 +1,43 @@
+Personalizacion
+Visualizacion personalizada (Estándar, Tetris, etc)
+
+Mover el menú Tablero al editor de Tablero creando los correspondientes Menúes
+
+En el Menú Tablero de la pantalla principal tener como única opción Abrir Editor de Tableros y
+Elegir Vista de resultados
+
+Ventana de resultados -> 3 vistas posibles (Tablero Inicial - Tablero Final - 
+  Tablero Inicial->Tablero Final)  (A futuro vista interactiva)
+  2 modos -> modoCompleto(tablero + opciones de vista y visualzación) - 
+	    modoErgonómico(sólo veo los tableros)
+  los dos modos se manejan también con HotKeys.
+  Opción de salvar el Tablero Final
+
+
+Prioridades 
+
+Directorio Actual y funciones derivadas del trabajo con el mismo
+  -segundo tab para Biblioteca.gbs
+  -variación de oferta de vestimentas en el editor de tableros
+  -operatoria de Biblioteca y demás al cambiar el directorio actual(menos prioritario)
+  -inicialmente el directorio actual se cambia cerrando la aplicación y abriéndola con un 
+    directorio nuevo de trabajo(prioritaro en caso que sea complejo el punto anterior).
+  
+
+
+Ventana de resultados (alta prioridad : sólo modo ergonómico) 
+  -tecla para switchear entre vestido y estándar
+  -tecla para switchear entre vestimentas
+  -tecla para switchear entre Inicial <-> Final
+  -tecla para salvar tablero final
+
+Ventana de edición de tablero
+  Zoom (no prioritario)
+  
+  
+
+Íconos con texto (bajísima prioridad)
+
+
+Si no está chequeado el programa el tilde verde en principio se vé con rojo con un ?
+(baja prioridad)

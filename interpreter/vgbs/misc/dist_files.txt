@@ -1,0 +1,10 @@
+DIR common
+DIR gui
+DIR lang
+DIR lang/judge
+DIR lang/board
+DIR lang/jit
+FILE gbs.py
+FILE Main.pyw
+FILE lang/gbs_grammar.bnf
+FILE common/LICENSE.txt

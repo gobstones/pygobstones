@@ -1,0 +1,33 @@
+The solution offered by the README does not apply to versions greater than or equal to Ubuntu 10.10 on fat32 or NTFS partitions.
+
+The solution to the problem is:
+(quote from a forum)
+"....
+the problem is that neither fat or ntfs support these permissions .. no place to store whether or not a file has execute permission. Truth does support NTFS permissions, but associated with user accounts / groups of windows, so your linux user with its numerical id has no place to get there.
+
+What you do is, when mounting the partition, request certain permissions, user and group business ... apply to all permits partition alike. That you do it to mount the partition with idUsuarioDueño options uid =, gid = idGrupoDueño, mask = default permissions .. take user and group root, with read permission. Permission is given as octal. To find out the id of your user and group id you can use the command in a terminal, but if you apply the permissions for the part of others, you indicate your inaccurate id .. 
+For example: mount-t ntfs-3g-o uid = 1000, gid = 1000, mask = 744 / dev/sdb1 / mnt/win7
+
+These same options you can put in the / etc / fstab file to mount so that when you start adding pc: / dev/sdb1 / mnt/win7 ntfs-3g users, uid = 1000, gid = users, umask = 0744 0 0
+
+instead of umask, dmask and fmask you can use to give different permissions to files and folders separately
+..."
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+La solución ofrecida por el README no se aplica a versiones de ubuntu mayores o iguales que v 10.10 en particiones fat32 o NTFS.
+
+La solución al problema es la siguiente :
+(cito de un foro)
+"....
+el problema es que ni fat ni ntfs soportan estos permisos.. no hay lugar donde almacenar si un archivo tiene o no permiso de ejecución. A decir verdad NTFS sí soporta permisos, pero asociados a cuentas de usuario/grupos de windows, así que tu usuario de linux con su id numérico no tiene lugar donde meterse ahí.
+
+Lo que se puede hacer es, al momento de montar la partición, pedir que se apliquen ciertos permisos, usuario dueño y grupo... a todos los permisos de la partición por igual. Eso lo hacés al montar la partición con las opciones uid=idUsuarioDueño,gid=idGrupoDueño,mask=permisos.. por defecto se toma usuario y grupo root, con permiso de lectura. Los permisos se indica en forma octal. Para averiguar el id de tu usuario y grupo podés usar el comando id en una terminal, aunque si aplicas los permisos por la parte de &quot;otros&quot; no precisas indicar tus id..
+Por ejemplo: mount -t ntfs-3g -o uid=1000,gid=1000,mask=744 /dev/sdb1 /mnt/win7
+
+Estas mismas opciones las podés poner en el archivo /etc/fstab para que se monte así al iniciar la pc agregándole: /dev/sdb1 /mnt/win7 ntfs-3g users,uid=1000,gid=users,umask=0744 0 0
+
+en lugar de umask, podés usar dmask y fmask para dar distintos permisos a archivos y carpetas por separado
+..."

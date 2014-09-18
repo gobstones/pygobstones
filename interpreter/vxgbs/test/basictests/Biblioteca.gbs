@@ -1,0 +1,227 @@
+# Test suite
+
+function debugMode() {
+    return (False)
+}
+
+procedure b.Assert(aBool) {
+	b := b && aBool
+    if (debugMode() && not b) {
+        THROW_ERROR("Assert Failed")
+    }
+}
+
+procedure b.Deny(aBool) {
+	b := b && not aBool
+    if (debugMode() && not b) {
+        THROW_ERROR("Deny Failed")
+    }
+}
+
+
+#########################
+# Coordenada			#
+#########################
+
+type Coordenada is record {
+	field columna
+	field fila
+}
+
+function eqCoordenada(c1, c2) {
+	return(fila(c1) == fila(c2) && columna(c1) == columna(c2))
+}
+
+#########################
+# Lists					#
+#########################
+
+function eqLists(xs, ys) {
+	ys_rec := ys
+	xs_rec := xs
+	equal := True
+	while (not isNil(xs_rec) && not isNil(ys_rec)) {
+		equal.Assert(head(xs_rec) == head(ys_rec))
+		xs_rec := tail(xs_rec)
+		ys_rec := tail(ys_rec)
+	}
+	equal.Assert(isNil(xs_rec))
+	equal.Assert(isNil(ys_rec))
+	return(equal)
+}
+
+#########################
+# Tablero				#
+#########################
+
+# Dimension
+type Dimension is record {
+	field filas
+	field columnas
+}
+
+function dimensionTablero(t) {
+	return(Dimension(columnas <- medirTablero(t, ancho()), filas <- medirTablero(t, alto())))
+}
+
+# Posicion
+
+function posicionActual(t) {
+	return(Coordenada(fila <- medirHacia(t, Sur)-1, columna <- medirHacia(t, Oeste)-1))
+}
+
+###
+
+function rangeS(min, max, step) {
+	return([min, min + step..max])
+}
+
+function nroTotalBolitas(t) {
+	total := 0
+	foreach c in [minColor()..maxColor()] {
+		total := total + nroBolitas(t, c)
+	}
+	return(total)
+}
+
+procedure t.IrAlOrigen() {
+	t.IrAlBorde(Sur)
+	t.IrAlBorde(Oeste)
+}
+
+procedure t.IrAlFin() {
+    while (puedeMover(t, Este) || puedeMover(t, Norte)) {
+        if (puedeMover(t, Este)) {
+            t.Mover(Este)
+        } else {
+            t.Mover(Norte)
+            t.IrAlBorde(Oeste)
+        }
+    }
+}
+
+procedure t.MoverN(unaDireccion, unaCantidad) {
+    repeat unaCantidad { 
+        t.Mover(unaDireccion)
+    }
+}
+
+function puedeMoverN(tablero, unaDireccion, unaCantidad) {
+    t := tablero
+    pasos := 0;
+    while (puedeMover(t, unaDireccion) && pasos < unaCantidad) {
+        t.Mover(unaDireccion)
+        pasos := pasos + 1;
+    }
+    return(pasos == unaCantidad)
+}
+
+function medirHacia(t, unaDireccion) {
+	trec := t
+	count := 1
+	while (puedeMover(trec, unaDireccion)) {			
+		trec.Mover(unaDireccion)
+		count := count + 1
+	}
+	return(count)
+}
+
+function medirTablero(t, unaDireccion) {
+	trec := t
+	trec.IrAlBorde(opuesto(unaDireccion))
+	return(medirHacia(trec, unaDireccion))
+}
+
+function ancho() {
+	return(Este)
+}
+
+function alto() {
+	return(Norte)
+}
+
+function puedeMoverTablero(t) {
+	return(puedeMover(t, Norte) || puedeMover(t, Este))
+}
+
+procedure t.MoverTablero() {
+	if (puedeMover(t, Norte)) {
+		t.Mover(Norte)
+	} else {
+		t.IrAlBorde(Sur)
+		t.Mover(Este)
+	}
+}
+
+procedure t.ReemplazarColor(unColor, otroColor) {
+	t.PonerN(otroColor, nroBolitas(t, unColor))
+	t.SacarTodas(unColor)
+}
+
+procedure t.SacarTodas(unColor) {
+	t.SacarN(unColor, nroBolitas(t, unColor))
+}
+
+procedure t.ReemplazarColorEnTablero(unColor, otroColor) {
+	t.IrAlOrigen()
+	while (puedeMoverTablero(t)) {
+		t.ReemplazarColor(unColor, otroColor)
+		t.MoverTablero()
+	}
+	t.ReemplazarColor(unColor, otroColor)
+}
+
+procedure t.PonerN(unColor, cantidad) {
+	repeat cantidad {
+		t.Poner(unColor)
+	}
+}
+
+procedure t.SacarN(unColor, cantidad) {
+	repeat cantidad {
+		t.Sacar(unColor)
+	}
+}
+
+procedure t.LlenarFilaConBolitas(unColor, cantidad) {
+	t.IrAlBorde(Oeste)
+	while (puedeMover(t, Este)) {
+		t.PonerN(unColor, cantidad)
+		t.Mover(Este)
+	}
+	t.PonerN(unColor, cantidad)
+}
+
+function snoc(xs, x) { return(xs ++ [x])}
+function cons(x, xs) { return([x] ++ xs)}
+
+procedure t.LlenarConBolitas(unColor, cantidad) {
+	t.IrAlOrigen()
+	while (puedeMoverTablero(t)) {
+		t.PonerN(unColor, cantidad)
+		t.MoverTablero()
+	}
+	t.PonerN(unColor, cantidad)
+}
+
+function contarBolitas(t, unColor) {
+	count := 0
+	trec := t
+	trec.IrAlOrigen()
+	while (puedeMoverTablero(trec)) {
+		count := count + nroBolitas(trec, unColor)
+		trec.MoverTablero()
+	}
+	return(count + nroBolitas(trec, unColor))
+}
+
+function aplicarNumOps(n, m) {
+	return ((n + m) + (n*m) + (n div m) + (n mod m))
+}
+
+function aplicarLogOps(p, q) {
+	res := (p && q)
+	res := (p || q)
+	res := not p 
+	return(not q || res)
+}

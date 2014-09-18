@@ -1,0 +1,204 @@
+# Test tools
+##################################
+function colorPassed() { return(Verde) }
+function colorFailed() { return(Rojo) }
+
+procedure IrAlOrigen() {
+	IrAlBorde(Oeste)
+	IrAlBorde(Sur)
+}
+
+procedure TestingStart() {
+	VaciarTablero()
+	IrAlOrigen()
+	MoverTablero()
+}
+
+procedure TestSetup() {
+	VaciarTablero()
+}
+
+procedure TestingEnd() {
+	passed := 0;
+	failed := 0;
+	while (puedeMoverTableroInv()) {
+		passed := passed + nroBolitas(colorPassed())
+		failed := failed + nroBolitas(colorFailed())
+		MoverTableroInv()
+	}
+	PonerN(colorPassed(), passed)
+	PonerN(colorFailed(), failed)
+}
+
+procedure Deny(b) {
+	Assert(not b)
+}
+
+procedure Assert(b) {
+	if (b) {
+		Poner(colorPassed())
+	} else {
+		Poner(colorFailed())
+	}
+	MoverTablero()
+}
+
+function getTestData(c) {
+	IrAlOrigen()
+	return(nroBolitas(c))
+}
+
+function failedCount() {
+	return(getTestData(colorFailed()))
+}
+
+function passedCount() {
+	return(getTestData(colorPassed()))
+}
+
+##################################
+
+
+function nroTotalBolitas() {
+	total := 0
+	foreach c in [minColor()..maxColor()] {
+		total := total + nroBolitas(c)
+	}
+	return(total)
+}
+
+function nroBolitasTablero(c) {
+    IrAlOrigen()
+    bolitas := 0
+    while (puedeMoverTablero()) {
+        MoverTablero()
+        bolitas := bolitas + nroBolitas(c)
+    }
+    return(bolitas + nroBolitas(c))
+}
+
+function nroBolitasTotalTablero() {
+    IrAlOrigen()
+    bolitas := 0
+    while (puedeMoverTablero()) {
+        MoverTablero()
+        bolitas := bolitas + nroTotalBolitas()
+    }
+    return(bolitas + nroTotalBolitas())
+}
+
+function medirTablero(unaDireccion) {
+	IrAlBorde(opuesto(unaDireccion))
+	count := 1
+	while (puedeMover(unaDireccion)) {			
+		Mover(unaDireccion)
+		count := count + 1
+	}
+	return(count)
+}
+
+function ancho() {
+	return(Este)
+}
+
+function alto() {
+	return(Norte)
+}
+
+function puedeMoverT(dirExterna, dirInterna) {
+	return(puedeMover(dirInterna) || puedeMover(dirExterna))
+}
+
+procedure MoverT(dirExterna, dirInterna) {
+	if (puedeMover(dirInterna)) {
+		Mover(dirInterna)
+	} else {
+		IrAlBorde(opuesto(dirInterna))
+		Mover(dirExterna)
+	}
+}
+
+function puedeMoverTableroInv() {
+	return(puedeMoverT(Sur, Oeste))
+}
+
+procedure MoverTableroInv() {
+	MoverT(Sur, Oeste)
+}
+
+function puedeMoverTablero() {
+	return(puedeMoverT(Norte, Este))
+}
+
+procedure MoverTablero() {
+	MoverT(Norte, Este)
+}
+
+procedure ReemplazarColor(unColor, otroColor) {
+	PonerN(otroColor, nroBolitas(unColor))
+	SacarTodas(unColor)
+}
+
+procedure SacarTodas(unColor) {
+	SacarN(unColor, nroBolitas(unColor))
+}
+
+procedure ReemplazarColorEnTablero(unColor, otroColor) {
+	IrAlOrigen()
+	while (puedeMoverTablero()) {
+		ReemplazarColor(unColor, otroColor)
+		MoverTablero()
+	}
+	ReemplazarColor(unColor, otroColor)
+}
+
+procedure PonerN(unColor, cantidad) {
+	repeat cantidad {
+		Poner(unColor)
+	}
+}
+
+procedure SacarN(unColor, cantidad) {
+	repeat cantidad {
+		Sacar(unColor)
+	}
+}
+
+procedure LlenarFilaConBolitas(unColor, cantidad) {
+	IrAlBorde(Oeste)
+	while (puedeMover(Este)) {
+		PonerN(unColor, cantidad)
+		Mover(Este)
+	}
+	PonerN(unColor, cantidad)
+}
+
+procedure LlenarConBolitas(unColor, cantidad) {
+	IrAlOrigen()
+	while (puedeMoverTablero()) {
+		PonerN(unColor, cantidad)
+		MoverTablero()
+	}
+	PonerN(unColor, cantidad)
+}
+
+function contarBolitas(unColor) {
+	count := 0
+	IrAlOrigen()
+	while (puedeMoverTablero()) {
+		count := count + nroBolitas(unColor)
+		MoverTablero()
+	}
+	return(count + nroBolitas(unColor))
+}
+
+function aplicarNumOps(n, m) {
+	return ((n + m) + (n*m) + (n div m) + (n mod m))
+}
+
+function aplicarLogOps(p, q) {
+	res := (p && q)
+	res := (p || q)
+	res := not p 
+	return(not q || res)
+}

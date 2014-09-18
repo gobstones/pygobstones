@@ -1,0 +1,12 @@
+# Should the judge check the board contents cell-by-cell?
+check_board True
+
+# Should the judge check the final position of the head?
+check_head True
+
+# Should the judge check the values of the variables returned by the Main procedure?
+check_result False
+
+# Should the judge provide a counterexample in presence of a wrong answer?
+provide_counterexample   True  # Initial board
+provide_expected_result  True  # Final board

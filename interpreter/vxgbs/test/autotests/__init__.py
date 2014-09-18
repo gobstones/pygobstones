@@ -1,0 +1,273 @@
+import itertools
+import functools
+from test import TestCase, GobstonesTest, run_gobstones
+
+def read_file(fn):
+    f = open(fn, 'r')
+    s = f.read()
+    f.close()
+    return s
+
+def write_file(fn, s):
+    f = open(fn, "w")
+    f.write(s)
+    f.close()
+    
+def copy_file(fn, fnnew):
+    write_file(fnnew, read_file(fn))
+
+def temp_test_file(codestr):
+    fn = "./examples/" + str(id(codestr)) + ".gbs"
+    write_file(fn, codestr)
+    return fn
+    
+def unzip(l):
+    return [list(t) for t in zip(*l)]
+
+def group(lst, n):
+    res = []
+    sublst = []
+    for x in lst:
+      sublst.append(x)
+      if len(sublst) == n:
+          res.append(sublst)
+          sublst = []
+    if len(sublst) > 0:
+        res.append(sublst)
+    return res
+
+def flatten(lst):
+    res = []
+    for x in lst:
+        if isinstance(x, list):
+            res.extend(flatten(x))
+        else:
+            res.append(x)
+    return res
+
+
+def nats(start, end):
+    if (start < end):
+        return list(range(start, end+1))
+    else:
+        l = list(range(end, start+1))
+        l.reverse()
+        return l
+    
+BINOPS = {
+    "+": lambda x, y: x + y,
+    "-": lambda x, y: x - y,
+    "*": lambda x, y: x * y,
+    "div": lambda x, y: x / y,
+    "mod": lambda x, y: x % y,
+}
+    
+binop = lambda op, x, y: BINOPS[op](x,y)
+
+# Gbs syntax
+
+isNil = lambda xs: len(xs) == 0
+head = lambda xs: xs[0]
+tail = lambda xs: xs[1:]
+
+# Test scripts
+
+def combine_args(args):
+    prod = itertools.product(*args.values())
+    return [dict(zip(args.keys(),pargs)) for pargs in prod]    
+    
+class Operation(object):
+  def __init__(self, nretvals, code, replace={}):
+    self.nretvals = nretvals
+    for k, v in replace.items():
+      code = code.replace('@' + k, str(v))
+    self.code = code
+    
+class TestScript(object):
+    
+    def __init__(self, possible_args):
+        self.cases = combine_args(possible_args)
+    
+    def build_tests(self):
+        return [self.build_test(c) for c in self.cases]
+    
+    def build_test(self, args):
+        return (Operation(self.nretvals(), self.gbs_code(), args), self.py_func(args))
+    
+    def nretvals(self):
+        return 1
+    
+    def gbs_code(self):
+        return "Skip"
+    
+    def py_func(self, args):
+        return functools.partial(self.pyresult, args)
+    
+    def py_code(self, args):
+        pass
+    
+# Tests
+
+class TestOpMapping(TestScript):
+
+    def __init__(self):
+        super(TestOpMapping, self).__init__({"length": [5,10,20], "operation": BINOPS.keys()})
+        
+    def gbs_code(self):
+        return '''
+            xs := nats(1, @length)
+            ys := nats(@length, 1)
+            zs := []
+            while(not isNil(xs)) {
+                zs := zs ++ [head(xs) @operation head(ys)]
+                xs := tail(xs)
+                ys := tail(ys)
+            }
+            return(zs)
+        '''    
+        
+    def pyresult(self, args):
+        xs = nats(1, args["length"])
+        ys = nats(args["length"], 1)
+        zs = []
+        while (not isNil(xs)):
+            zs = zs + [binop(args["operation"], head(xs), head(ys))]
+            xs = tail(xs)
+            ys = tail(ys)
+        return zs
+    
+
+class TestOpInject(TestScript):
+    
+    def __init__(self):
+        super(TestOpInject, self).__init__({"length": [5,10,20], "operation": BINOPS.keys()})
+    
+    def gbs_code(self):
+        return '''
+            xs := nats(1, @length)
+            ys := nats(@length, 1)
+            res := 0
+            while(not isNil(xs)) {
+                res := res + (head(xs) @operation head(ys))
+                xs := tail(xs)
+                ys := tail(ys)
+            }
+            return(res)
+        '''
+        
+    def pyresult(self, args):
+        xs = nats(1, args["length"])
+        ys = nats(args["length"], 1)
+        res = 0
+        while (not isNil(xs)):
+            res += binop(args["operation"], head(xs), head(ys))
+            xs = tail(xs)
+            ys = tail(ys)
+        return res
+    
+class TestListGenerator(TestScript):
+    def __init__(self):
+        super(TestListGenerator, self).__init__({"low": [1, 11, 33], "high": [11, 51, 22]})
+    
+    def nretvals(self):
+        return 7
+    
+    def gbs_code(self):
+        return '''
+            xs := [@low..@high]
+            ys := [@low,@low+1..@high]
+            zs := [@high,@high-1..@low]
+            ws := [@low,@low+5..@high]
+            vs := [@high, @high-5..@low]
+            us := [@low,@low+9..@high]
+            ts := [@high, @high-9..@low]            
+            return(ts, us, vs, ws, xs, ys, zs)
+        '''
+        
+    def pyresult(self, args):
+        xs = range(args['low'], args['high']+1)
+        ys = range(args['low'], args['high']+1, 1)
+        zs = range(args['high'], args['low']-1, -1)
+        ws = range(args['low'], args['high']+1, 5)
+        vs = range(args['high'], args['low']-1, -5)
+        us = range(args['low'], args['high']+1, 9)
+        ts = range(args['high'], args['low']-1, -9)
+        return ts, us, vs, ws, xs, ys, zs
+    
+    
+TESTS_GROUPS = group(flatten([cls().build_tests() for cls in TestScript.__subclasses__()]), 128)
+
+def program_for(exprs):
+  variables = []
+  def expr_eval(i, e):
+    if isinstance(e, Operation):
+      if e.nretvals == 1: 
+        variables.append('x_%i' % (i,))
+        return 'x_%i := f0_%i()' % (i, i,)
+      else:
+        vs = ['x_%i_%i' % (i, j) for j in range(e.nretvals)]
+        variables.extend(vs)
+        return '(%s) := f0_%i()' % (','.join(vs), i,)
+    else:
+      variables.append('x_%i' % (i,))
+      return 'x_%i := %s' % (i, e)
+  R = range(len(exprs))
+  prog = []
+  for i, e in zip(R, exprs):
+    if isinstance(e, Operation):
+      prog.append('function f0_%i() {' % (i,))
+      prog.append(e.code)
+      prog.append('}')
+  prog.append('t.program {')
+  prog.append(''.join(['  %s\n' % (expr_eval(i, e),) for i, e in zip(R, exprs)]))
+  prog.append('  return (%s)\n' % (', '.join(variables),))
+  prog.append('}\n')
+  return '\n'.join(prog)
+
+
+def eqValue(gbsv, pyv):
+    return gbsv == str(pyv)
+
+
+class AutoGobstonesTest(GobstonesTest):
+
+    def __init__(self, gbscode, pyfuncs):
+        self.gbscode = gbscode
+        self.pyfuncs = pyfuncs
+        
+    def run(self):
+        results = run_gobstones(temp_test_file(self.gbscode), "./boards/empty.gbb")
+        if results[0] == "OK":
+            gbsres = results[1]
+            pyres = []
+            for f in self.pyfuncs:
+                pyr = f()
+                if isinstance(pyr, tuple):
+                    pyres += list(pyr)
+                else:
+                    pyres.append(pyr)
+                    
+            if len(pyres) == len(gbsres):
+                for gbsval, pyval in zip(unzip(gbsres)[1], pyres):
+                    if not eqValue(gbsval, pyval):
+                        return "FAILED"
+                return "PASSED"
+            else:
+                return "FAILED"            
+        else:
+            return results[0]
+        
+
+class AutoTestCase(TestCase):
+    
+    def __init__(self):
+        super(AutoTestCase, self).__init__("AutoTestCase")
+        copy_file("./autotests/Biblioteca.gbs", "./examples/Biblioteca.gbs")
+    
+    def get_gobstones_tests(self):
+        tests = []
+        for tgroup in TESTS_GROUPS:
+            ops, pyfs = unzip(tgroup) 
+            tests.append(AutoGobstonesTest(program_for(ops), pyfs))
+        return tests        
+ 

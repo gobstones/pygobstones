@@ -1,0 +1,48 @@
+#!assert
+
+#################################
+# Test Nesting with Same Fields #
+#################################
+type Pepe is record {
+  field a
+}
+
+type Rosa is record {
+  field a
+}
+
+type Pepe2 is record { field a }
+type Pepe3 is record { field a }
+
+function testNestingWithSameFields() {
+  passed := True
+  p := Pepe(a <- Rosa(a <- 1))
+  p2 := Pepe3(a <- Pepe2(a <- p))
+  passed.Assert(p2.a.a.a.a == 1)
+  return(passed)  
+}
+
+#################################
+# Basic record testing          #
+#################################
+type Persona is record {
+	field nombre
+	field edad
+	field dni
+}
+
+function igualPersona(p1, p2) {
+	return(nombre(p1) == nombre(p2) && edad(p1) == edad(p2) && dni(p1) == dni(p2))
+}
+
+function testBasicRecords() {	
+	p1 := Persona(nombre <- 2, edad <- 21, dni <- 3523432)
+	p2 := Persona(nombre <- 2, edad <- 21, dni <- 3523432)
+	return(igualPersona(p1, p2))
+}
+
+t.program {
+	passed := testBasicRecords()
+	passed.Assert(testNestingWithSameFields())
+	return(passed)
+}

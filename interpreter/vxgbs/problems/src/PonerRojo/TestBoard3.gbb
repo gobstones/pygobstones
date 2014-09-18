@@ -1,0 +1,27 @@
+GBB/1.0
+s 9 9
+o 1 0 R 1
+o 1 4 N 2
+o 1 8 N 1 V 1
+o 2 2 A 2
+o 2 6 A 2 V 1
+o 3 1 V 1
+o 3 2 A 1 N 4
+o 3 3 A 2 N 2 R 1 V 4
+o 3 5 A 11 V 1
+o 3 6 R 1
+o 4 8 A 4 R 1
+o 5 1 R 15
+o 5 4 A 1 R 1
+o 5 8 V 1
+o 6 8 N 19 V 4
+o 7 5 A 1 V 1
+o 7 7 A 2
+o 8 1 N 1
+o 8 3 R 1 V 1
+o 8 4 R 3
+o 8 6 A 1 N 3 R 12 V 5
+o 8 7 A 2 R 26
+o 8 8 N 2
+x 3 6
+%%

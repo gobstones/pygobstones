@@ -1,0 +1,41 @@
+body {
+	background: #ffffff;
+	font-family: "Helvetica", "Verdana", sans-serif;
+}
+#header, #footer {
+    padding: 20px;
+}
+#header img {
+	float: right;
+}
+#main {
+    padding: 20px;
+}
+input {
+	border: solid black 1px;
+	padding: 5px;
+}
+table {
+	padding: 10px;
+}
+.block {
+	border: solid black 1px;
+	padding: 10px;
+}
+.block h1 {
+	background: #888;
+	font-size: 18pt;
+	font-weight: normal;
+	color: white;
+	padding: 5px;
+	margin: -10px -10px 0 -10px;
+}
+label {
+	font-weight: bold;
+}
+.errmsg {
+	margin: 10px;
+	padding: 10px;
+	background: #ffe0e0;
+	border: solid red 1px;
+}

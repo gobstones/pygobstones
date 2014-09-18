@@ -1,0 +1,41 @@
+$def with (content)
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="es">
+  <head>
+    <title>Chang&uuml;&iacute; - $content.description</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+    <meta name="description" content="$content.description"> 
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <script type="text/javascript" src="/static/view.js"></script>
+  </head>
+    $if content.focus != '':
+         <body onload="set_focus('$content.focus')">
+    $else:
+         <body>
+
+    <div id="header">
+      <img src="/static/changui.png" width="293" height="100" alt="changui"><br>
+      $if session.get('logged_in', False):
+	    <a href="/"><strong>$session.username</strong></a>
+      $for title, url in menu():
+        | <a href="$url">$title</a>
+      $if session.get('logged_in', False):
+        | <a href="/login/remove">Salir</a> |
+      &nbsp;
+    </div>
+
+    <div id="main">
+    $:content
+    </div>
+
+    <div id="footer">
+      <p>
+          <a href="http://validator.w3.org/check?uri=referer">
+            <img src="http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Strict" height="31" width="88">
+          </a>
+      </p>
+    </div>
+
+  </body>
+</html>
+

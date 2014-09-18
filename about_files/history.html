@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Historia</title>
+    <link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+
+
+<H1>Historia del Proyecto</H1>
+
+<H2>El lenguaje</H2>
+
+<p>
+<b>Gobstones</b> es un lenguaje diseñado exclusivamente con la idea de expresar una secuencia didáctica innovadora para la enseñanza de la programación. Fue diseñado en la Universidad Nacional de Quilmes a partir del año 2008, como parte del dictado de la materia <i>Introducción a la Programación</i> de la carrera <i>Tecnicatura Universitaria en Programación Informática</i>.
+</p>
+
+<p>
+El lenguaje en sí, o sea el conjunto de reglas que permiten armar los programas, tuvo varias versiones, que se numeraron para poder referenciarlas.
+<ul>
+	<li>La versión 1.0 tenía una sintaxis muy primitiva y rígida (sin llaves, con puntos y comas como separadores de comandos, y varias otras cuestiones que lo hacían incómodo de utilizar) y su conjunto de comandos básicos era diferente del actual.
+	</li>
+
+	<li>La versión 2.0 incorporó muchas de las mejoras actuales, tales como el uso de bloques entre llaves, la separación implícita entre comandos, y la gran mayoría de los comandos básicos actuales (aunque algunos de ellos con diferente nombre). Esta versión (o sus derivadas) se utilizó fuertemente en el dictado de la materia mencionada desde 2009 hasta 2013. También con esta versión del lenguaje se comenzó a utilizar la secuencia didáctica expresada por <b>Gobstones</b> en diversas escuelas secundarias durante 2013.
+	</li>
+
+	<li>La versión actual, 3.0, se diseñó en base a la experiencia adquirida en el dictado de las materias en secundarios, e incorpora varias modificaciones necesarias para mejorar la secuencia didáctica, como ser facilitar la definición de <i>programas</i> sin conceptos adicionales (antes un programa dependía del concepto de <i>procedimiento</i>), y la posibilidad de agrupar ciertas operaciones básicas en una Biblioteca de operaciones. Además, también introduce ciertos cambios para compatibilizarse con una extensión del lenguaje, denominada <b>XGobstones</b>, que incorpora mecanismos de trabajo con estructuras de datos y modificaciones explícitas de estado, e incorpora una variante de programas con interactividad básica.
+	</li>
+</ul>
+</p>
+
+<p>
+La presente herramienta implementa la versión del lenguaje 3.0. El nombre <b>Gobstones</b> cuando no se indica de qué versión hablamos, siempre debe referirse a la última existente.
+</p>
+
+<h2>Las herramientas que implementan <b>Gobstones</b></h2>
+<p>
+El lenguaje, por sí mismo, no es más que un conjunto de reglas. Para que esas reglas puedan ser utilizadas en la confección de programas, y los programas escritos en el lenguaje puedan ejecutarse de alguna manera, hace falta contar con herramientas que implementen el lenguaje. Estas herramientas incluyen normalmente las siguientes componentes.
+</p>
+<ul>
+	<li>Un intérprete o compilador del lenguaje.
+	</li>
+
+	<li>Algún mecanismo de entrada/salida para poder leer y ejecutar programas y mostrar sus resultados.
+	</li>
+
+	<li>Opcionalmente, componentes adicionales como un editor de progamas, un editor de tableros, etc.
+	</li>
+</ul>
+
+<p>
+Hasta el momento se implementaron 3 herramientas dentro del proyecto <b>Gobstones</b>, la tercera una variante de la segunda.
+<ul>
+	<li>Una primera herramienta implementada en el lenguaje Haskell, que implementó primero la versión 1.0 del lenguaje y luego la 2.0 y todos sus derivados (hasta la versión 2.12). Esta herramienta era muy primitiva y no poseía componentes adicionales, y su entrada/salida se realizaba en formato ASCII. Esta herramienta no recibió nombre, más allá de <b>Gobstones</b>.
+	</li>
+
+	<li>Una segunda herramienta, y la primera que podría decirse tuvo características de ambiente, implementada en el lenguaje Python por Pablo Barenbaum. Esta herramienta recibió el nombre de PyGobstones, y se versionó como la versión 0.0 (con derivadas hasta la 0.9.7, al incorporar mejoras o correcciones). Incorporó una interfaz gráfica, con un tablero y bolitas a colores, y componentes para realizar edición de programas, edición de tableros, chequeo de programas y un "juez" que permitía al docente validar ejercicios dados por el estudiante.</br> La interfaz gráfica de esta versión utilizó la herramienta Tkinter. El PyGobstones versión 0.0 implementó siempre la versión 2.0 del lenguaje.
+	</li>
+
+	<li>La tercera herramienta, también denominada PyGobstones, pues está íntegramente inspirada en la anterior, es la que están utilizando en este momento. Se la denomina PyGobstones versión 1.0 para distinguirla de la anterior e implementa exclusivamente la versión 3.0 de <b>Gobstones</b> y la versión 1.0 de <b>XGobstones</b>. También está implementada en Python, pero a diferencia de la anterior, su interfaz gráfica está implementada utilizando PyQt. Los autores de la interfaz fueron Ariel Morellato y Leonardo Orellana, que comenzaron desde cero, pero conservando muchas de las ideas de la versión anterior.</br> Para el intérprete de esta versión se reutilizó el de la versión 0.9.7 de PyGobstones, pero con modificaciones y mejoras introducidas por Ary Batista, quién además realizó una implementación de un segundo intérpete para <b>XGobstones</b> basándose en el original.
+	</li>
+</ul>
+</p>
+
+<p>
+La versión actual de PyGobstones, la 1.0, añade varias características innovadoras:
+<ul>
+	<li>Mejora la presentación visual, ofreciendo un diseño propio que caracterice a la herramienta.
+	</li>
+
+	<li>Separa el editor de tableros de las ventanas de resultados.
+	</li>
+
+	<li>Incorpora numerosas opciones para personalizar la interfaz y los componentes utilizados.
+	</li>
+
+	<li>Incorpora facilidades para la ejecución de programas interactivos (de acuerdo con la definición de lenguaje en su versión 3.0).
+	</li>
+
+	<li>Permite definir <i>"vestimentas"</i> para cambiar la apariencia gráfica del tablero final. Esta componente fue pensada para permitir mostrar mejor el proceso de abstracción que permite utilizar bolitas para representar otros tipos de ideas o conceptos. Además, junto con la capacidad de interactividad, permite el desarrollo de algunos juegos básicos. En los ejemplos puede encontrarse el juego Zilfost, que es una variante del Tetris escrita íntegramente en <b>Gobstones</b>.
+	</li>
+
+	<li>Permite visualizar la Biblioteca en una pestaña separada del editor de tableros.
+	</li>
+
+	<li>Define la idea de <i>directorio de trabajo</i> donde se pueden encontrar la Biblioteca actual, las vestimentas actuales, junto con un conjunto de programas que utilicen esas componentes.
+	</li>
+
+	<li>Permite utilizar desde la misma interfaz los intérpretes de <b>Gobstones</b> y <b>XGobstones</b>, cambiando entre ellos mediante un botón de fácil acceso
+	</li>
+
+	<li>Permite acceder al sitio oficial de <b>Gobstones</b> (<a href=http://www.gobstones.org> www.gobstones.org </a>) mediante un botón de fácil acceso.
+	</li>
+</ul>
+</p>
+
+<p>
+Las versiones de Haskell y de PyGobstones v.0.0 no se mantendrán en el futuro. La versión de PyGobstones v.1.0 será la que la comunidad mantenga, actualice y mejore, mediante la incorporación de mayores funcionalidades.
+</p>
+
+¡Disfruten <b>Gobstones</b>!
+
+</body>

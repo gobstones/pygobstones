@@ -1,0 +1,42 @@
+#!assert
+#!board=boards/empty.gbb
+
+procedure t.LlenarTablero() {
+	foreach c in [minColor()..maxColor()] {
+		t.LlenarFilaConBolitas(c, 2)		
+	}
+}
+
+// Este va sin cons y snoc
+function filaALista(tp) {
+	t := tp
+	res := []
+	t.IrAlBorde(Oeste)
+	while (puedeMover(t, Este)) {
+		res := res ++ [nroTotalBolitas(t)]
+		t.Mover(Este)
+	}
+	return(res ++ [nroTotalBolitas(t)])
+}
+
+// Este va con Snoc y Cons, definidos en Biblioteca.gbs
+function sumarElementos(xs) {
+	suma := 0
+	foreach x in xs {
+		suma := suma + x
+	}
+	return(suma)
+}
+
+t.program {
+	passed := True
+	
+	t.LlenarTablero()
+	
+	cantidadesFila := filaALista(t)
+	
+	anchoTablero := medirTablero(t, ancho())
+	passed.Assert(sumarElementos(cantidadesFila) == 2 * 4 * anchoTablero)
+	
+	return(passed)
+}

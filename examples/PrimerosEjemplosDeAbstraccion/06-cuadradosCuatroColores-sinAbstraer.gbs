@@ -1,0 +1,50 @@
+program
+{
+ IrAlBorde(Oeste); IrAlBorde(Sur);
+ DibujarCuadradoRojo()
+
+ IrAlBorde(Este);Mover(Oeste);Mover(Oeste)
+ DibujarCuadradoNegro()
+
+ IrAlBorde(Norte);Mover(Sur);Mover(Sur)
+ DibujarCuadradoAzul()
+
+ IrAlBorde(Oeste)
+ DibujarCuadradoVerde()
+}
+
+procedure DibujarCuadradoNegro()
+// Dibujar cuadrado de color negro
+{
+ Poner(Negro);Mover(Norte);Poner(Negro);Mover(Norte)
+ Poner(Negro);Mover(Este);Poner(Negro);Mover(Este)
+ Poner(Negro);Mover(Sur);Poner(Negro);Mover(Sur)
+ Poner(Negro);Mover(Oeste);Poner(Negro);Mover(Oeste)
+}
+
+procedure DibujarCuadradoRojo()
+// Dibujar cuadrado de color rojo
+{
+ Poner(Rojo);Mover(Norte);Poner(Rojo);Mover(Norte)
+ Poner(Rojo);Mover(Este);Poner(Rojo);Mover(Este)
+ Poner(Rojo);Mover(Sur);Poner(Rojo);Mover(Sur)
+ Poner(Rojo);Mover(Oeste);Poner(Rojo);Mover(Oeste)
+}
+
+procedure DibujarCuadradoAzul()
+// Dibujar cuadrado de color azul
+{
+ Poner(Azul);Mover(Norte);Poner(Azul);Mover(Norte)
+ Poner(Azul);Mover(Este);Poner(Azul);Mover(Este)
+ Poner(Azul);Mover(Sur);Poner(Azul);Mover(Sur)
+ Poner(Azul);Mover(Oeste);Poner(Azul);Mover(Oeste)
+}
+
+procedure DibujarCuadradoVerde()
+// Dibujar cuadrado de color verde
+{
+ Poner(Verde);Mover(Norte);Poner(Verde);Mover(Norte)
+ Poner(Verde);Mover(Este);Poner(Verde);Mover(Este)
+ Poner(Verde);Mover(Sur);Poner(Verde);Mover(Sur)
+ Poner(Verde);Mover(Oeste);Poner(Verde);Mover(Oeste)
+}

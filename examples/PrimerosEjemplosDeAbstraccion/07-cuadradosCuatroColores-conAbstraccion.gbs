@@ -1,0 +1,25 @@
+program
+{
+ IrAlBorde(Oeste); IrAlBorde(Sur);
+ DibujarCuadrado(Rojo)
+
+ IrAlBorde(Este);Mover(Oeste);Mover(Oeste)
+ DibujarCuadrado(Negro)
+
+ IrAlBorde(Norte);Mover(Sur);Mover(Sur)
+ DibujarCuadrado(Azul)	
+
+ IrAlBorde(Oeste)
+ DibujarCuadrado(Verde)
+}
+
+procedure DibujarCuadrado(colorDelCuadrado)
+// Dibujar un cuadrado de color "colorDelCuadrado"
+// ("colorDelCuadrado" debe ser un color)
+{
+ Poner(colorDelCuadrado);Mover(Norte);Poner(colorDelCuadrado);Mover(Norte)
+ Poner(colorDelCuadrado);Mover(Este);Poner(colorDelCuadrado);Mover(Este)
+ Poner(colorDelCuadrado);Mover(Sur);Poner(colorDelCuadrado);Mover(Sur)
+ Poner(colorDelCuadrado);Mover(Oeste);Poner(colorDelCuadrado);Mover(Oeste)
+}
+

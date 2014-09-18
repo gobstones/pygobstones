@@ -44,7 +44,7 @@ coverage.xml
 *.mo
 *.pot
 
-# Django stuff:
+# Logging
 *.log
 
 # Sphinx documentation
@@ -52,3 +52,8 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Eclipse project files
+.project
+.pydevproject
+.settings

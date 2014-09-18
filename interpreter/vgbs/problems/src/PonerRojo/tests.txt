@@ -1,0 +1,13 @@
+TestProg1.gbs PonerRojo/TestBoard1.gbb
+TestProg1.gbs PonerRojo/TestBoard2.gbb
+TestProg1.gbs PonerRojo/TestBoard3.gbb
+TestProg1.gbs PonerRojo/RandBoard01.gbb
+TestProg1.gbs PonerRojo/RandBoard02.gbb
+TestProg1.gbs PonerRojo/RandBoard03.gbb
+TestProg1.gbs PonerRojo/RandBoard04.gbb
+TestProg1.gbs PonerRojo/RandBoard05.gbb
+TestProg1.gbs PonerRojo/RandBoard06.gbb
+TestProg1.gbs PonerRojo/RandBoard07.gbb
+TestProg1.gbs PonerRojo/RandBoard08.gbb
+TestProg1.gbs PonerRojo/RandBoard09.gbb
+TestProg1.gbs PonerRojo/RandBoard10.gbb

@@ -1,0 +1,23 @@
+program
+{
+ IrAlBorde(Oeste); IrAlBorde(Sur);
+ DibujarCuadrado()
+
+ IrAlBorde(Este);Mover(Oeste);Mover(Oeste)
+ DibujarCuadrado()
+
+ IrAlBorde(Norte);Mover(Sur);Mover(Sur)
+ DibujarCuadrado()
+
+ IrAlBorde(Oeste)
+ DibujarCuadrado()
+}
+
+procedure DibujarCuadrado()
+// Dibujar un cuadrado
+{
+ Poner(Negro);Mover(Norte);Poner(Negro);Mover(Norte)
+ Poner(Negro);Mover(Este);Poner(Negro);Mover(Este)
+ Poner(Negro);Mover(Sur);Poner(Negro);Mover(Sur)
+ Poner(Negro);Mover(Oeste);Poner(Negro);Mover(Oeste)
+}

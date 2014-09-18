@@ -1,0 +1,51 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file alias="close.png">icons/archivo/close.png</file>
+  <file alias="exit.png">icons/archivo/exit.png</file>
+  <file alias="new.png">icons/archivo/new.png</file>
+  <file alias="open.png">icons/archivo/open.png</file>
+  <file alias="save-as.png">icons/archivo/save-as.png</file>
+  <file alias="save.png">icons/archivo/save.png</file>
+  
+  <file alias="about.png">icons/ayuda/about.png</file>
+  <file alias="help.png">icons/ayuda/help.png</file>
+  <file alias="manual.png">icons/ayuda/manual.png</file>
+  
+  <file alias="check.png">icons/gobstones/check.png</file>
+  <file alias="start.png">icons/gobstones/start.png</file>
+  <file alias="stop.png">icons/gobstones/stop.png</file>
+  <file alias="logoGobstones.png">icons/gobstones/logoGobstones.png</file>
+  <file alias="logoXGobstones.png">icons/gobstones/logoXGobstones.png</file>
+  <file alias="background.png">icons/gobstones/background.png</file>
+  <file alias="backgroundWidgets.png">icons/gobstones/backgroundWidgets.png</file>
+  <file alias="backgroundWidget.png">icons/gobstones/backgroundWidget.png</file>
+  <file alias="ballRed.png">icons/gobstones/ballRed.png</file>
+  <file alias="ballGreen.png">icons/gobstones/ballGreen.png</file>
+  
+  <file alias="copy.png">icons/editar/copy.png</file>
+  <file alias="cut.png">icons/editar/cut.png</file>
+  <file alias="find.png">icons/editar/find.png</file>
+  <file alias="font-size.png">icons/editar/font-size.png</file>
+  <file alias="paste.png">icons/editar/paste.png</file>
+  <file alias="undo.png">icons/editar/undo.png</file>
+  <file alias="redo.png">icons/editar/redo.png</file>
+  <file alias="select-all.png">icons/editar/select-all.png</file>
+  <file alias="select-font.png">icons/editar/select-font.png</file>
+  <file alias="prev.png">icons/editar/prev.png</file>
+  <file alias="next.png">icons/editar/next.png</file>
+  
+  <file alias="board-clear.png">icons/tablero/clear.png</file>
+  <file alias="board-new.png">icons/tablero/new.png</file>
+  <file alias="board-open.png">icons/tablero/open.png</file>
+  <file alias="board-random.png">icons/tablero/random.png</file>
+  <file alias="board-save.png">icons/tablero/save.png</file>
+  <file alias="board-size.png">icons/tablero/size.png</file>
+  <file alias="board-select.png">icons/tablero/select.gif</file>
+  <file alias="empty.png">icons/tablero/empty.png</file>
+  
+  <file alias="logoHelp.png">helpFiles/logo.png</file>
+  
+  <file alias="license.html">helpFiles/license.html</file>
+</qresource>
+</RCC>
+ 

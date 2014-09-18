@@ -1,0 +1,27 @@
+$def with (input, default_login_user)
+$var title: Ingresar
+$var description: Ingresar a Chang&uuml;&iacute;
+$var focus: login_user
+<div class="block">
+  <h1>Ingresar</h1>
+  <form method="post" action="/login">
+    <table>
+  	<tr>
+  	  <td><label for="login_user">Usuario (e-mail)</label></td>
+  	  <td><input type="text" id="login_user" name="login_user" value="$default_login_user"></td>
+  	</tr>
+  	<tr>
+  	  <td><label for="login_pass">Contrase&ntilde;a</label></td>
+  	  <td><input type="password" id="login_pass" name="login_pass"></td>
+  	</tr>
+  	<tr>
+  	  <td></td>
+  	  <td><input type="submit" value="Ingresar"></td>
+  	</tr>
+    </table>
+    $if input.get('errmsg', False):
+        <div class="errmsg">
+		<p>Usuario o contrase&ntilde;a inv&aacute;lidos.</p>
+        </div>
+  </form>
+</div>

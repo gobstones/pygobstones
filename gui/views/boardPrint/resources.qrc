@@ -1,0 +1,28 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  
+  <file alias="rosa.png">images/visor/rosa.png</file>
+  <file alias="rosa_vientos.png">images/visor/rosa_vientos.png</file>
+  <file alias="rosa_vientos_sobria.png">images/visor/rosa_vientos_sobria.png</file>
+  <file alias="boom.png">images/visor/boom.png</file>
+  <file alias="red.png">images/red.png</file>
+  <file alias="black.png">images/black.png</file>
+  <file alias="blue.png">images/blue.png</file>
+  <file alias="green.png">images/green.png</file>
+  <file alias="cell.png">images/cell.png</file>
+  <file alias="down_right.png">images/down_right.png</file>
+  <file alias="down_left.png">images/down_left.png</file>
+  <file alias="up_right.png">images/up_right.png</file>
+  <file alias="up_left.png">images/up_left.png</file>
+  <file alias="right.png">images/right.png</file>
+  <file alias="left.png">images/left.png</file>
+  <file alias="up.png">images/up.png</file>
+  <file alias="down.png">images/down.png</file>
+  <file alias="circle.png">images/circle.png</file>
+  <file alias="down_right_translucent.png">images/down_right_translucent.png</file>
+  <file alias="down_left_translucent.png">images/down_left_translucent.png</file>
+  <file alias="up_right_translucent.png">images/up_right_translucent.png</file>
+  <file alias="up_left_translucent.png">images/up_left_translucent.png</file>
+  <file alias="cell_translucent.png">images/cell_translucent.png</file>
+</qresource>
+</RCC>

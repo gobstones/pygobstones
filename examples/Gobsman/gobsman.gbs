@@ -1,0 +1,197 @@
+/* -------------------------------------------------
+   AUTOR: Morellato Ariel, Orellana Leonardo
+   FECHA: agosto 2013
+
+   OBSERVACIONES:
+	* Gobsman es un pequeño juego que utiliza ideas y personajes del Pacman.
+	* Su objetivo es mostrar como construir un programa escrito en Gobstones.
+	* En este juego no es posible ganar ni perder, tampoco hay puntaje. Simplemente se pueden realizar movimientos y 
+	  observar los efectos del programa sobre el tablero.
+	* Los elementos con los que cuenta el juego son: Fanasmas, el personaje Gobsman, paredes y puntajes o comidas.
+   
+   CODIFICACIÓN DEL TABLERO:
+	* Fantasma verde -> 0A,0N,0R,2V
+	* Fantasma rojo -> 0A,0N,2R,0V
+	* Gobsman norte -> 1A,0N,0R,0V
+	* Gobsman sur -> 3A,0N,0R,0V
+	* Gobsman este -> 2A,0N,0R,0V
+	* Gobsman oeste -> 4A,0N,0R,0V
+	* Gobsman herido -> 5A,0N,0R,0V
+	* Puntaje 	-> 0A,1N,0R,0V
+	* Pared 	-> 0A,2N,0R,0V
+	* Celda vacía 	-> 0A,0N,0R,0V
+
+*/
+program
+{
+	MoverAl(Oeste)
+	MoverAl(Sur)
+	MoverAl(Este)
+	MoverAl(Norte)
+}
+
+
+
+-- PROCEDIMIENTOS
+
+procedure MoverAl(dir)
+/*
+  PROPÓSITO: 
+	1# Si está al borde del tablero y dir provoca caerse del tablero, debe mover al personaje al extremo opuesto 
+	e intentar comer. 
+	2# Si en la dirección dir hay una pared, el personaje no se mueve.
+	3# Si en la dirección dir hay una celda con un puntaje, debe desplazarse hacia esa celda e intentar comer.
+  PRECONDICIÓN:
+	1# Cuando nos encontramos con la situación nro 1 indicada el el propósito, en el extremo opuesto no debe haber pared.
+*/
+{
+	if(not esPasajeAl(dir))
+	{
+		if(not hayParedAl(dir))
+		{
+			MoverPacman(dir)
+			IntentarComer()
+		}
+	}
+	else
+	{
+		Trasladar(dir)
+		IntentarComer()
+	}
+}
+
+procedure Trasladar(dir)
+/*
+  PROPÓSITO: Desplazar al Gobsman hasta el extremo opuesto a su posición actual.
+  PRECONDICIÓN: En el extremo opuesto no debe haber una pared. Si esto sucede no tendría sentido el movimiento.
+*/
+{
+	BorrarPacman()
+	IrAlExtremo(opuesto(dir))
+	ActualizarImagen(dir)
+}
+
+/*
+  PROPÓSITO: Si en la posición actual hay un fantasma, el gobsman debe herirse. 
+	     De lo contrario debe comer el puntaje y el puntaje debe desaparecer.
+  PRECONDICIÓN: -/-
+*/
+procedure IntentarComer()
+{
+	if(hayFantasma())
+	{
+		Herir()
+	}
+	else
+	{
+		if(hayBolitas(Negro))
+		{
+			Sacar(Negro)
+		}
+	}
+}
+
+/*
+  PROPÓSITO: Dejar a la celda con 5 bolitas azules que es la configuración del gobsman herido.
+  PRECONDICIÓN: -/-
+*/
+procedure Herir()
+{
+	BorrarElementos()
+	foreach i in [1..5] {Poner(Azul)}
+}
+
+/*
+  PROPÓSITO: Dejar a la celda actual sin bolitas.
+  PRECONDICIÓN: -/-
+*/
+procedure BorrarElementos()
+{
+	foreach color in [minColor()..maxColor()]
+	{
+		while(hayBolitas(color))
+		{
+			Sacar(color)
+		}
+	}
+}	
+
+/*
+  PROPÓSITO: Desplazar al Gobsman hacia la dirección dir.
+  PRECONDICIÓN: -/-
+*/
+procedure MoverPacman(dir)
+{
+	BorrarPacman()
+	Mover(dir)
+	ActualizarImagen(dir)
+}
+
+/*
+  PROPÓSITO: Borra todas ls bolitas azules de la celda actual.
+  PRECONDICIÓN: -/-
+*/
+procedure BorrarPacman()
+{
+	while(hayBolitas(Azul))
+	{
+		Sacar(Azul)
+	}
+}
+
+/*
+  PROPÓSITO: Dejar tantas bolitas azules como indica la configuración según la dirección dir.
+  PRECONDICIÓN: La celda actual no tiene bolitas azules.
+*/
+procedure ActualizarImagen(dir)
+{
+	switch (dir) to
+		Norte -> {Poner(Azul)}
+		Este  -> {Poner(Azul);Poner(Azul)}
+		Sur   -> {Poner(Azul);Poner(Azul);Poner(Azul)}
+		Oeste -> {Poner(Azul);Poner(Azul);Poner(Azul);Poner(Azul)}
+		_ -> {}
+}
+
+/*
+  PROPÓSITO: Mover la celda actual hacia el extremo dir.
+  PRECONDICIÓN: -/-
+*/
+procedure IrAlExtremo(dir)
+{
+	while(puedeMover(dir))
+	{
+		Mover(dir)
+	}
+}
+
+-- FUNCIONES
+
+/*
+  PROPÓSITO: Retornar si hay una parede en la dirección dir.
+  PRECONDICIÓN: Hay al menos una celda en la dirección dir.
+*/
+function hayParedAl(dir)
+{
+	Mover(dir)
+	return(nroBolitas(Negro) == 2)
+
+}
+
+/*
+  PROPÓSITO: Retorna si está en el borde dir del tablero.
+  PRECONDICIÓN: -/-
+*/
+function esPasajeAl(dir)
+{
+	return(not puedeMover(dir))
+}
+
+/*
+  PROPÓSITO: Retorna si hay un fantasma rojo o verde en la celda actual.
+  PRECONDICIÓN: -/-
+*/
+function hayFantasma()
+{
+	return (nroBolitas(Rojo) == 2 || nroBolitas(Verde) == 2)
+}

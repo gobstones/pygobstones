@@ -1,0 +1,38 @@
+<BoardCoding>
+    <Cell>
+        <Blue>0</Blue>
+        <Black>0</Black>
+        <Red>0</Red>
+        <Green>0</Green>
+        <Image>fondo.png</Image>         
+    </Cell>
+    <!-- Bloques de Colores -->    
+    <Cell>
+        <Blue>0</Blue>
+        <Black>0</Black>
+        <Red>0</Red>
+        <Green>1</Green>
+        <Image>bloque-verde.png</Image>         
+    </Cell>
+    <Cell>
+        <Blue>1</Blue>
+        <Black>0</Black>
+        <Red>0</Red>
+        <Green>0</Green>
+        <Image>bloque-azul.png</Image>         
+    </Cell>
+    <Cell>
+        <Blue>0</Blue>
+        <Black>1</Black>
+        <Red>0</Red>
+        <Green>0</Green>
+        <Image>bloque-negro.png</Image>         
+    </Cell>
+    <Cell>
+        <Blue>0</Blue>
+        <Black>0</Black>
+        <Red>1</Red>
+        <Green>0</Green>
+        <Image>bloque-rojo.png</Image>         
+    </Cell>
+</BoardCoding>

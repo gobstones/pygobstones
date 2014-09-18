@@ -1,0 +1,34 @@
+program
+{
+ IrAlBorde(Oeste); IrAlBorde(Sur);
+
+ // Dibujar un cuadrado
+ Poner(Negro);Mover(Norte);Poner(Negro);Mover(Norte)
+ Poner(Negro);Mover(Este);Poner(Negro);Mover(Este)
+ Poner(Negro);Mover(Sur);Poner(Negro);Mover(Sur)
+ Poner(Negro);Mover(Oeste);Poner(Negro);Mover(Oeste)
+
+ IrAlBorde(Este);Mover(Oeste);Mover(Oeste)
+
+ // Dibujar un cuadrado
+ Poner(Negro);Mover(Norte);Poner(Negro);Mover(Norte)
+ Poner(Negro);Mover(Este);Poner(Negro);Mover(Este)
+ Poner(Negro);Mover(Sur);Poner(Negro);Mover(Sur)
+ Poner(Negro);Mover(Oeste);Poner(Negro);Mover(Oeste)
+
+ IrAlBorde(Norte);Mover(Sur);Mover(Sur)
+
+ // Dibujar un cuadrado
+ Poner(Negro);Mover(Norte);Poner(Negro);Mover(Norte)
+ Poner(Negro);Mover(Este);Poner(Negro);Mover(Este)
+ Poner(Negro);Mover(Sur);Poner(Negro);Mover(Sur)
+ Poner(Negro);Mover(Oeste);Poner(Negro);Mover(Oeste)
+
+ IrAlBorde(Oeste)
+
+ // Dibujar un cuadrado
+ Poner(Negro);Mover(Norte);Poner(Negro);Mover(Norte)
+ Poner(Negro);Mover(Este);Poner(Negro);Mover(Este)
+ Poner(Negro);Mover(Sur);Poner(Negro);Mover(Sur)
+ Poner(Negro);Mover(Oeste);Poner(Negro);Mover(Oeste)
+}

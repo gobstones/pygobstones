@@ -1,0 +1,19 @@
+$def with (record)
+$var description: $record.admin_title
+$var focus:
+<div class="block">
+<h1>$record.admin_title</h1>
+<ul>
+<li><p><a href="/$record.record_name/add_service">$record.add_title</a></p>
+</ul>
+
+<table>
+$ n = 0
+$for elem in record.all_elements():
+    <tr>
+    <td><strong>$elem[record.primary_key.name]</strong></td>
+    </tr>
+    $ n += 1
+</table>
+$if n == 0:
+    <p><strong>No hay registros en el sistema.</strong></p>

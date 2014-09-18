@@ -1,0 +1,2869 @@
+/* -------------------------------------------------
+   AUTOR: Pablo E. Martínez López 
+   FECHA: abril-octubre 2013
+   OBSERVACIONES: 
+      * Zilfost es un juego basado en el Tetris, pero donde
+        las reglas son levemente diferentes
+      * se basa en una idea de un parcial de
+        Introducción a la Programación de la
+        carrera TPI de la UNQ, con agregados propios
+      * el nombre ZILFOST se inspira en la forma de las
+        piezas, que recuerdan levemente a distintas letras
+      * casi TODAS las operaciones asumen como
+        precondición global mínima que hay una
+        codificación válida de Zilfost en el
+        tablero 
+      * una codificación válida de Zilfost cumple:
+         - se codifican 3 zonas en el tablero: la zona de semilla,
+           la zona de juego y la zona de datos
+         - sobre la zona de juego:
+            . la zona de juego está delimitada en sus extremos
+              inferior izquierdo e inferior derecho con
+              dos celdas con exactamente 5 bolitas azules,
+              de manera que la de la izquierda es la primer
+              celda en recorrido NE que tiene exactamente esa
+              cantidad de bolitas
+            . desde esas dos celdas, hacia arriba hay dos filas
+              de bolitas azules con 6 en el cuerpo
+              y 7 en el tope; este tope se encuentra en el
+              borde Norte
+            . estas dos filas delimitan la zona de
+              juego
+            . la primer celda a la derecha de la celda con 5
+              bolitas azules de la izquierda se denomina el
+              origen de la zona de juego
+         - sobre la zona de datos:
+            . a la izquierda de la zona de juego
+              se encuentra la zona de datos, que
+              tiene la misma altura que la zona de juego.
+            . la zona de datos contendrá 2 zonas de números
+              en su parte inferior, la zona de código de la
+              próxima pieza a ingresar a la zona de juego y
+              la zona del código de pieza seleccionada
+         - sobre la zona de semilla:
+            . abajo de las zonas de juego y de datos se
+              encuentra la zona de semilla, que tiene el mismo
+              ancho que ambas zonas juntas
+            . la zona de semilla es una zona de números
+         - sobre las zonas de números:
+            . las zonas de números tienen una fila de
+              alto y están delimitadas arriba y abajo
+              por filas cuyas celdas tienen casi todas 4
+              bolitas azules (algunas pueden variar esta
+              cantidad en función de otras condiciones)
+            . los extremos izquierdo y derecho de la fila
+              de una zona de números estarán delimitados por
+              celdas con 6 bolitas azules
+            . las zonas de números utilizan numeración
+              posicional decimal estándar, de derecha a
+              izquierda desde las unidades
+            . cada dígito d en una zona de números
+              se codifica con 1 bolita
+              azul para indicar su presencia, y d
+              bolitas negras para indicar de qué dígito se
+              trata (0<=d<=9)
+            . una celda vacía indica que no hay dígito en
+              ese lugar
+         - las piezas se codifican en 4 celdas contiguas
+           utilizando bolitas verdes, rojas y negras.
+         - el piso se codifica con exactamente 8 bolitas azules
+           (y puede llevar marcas especiales con bolitas azules
+           extra)
+         - una pieza es válida si (ver SECCIÓN 2):
+            . ocupa 4 celdas contiguas identificadas con
+              la misma cantidad de bolitas verdes
+              (el código de la pieza)
+            . una sola de las celdas es el pivote
+              (identificado con bolitas negras y
+               rojas -- las negras indican el
+               tipo de pieza y las rojas la rotación)
+            . las celdas de la pieza están dispuestas
+              según indican el tipo y la rotación
+            . un tipo válido va entre 1 y 7
+              (1-Z,2-I,3-L,4-F,5-O,6-S,7-T)
+            . cada tipo tiene una rotación "natural"
+              que corresponde a la mnemotecnia
+            . una rotación válida va entre 1 y 4
+              y la codificación sigue el sentido de las
+              agujas del reloj
+              (1-natural, 2-1/4 de giro horario,
+               3-1/2 giro, 4-1/4 de giro antihorario)
+            . el pivote de una pieza puede llevar
+              una marca de exactamente 7 bolitas rojas
+              adicionales
+         - en la zona de juego solo puede haber
+           piezas válidas o piso, sin marcar
+         - no hay otra pieza con el mismo código
+           en la zona de juego
+         - en las zonas de números solo puede haber
+           dígitos válidos o celdas vacías
+ ------------------------------------------------- */
+
+{-
+/*==================================================*/
+/* Programa */
+/*==================================================*/
+program
+ /*
+   PRECONDICIÓN:
+     * tiene que haber un juego de Zilfost válido
+       codificado en el tablero con una zona de
+       juego de ancho mínimo 9
+ */
+ { GenerarLogoZILFOST() }
+-}
+
+{- -}
+/*==================================================*/
+/* Programa interactivo */
+/*==================================================*/
+//----------------------------------------------------
+interactive program
+ /*
+    PRECONDICIÓN:
+      * tiene que haber un juego de
+        Zilfost válido codificado en el tablero
+  */
+ {
+   K_B, K_ESCAPE, K_DELETE, K_BACKSPACE
+       -> { BorrarZonaDeSeleccion() }
+   K_0 -> { OperacionAgregarDigitoASeleccion(0) }
+   K_1 -> { OperacionAgregarDigitoASeleccion(1) }
+   K_2 -> { OperacionAgregarDigitoASeleccion(2) }
+   K_3 -> { OperacionAgregarDigitoASeleccion(3) }
+   K_4 -> { OperacionAgregarDigitoASeleccion(4) }
+   K_5 -> { OperacionAgregarDigitoASeleccion(5) }
+   K_6 -> { OperacionAgregarDigitoASeleccion(6) }
+   K_7 -> { OperacionAgregarDigitoASeleccion(7) }
+   K_8 -> { OperacionAgregarDigitoASeleccion(8) }
+   K_9 -> { OperacionAgregarDigitoASeleccion(9) }
+   K_J, K_ARROW_LEFT
+       -> { OperacionMoverPiezaAl(Oeste) }
+   K_L, K_ARROW_RIGHT
+       -> { OperacionMoverPiezaAl(Este) }
+   K_K, K_ARROW_DOWN
+       -> { OperacionMoverPiezaAl(Sur) }
+   K_I, K_ARROW_UP
+       -> { OperacionColocarNuevaPieza() }
+   K_D, K_ENTER
+       -> { OperacionRotarPieza(True) }
+           -- Sentido horario
+   K_A, K_SPACE
+       -> { OperacionRotarPieza(False) }
+           -- Sentido antihorario
+   _ -> { OperacionBajarPiezas() }
+ }
+
+
+/*=SECCIÓN 1=======================================*
+ * Operaciones sobre zonas *
+ *=================================================*
+// 1.1 Operaciones de la zona de juego del tablero
+// 1.2 Operaciones en zonas de números
+// 1.3 Operaciones de zonas específicas
+ *=================================================*/
+
+/*=SECCIÓN 1.1=====================================*
+ * *
+ * Auxiliares - Operaciones de *
+ * la zona de juego del tablero *
+ * *
+ * La zona de juego es una zona rectangular, *
+ * delimitada en sus esquinas inferiores por *
+ * celdas con 5 bolitas azules, en sus *
+ * esquinas superiores por celdas con 7 *
+ * bolitas azules y rodeada por celdas con *
+ * 6 bolitas azules a ambos lados. *
+ * *
+ *=================================================*
+// * Geometría de la zona de juego
+// procedure IrAlOrigenDeZonaDeJuego()
+// function desplazamientoXDeZonaDeJuego()
+// function desplazamientoYDeZonaDeJuego()
+// function anchoDeZonaDeJuego()
+// function altoDeZonaDeJuego()
+//
+// * Movimiento dentro de la zona de juego
+// function puedeMoverEnZonaDeJuego(dir)
+// procedure IrAlBordeDeZonaDeJuego(dir)
+// procedure IrACoordenadaDeZonaDeJuego(x,y)
+// function esFinDelRecorridoNEDeZonaDeJuego()
+// procedure AvanzarEnRecorridoNEDeZonaDeJuego()
+ *=================================================*/
+
+//-----------------------------------------------------
+//----------------------------------------------------
+procedure IrAlOrigenDeZonaDeJuego()
+ /*
+    PROPÓSITO: ir al origen de la zona de juego del Zilfost
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+     * El origen esta al Este de la primer celda
+       de 5 bolitas en un recorrido NE de las celdas
+ */
+ { IrAPrimerCeldaNEConBolitas(Azul,5); Mover(Este) }
+
+//----------------------------------------------------
+function desplazamientoXDeZonaDeJuego()
+ /*
+    PROPÓSITO: retorna la cantidad de celdas al Este
+               a moverse desde la esquina suroeste para
+               ubicarse en la 1era columna de la zona de juego
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+ */
+ {
+   IrAlOrigenDeZonaDeJuego()
+   return (medirDistanciaAlBorde(Oeste))
+ }
+
+//----------------------------------------------------
+function desplazamientoYDeZonaDeJuego()
+ /*
+    PROPÓSITO: retorna la cantidad de celdas al Norte
+               a moverse desde la esquina suroeste para
+               ubicarse en la 1era fila de la zona de juego
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+ */
+ {
+   IrAlOrigenDeZonaDeJuego()
+   return (medirDistanciaAlBorde(Sur))
+ }
+
+//----------------------------------------------------
+function anchoDeZonaDeJuego()
+ /*
+    PROPÓSITO: retorna la cantidad de celdas de ancho
+               de la zona de juego
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+ */
+ {
+   IrAlOrigenDeZonaDeJuego()
+
+   // Contar la distancia hasta el otro borde de la zona
+   anchoActual := 0
+   while (not nroBolitas(Azul)==5)
+    {
+      anchoActual := anchoActual + 1
+      Mover(Este)
+    }
+   return (anchoActual)
+ }
+
+//-----------------------------------------------------
+function altoDeZonaDeJuego()
+ /*
+    PROPÓSITO: retorna la cantidad de celdas de alto
+               de la zona de juego
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+ */
+ {
+   IrAlOrigenDeZonaDeJuego(); Mover(Oeste)
+
+   // Contar la altura hasta las 7 bolitas azules
+   altura := 0
+   while (nroBolitas(Azul)/=7)
+    {
+      altura := altura + 1
+      Mover(Norte)
+    }
+   return (altura+1) // Ajusta contando la ultima
+ }
+
+//-----------------------------------------------------
+//------------------------------------------------------
+function puedeMoverEnZonaDeJuego(dir)
+ /*
+    PROPÓSITO: determina si puede moverse en la dirección
+               dada sin caerse de la parte de juego
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * la celda actual está dentro de la zona de juego
+    OBSERVACIONES:
+      * optimiza la pregunta (no usa cuentas que deban
+        recorrer mucho el tablero)
+ */
+ {
+   switch (dir) to
+    Norte ->
+           // Si dir es Norte, se puede mover dentro de la
+           // zona si hay lugar al norte
+       { puede := puedeMover(Norte) }
+    Este, Oeste ->
+          // Si dir es Este u Oeste, se puede mover dentro
+          // de la zona si al moverse se topa con el borde
+       {
+         Mover(dir)
+         puede := not (nroBolitas(Azul)==5
+                    || nroBolitas(Azul)==6
+                    || nroBolitas(Azul)==7
+                      )
+       }
+    _ -> // Solo hay 4 direcciones!!!
+           // Si dir es Sur, se puede mover dentro de la
+           // zona si al moverse al sur se topa con el borde
+       {
+         Mover(Sur)
+         puede := not (nroBolitas(Azul)==4)
+       }
+
+   return (puede)
+ }
+
+//----------------------------------------------------
+procedure IrAlBordeDeZonaDeJuego(dir)
+ /*
+    PROPÓSITO: ir al borde en dirección dir
+               dentro de la zona de juego del Zilfost
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+ */
+ { while (puedeMoverEnZonaDeJuego(dir)) { Mover(dir) } }
+
+//----------------------------------------------------
+procedure IrACoordenadaDeZonaDeJuego(x,y)
+ /*
+    PROPÓSITO: ir a la coordenada (x,y) en la zona
+               de juego del SeudoTetris
+    PRECONDICIONES:
+     * (x,y) indica una coordenada válida
+             dentro de la zona de juego de Zilfost
+    OBSERVACIONES:
+     * la zona de juego de Zilfost está desplazada
+       al Este por la parte de datos
+ */
+ {
+   IrACoordenada(x + desplazamientoXDeZonaDeJuego()
+               , y + desplazamientoYDeZonaDeJuego())
+ }
+
+//----------------------------------------------------
+function esFinDelRecorridoNEDeZonaDeJuego()
+ /*
+    PROPÓSITO: determina si puede moverse a la celda
+               siguiente en un recorrido Noreste de
+               las celdas de la zona de juego
+  */
+ {
+  return (not puedeMoverEnZonaDeJuego(Norte)
+        && not puedeMoverEnZonaDeJuego(Este))
+ }
+
+//----------------------------------------------------
+procedure AvanzarEnRecorridoNEDeZonaDeJuego()
+ /*
+    PROPÓSITO: avanza a la celda siguiente en un
+               recorrido Noreste de las celdas de
+               la zona de juego
+    PRECONDICIONES: no está en el final del recorrido
+  */
+ {
+   if (puedeMoverEnZonaDeJuego(Este))
+     { Mover(Este) }
+   else
+     { IrAlBordeDeZonaDeJuego(opuesto(Este)); Mover(Norte) }
+ }
+
+/*=SECCIÓN 1.2=====================================*
+ * Operaciones en zonas de números *
+ *=================================================*
+// Operaciones de movimiento en la zona de números actual
+// function puedeMoverEnZonaDeNumeroAl(dir)
+// procedure IrAlBordeDeZonaDeNumeros(dir)
+//
+// Operaciones para leer y grabar un número de una
+// zona de números
+// function leerZonaDeNumeros()
+// function hayDigito()
+// function leerDigito()
+// procedure GrabarNumeroEnZonaDeNumeros(numero)
+// procedure GrabarDigitoEnCelda(dig)
+//
+// Operaciones para modificar una zona de números
+// procedure BorrarZonaDeNumeros()
+// procedure AgregarDigitoAZonaDeNumerosPorIzq(dig)
+// procedure IncrementarZonaDeNumeros()
+// procedure IncrementarDigitoDeCelda()
+ *=================================================*/
+
+//----------------------------------------------------
+function puedeMoverEnZonaDeNumeroAl(dir)
+ /*
+    PROPÓSITO:
+      devuelve si hay más lugar en dirección dir en
+      la zona de números actual
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * la celda actual está en la zona de números a
+       determinar si se puede mover
+     * dir es Este u Oeste (no tiene sentido que sea
+       Norte o Sur, porque las zonas de números tienen
+       altura 1)
+    OBSERVACIONES:
+     * la zona termina con 6 azules al Este y Oeste
+ */
+ { return(nroBolitasAl(Azul,dir)/=6) }
+
+//----------------------------------------------------
+procedure IrAlBordeDeZonaDeNumeros(dir)
+ /*
+    PROPÓSITO:
+      ir al borde dir de la zona de números actual
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * se encuentra dentro de una zona de números
+     * dir es Este u Oeste (no tiene sentido que sea
+       Norte o Sur, porque las zonas de números tienen
+       altura 1)
+ */
+ {
+   while(puedeMoverEnZonaDeNumeroAl(dir))
+    { Mover(dir) }
+ }
+
+//----------------------------------------------------
+//----------------------------------------------------
+function leerZonaDeNumeros()
+ /*
+    PROPÓSITO:
+      devuelve un número codificado en la zona de números
+      actual, si tal número existe, o cero si no
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * está en el borde derecho de la zona de números
+       a leer
+    OBSERVACIONES:
+     * se estructura como un recorrido sobre los dígitos
+       codificados en la zona de números
+     * total guarda el número leído hasta el momento
+     * posDig guarda la próxima unidad a leer
+ */
+ {
+   total := 0
+   posDig := 1
+   while(hayDigito() && puedeMoverEnZonaDeNumeroAl(Oeste))
+    {
+      // cada digito contribuye según su posición
+      total := leerDigito() * posDig + total
+      posDig := posDig * 10 // base 10
+      Mover(Oeste)
+    }
+   // si no pudo mover al Oeste y hay dígito, no leyó el
+   // último dígito
+   if (hayDigito() && not puedeMoverEnZonaDeNumeroAl(Oeste))
+    {
+      // cada digito contribuye según su posición
+      total := leerDigito() * posDig + total
+      posDig := posDig * 10 // base 10
+    }
+   return(total)
+ }
+
+//----------------------------------------------------
+function hayDigito()
+ /*
+    PROPÓSITO:
+      indica si en la celda actual hay un dígito
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+     * los dígitos se indican con una bolita azul
+       y no tienen más de 9 bolitas negras
+ */
+ { return(nroBolitas(Azul)==1 && nroBolitas(Negro)<=9) }
+
+//----------------------------------------------------
+function leerDigito()
+ /*
+    PROPÓSITO:
+      retorna el dígito codificado en la celda actual
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * hay un dígito codificado en la celda actual
+    OBSERVACIONES:
+     * los dígitos se indican con una bolita azul
+       y dig negras (0<=dig<=9)
+ */
+ { return(nroBolitas(Negro)) }
+
+//----------------------------------------------------
+procedure GrabarNumeroEnZonaDeNumeros(numero)
+ /*
+    PROPÓSITO: guardar el número dado en la zona de
+               números actual
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * está en la zona de números donde debe grabarse
+ */
+ {
+   BorrarZonaDeNumeros()
+   IrAlBordeDeZonaDeNumeros(Este)
+   aGuardar := numero
+   while (aGuardar > 0)
+     {
+       GrabarDigitoEnCelda(aGuardar mod 10)
+       aGuardar := aGuardar div 10
+       Mover(Oeste)
+     }
+ }
+
+//----------------------------------------------------
+procedure GrabarDigitoEnCelda(dig)
+ /*
+    PROPÓSITO:
+      agrega el dígito dig codificado en la celda actual
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * dig es un dígito (entre 0 y 9)
+     * está sobre un espacio libre (celda vacía) de
+       una zona de números
+ */
+ { Poner(Azul); PonerN(Negro,dig) }
+
+//---------------------------------------------------
+//---------------------------------------------------
+procedure BorrarZonaDeNumeros()
+ /*
+    PROPÓSITO:
+      borra el contenido de la zona de números actual
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * se encuentra en la zona de números a borrar
+    OBSERVACIONES:
+     * se estructura como un recorrido en la zona
+       de números
+ */
+ {
+   IrAlBordeDeZonaDeNumeros(Este)
+   while(puedeMoverEnZonaDeNumeroAl(Oeste))
+    {
+      VaciarCelda()
+      Mover(Oeste)
+    }
+   VaciarCelda()
+ }
+
+//---------------------------------------------------
+//----------------------------------------------------
+procedure AgregarDigitoAZonaDeNumerosPorIzq(dig)
+ /*
+    PROPÓSITO:
+      agrega el dígito dig codificado en la zona de
+      números actual
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * dig es un dígito (entre 0 y 9)
+     * se encuentra en la zona de números donde debe
+       agregar el dígito
+    OBSERVACIONES:
+     * los dígitos entran a la zona de izquierda a
+       derecha
+     * recorre los dígitos de izq a der para
+       encontrar dónde poner el dígito
+     * los espacios libres solo pueden estar
+       a la derecha y si no hay, borra el número
+       completo y pone el dígito como el primero
+       (alternativamente podría ignorar el dígito)
+ */
+ {
+   IrAlBordeDeZonaDeNumeros(Oeste)
+   while(hayDigito()) { Mover(Este) }
+
+   if (nroBolitas(Azul)==0)
+     { GrabarDigitoEnCelda(dig) }
+   else
+     {
+       // Si no hay espacio, borra el número anterior
+       Mover(Oeste)
+       BorrarZonaDeNumeros()
+       IrAlBordeDeZonaDeNumeros(Oeste)
+       GrabarDigitoEnCelda(dig)
+     }
+ }
+
+//----------------------------------------------------
+procedure IncrementarZonaDeNumeros()
+ /*
+    PROPÓSITO: incrementa el número codificado en la
+               zona de números actual
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * el número máximo codificado no excede la cantidad
+       de dígitos disponibles
+     * se encuentra en la zona de números a incrementar
+    OBSERVACIONES:
+     * usa el algoritmo usual de incremento con carry
+       ("llevarme uno"), o sea un recorrido sobre los
+       dígitos a incrementar
+     * puede fallar si excede el máximo representable
+ */
+ {
+   IrAlBordeDeZonaDeNumeros(Este)
+   IncrementarDigitoDeCelda()
+   carry := (leerDigito() == 0)
+   while (carry && puedeMoverEnZonaDeNumeroAl(Oeste))
+    {
+      Mover(Oeste)
+      IncrementarDigitoDeCelda()
+      carry := (leerDigito() == 0)
+    }
+   if (carry) // Se excedió del máximo permitido de piezas!
+     {
+       BorrarZonaDeNumeros()
+       IncrementarDigitoDeCelda()
+     }
+ }
+
+//----------------------------------------------------
+procedure IncrementarDigitoDeCelda()
+ /*
+    PROPÓSITO: incrementa el dígito actual
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * o bien no hay dígito, o bien es un dígito válido
+       (entre 0 y 9)
+    OBSERVACIONES:
+     * si no hay dígito, lo agrega
+     * si se excede, lo vuelve a 0
+ */
+ {
+   // Agrega un dígito si no lo había
+   if (not hayDigito()) { Poner(Azul) }
+   // Incrementa dicho dígito
+   Poner(Negro)
+   // Si se excede, vuelve a 0
+   if (leerDigito() == 10) { SacarN(Negro, 10) }
+ }
+
+/*=SECCIÓN 1.3======================================*
+ * Operaciones de zonas específicas *
+ *==================================================*
+// procedure IrAlOrigenDeZonaDeProximaPieza()
+// procedure IrAlOrigenDeZonaDeSeleccion()
+// procedure IrAlOrigenDeZonaDeSemilla()
+//
+// function leerZonaDeProximaPieza()
+// function leerZonaDeSeleccion()
+// function leerSemilla()
+//
+// procedure BorrarZonaDeProximaPieza()
+// procedure BorrarZonaDeSeleccion()
+//
+// procedure AgregarDigitoASeleccion(dig)
+// procedure IncrementarZonaDeProximaPieza()
+// procedure GrabarSemilla(semilla)
+ *==================================================*/
+
+//----------------------------------------------------
+procedure IrAlOrigenDeZonaDeProximaPieza()
+ /*
+    PROPÓSITO:
+      ir al origen de la zona de próxima pieza
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+     * esta zona está 2 al Oeste del origen de la
+       zona de juego y 1 al Norte
+ */
+ {
+   IrAlOrigenDeZonaDeJuego()
+   MoverN(Oeste,2); MoverN(Norte, 1)
+ }
+
+//----------------------------------------------------
+procedure IrAlOrigenDeZonaDeSeleccion()
+ /*
+    PROPÓSITO:
+      ir al origen de la zona de selección
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+     * 2 al Norte del origen de la zona de
+       próxima pieza
+ */
+ {
+   IrAlOrigenDeZonaDeProximaPieza()
+   MoverN(Norte,2)
+ }
+
+//----------------------------------------------------
+procedure IrAlOrigenDeZonaDeSemilla()
+ /*
+    PROPÓSITO: ir al origen de la zona de semilla
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+      * la semilla se codifica debajo de la zona
+        de piezas, todo a lo ancho
+ */
+ {
+   IrAlOrigenDeZonaDeJuego()
+   MoverN(Sur, 2)
+   IrAlBordeDeZonaDeNumeros(Este)
+ }
+
+//----------------------------------------------------
+//----------------------------------------------------
+function leerZonaDeProximaPieza()
+ /*
+    PROPÓSITO:
+      devuelve un número codificado en la zona de
+      próxima pieza, si existe, o cero si no
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+     * va a la zona de próxima pieza y lee el
+       número allí codificado
+ */
+ {
+   IrAlOrigenDeZonaDeProximaPieza()
+   return(leerZonaDeNumeros())
+ }
+
+//----------------------------------------------------
+function leerZonaDeSeleccion()
+ /*
+    PROPÓSITO:
+      devuelve un número codificado en la zona de
+      selección, si existe, o cero si no
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+     * va a la zona de selección y lee el
+       número allí codificado
+ */
+ {
+   IrAlOrigenDeZonaDeSeleccion()
+   return(leerZonaDeNumeros())
+ }
+
+//----------------------------------------------------
+function leerSemilla()
+ /*
+    PROPÓSITO: leer el valor de la semilla del tablero
+    OBSERVACIONES:
+      * la semilla se codifica en la zona de semillas,
+        según la codificación de números en zonas
+ */
+ {
+   IrAlOrigenDeZonaDeSemilla()
+   return(leerZonaDeNumeros())
+ }
+
+//----------------------------------------------------
+//---------------------------------------------------
+procedure BorrarZonaDeProximaPieza()
+ /*
+    PROPÓSITO:
+      borra el contenido de la zona de selección
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+     * se estructura como un recorrido en la zona
+       de selección
+ */
+ {
+   IrAlOrigenDeZonaDeProximaPieza()
+   BorrarZonaDeNumeros()
+ }
+
+//---------------------------------------------------
+procedure BorrarZonaDeSeleccion()
+ /*
+    PROPÓSITO:
+      borra el contenido de la zona de selección
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+     * se estructura como un recorrido en la zona
+       de selección
+ */
+ {
+   IrAlOrigenDeZonaDeSeleccion()
+   BorrarZonaDeNumeros()
+ }
+
+//---------------------------------------------------
+//----------------------------------------------------
+procedure AgregarDigitoASeleccion(dig)
+ /*
+    PROPÓSITO:
+      agrega el dígito dig codificado en la zona de
+      selección.
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * dig es un dígito (entre 0 y 9)
+    OBSERVACIONES:
+     * La operatoria varía según lo que ya haya
+       en dicha zona (agrega un dígito a los ya
+       existentes, o borra los anteriores y deja
+       el nuevo como único dígito)
+ */
+ {
+   IrAlOrigenDeZonaDeSeleccion()
+   AgregarDigitoAZonaDeNumerosPorIzq(dig)
+ }
+
+//----------------------------------------------------
+procedure IncrementarZonaDeProximaPieza()
+ /*
+    PROPÓSITO: incrementa el número codificado en la
+               zona de código de próxima pieza
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+     * el número máximo codificado no excede la cantidad
+       de dígitos disponibles
+    OBSERVACIONES:
+     * puede fallar si excede el máximo representable
+ */
+ {
+   IrAlOrigenDeZonaDeProximaPieza()
+   IncrementarZonaDeNumeros()
+ }
+
+//----------------------------------------------------
+procedure GrabarSemilla(semilla)
+ /*
+    PROPÓSITO: guardar la semilla dada como la semilla
+               del tablero
+    OBSERVACIONES:
+      * la semilla se codifica en la zona de semillas,
+        según la codificación de números en zonas
+ */
+ {
+   IrAlOrigenDeZonaDeSemilla()
+   GrabarNumeroEnZonaDeNumeros(semilla)
+ }
+
+/*=SECCIÓN 2=======================================*
+ * Operaciones para expresar las piezas *
+ * *
+ * Las piezas se representan con bolitas verdes *
+ * (tantas como el código de pieza) y su *
+ * pivote se representa con bolitas negras *
+ * (tantas como el tipo de pieza) y rojas *
+ * (tantas como la rotación de la pieza). *
+ * *
+ * Negras: *
+ * 1: pieza Z *
+ * 2: pieza I ZZ I L FF OO SS *
+ * 3: pieza L XZ X X X XO SX TXT *
+ * 4: pieza F I LL F T *
+ * 5: pieza O I *
+ * 6: pieza T (X marca el pivote *
+ * 7: pieza S en rotación 1) *
+ * Rojas: *
+ * 1: original, pivote marcado con X *
+ * 2: 1/4 de giro horario *
+ * 3: 1/2 de giro *
+ * 4: 1/4 de giro antihorario *
+ * (puede estar marcada con 7 extras) *
+ * Cada pieza tiene un único pivote. *
+ * Las piezas clase A tienen dos partes *
+ * directamente adyacentes y otra a en *
+ * diagonal al pivote. Las piezas clase B *
+ * tienen las 3 partes directamente adyacentes *
+ * *
+ *=================================================*
+// 2.1. Geometría de las piezas
+// 2.2. Detección de piezas
+ *=================================================*/
+
+/*=SECCIÓN 2.1=====================================*
+ * Geometría de las piezas *
+ *=================================================*
+// function rotar(rotacion,sentidoHorario)
+//
+// function esClaseA(tipoPieza)
+// function esClaseB(tipoPieza)
+// function diresDePiezaClaseA(tipoPieza,rotPieza)
+// function diresDePiezaClaseB(tipoPieza,rotPieza)
+// function diresDePiezaZ(rotPieza)
+// function diresDePiezaI(rotPieza)
+// function diresDePiezaL(rotPieza)
+// function diresDePiezaF(rotPieza)
+// function diresDePiezaO(rotPieza)
+// function diresDePiezaS(rotPieza)
+// function diresDePiezaT(rotPieza)
+//
+// function id(dA,dB,dC1,dC2)
+// function ajustarDires(dA,dB,dC1,dC2,rotPieza)
+ *=================================================*/
+
+//-----------------------------------------------------
+//----------------------------------------------------
+function rotar(rotacionBase,sentidoHorario)
+ /*
+    PROPÓSITO: calcular la rotacion siguiente en
+               sentido horario o antihorario, según
+               lo indique el booleano sentidoHorario
+    PRECONDICIONES:
+      * rotacion es una rotación válida
+        (de 1 a 4 o con marca de 7 rojas)
+    OBSERVACIONES:
+      * el cálculo se realiza de la siguiente forma
+        rotacion 1 2 3 4
+        . mod 4 1 2 3 0
+        . +1 2 3 4 1 // En sentido horario
+ 
+        rotacion 1 2 3 4
+        . + 2 3 4 5 6
+        . mod 4 3 0 1 2
+        . + 1 4 1 2 3 // En sentido antihorario
+ */
+ {
+   // Recordar si tiene o no marca
+   if (rotacionBase>=1 && rotacionBase<=4)
+     { marca := 0 }
+   else { if (rotacionBase>=8 && rotacionBase<=11)
+     { marca := 7 }
+   else { }} -- La rotación es inválida
+
+   // Ajusta la rotación si tiene marcas
+   rotacion := rotacionBase - marca
+
+   // Calcula la nueva rotación
+   if (sentidoHorario)
+     { nuevaRotacion := (rotacion mod 4) + 1 }
+   else
+     { nuevaRotacion := (rotacion+2) mod 4 + 1 }
+
+   // Retorna, restaurando la marca si corresponde
+   return (nuevaRotacion+marca)
+ }
+
+//-----------------------------------------------------
+//-----------------------------------------------------
+function esClaseA(tipoPieza)
+  /*
+     PROPÓSITO: indica si la pieza del tipo dado
+                es de clase A
+   */
+  { return(tipoPieza >= 1 && tipoPieza <= 6) }
+
+//-----------------------------------------------------
+function esClaseB(tipoPieza)
+  /*
+     PROPÓSITO: indica si la pieza del tipo dado
+                es de clase B
+   */
+  { return(tipoPieza >= 7 && tipoPieza <= 7) }
+
+//-----------------------------------------------------
+function diresDePiezaClaseA(tipoPieza,rotPieza)
+ /*
+    PROPÓSITO: devolver las direcciones de una pieza
+               de clase A, ajustadas según la rotación
+    PRECONDICIONES:
+     * tipoPieza es un tipo válido
+     * rotPieza es una rotación válida
+    OBSERVACIONES:
+     * realiza una selección alternativa en base al
+       tipo de pieza
+ */
+ {
+   switch (tipoPieza) to
+     1 -> { (dirA,dirB,dirC1,dirC2)
+              := diresDePiezaZ(rotPieza) }
+     2 -> { (dirA,dirB,dirC1,dirC2)
+              := diresDePiezaI(rotPieza) }
+     3 -> { (dirA,dirB,dirC1,dirC2)
+              := diresDePiezaL(rotPieza) }
+     4 -> { (dirA,dirB,dirC1,dirC2)
+              := diresDePiezaF(rotPieza) }
+     5 -> { (dirA,dirB,dirC1,dirC2)
+              := diresDePiezaO(rotPieza) }
+     6 -> { (dirA,dirB,dirC1,dirC2)
+              := diresDePiezaS(rotPieza) }
+     _ -> { }
+
+   return (dirA,dirB,dirC1,dirC2)
+ }
+
+//-----------------------------------------------------
+function diresDePiezaClaseB(tipoPieza,rotPieza)
+ /*
+    PROPÓSITO: devolver las direcciones de una pieza
+               de clase B, ajustadas según la rotación
+    PRECONDICIONES:
+     * tipoPieza es un tipo válido
+     * rotPieza es una rotación válida
+    OBSERVACIONES:
+     * realiza una selección alternativa en base al
+       tipo de pieza
+ */
+ {
+   switch (tipoPieza) to
+     7 -> { (dirA,dirB,dirC) := diresDePiezaT(rotPieza) }
+     _ -> { }
+
+   return (dirA,dirB,dirC)
+ }
+
+//-----------------------------------------------------
+function diresDePiezaZ(rotPieza)
+ /*
+    PROPÓSITO: devolver las direcciones de una Z
+    PRECONDICIONES:
+      * la rotación es válida
+    OBSERVACIONES:
+      * en rotación 1, Z es
+         Norte,Oeste -> ZZ <- Norte
+                          XZ <- Este
+        donde la X representa al pivote y
+        las Zs a las demás secciones
+ */
+ {
+   (dA,dB,dC1,dC2) := id(Este,Norte,Norte,Oeste)
+   (dA,dB,dC1,dC2) := ajustarDires(dA,dB,dC1,dC2,rotPieza)
+   return (dA,dB,dC1,dC2)
+ }
+
+//-----------------------------------------------------
+function diresDePiezaI(rotPieza)
+ /*
+    PROPÓSITO: devolver las direcciones de una I
+    PRECONDICIONES:
+      * la rotación es válida
+    OBSERVACIONES:
+      * en rotación 1, I es
+               Norte -> I
+                         X
+                         I <- Sur
+                         I <- Sur,Sur
+        donde la X representa al pivote y
+        las Is a las demás secciones
+ */
+ {
+   (dA,dB,dC1,dC2) := id(Sur,Norte,Sur,Sur)
+   (dA,dB,dC1,dC2) := ajustarDires(dA,dB,dC1,dC2,rotPieza)
+   return (dA,dB,dC1,dC2)
+ }
+
+//-----------------------------------------------------
+function diresDePiezaL(rotPieza)
+ /*
+    PROPÓSITO: devolver las direcciones de una L
+    PRECONDICIONES:
+      * la rotación es válida
+    OBSERVACIONES:
+      * en rotación 1, L es
+               Norte -> L
+                         X
+                 Sur -> LL <- Sur,Este
+        donde la X representa al pivote y
+        las Ls a las demás secciones
+ */
+ {
+   (dA,dB,dC1,dC2) := id(Norte,Sur,Sur,Este)
+   (dA,dB,dC1,dC2) := ajustarDires(dA,dB,dC1,dC2,rotPieza)
+   return (dA,dB,dC1,dC2)
+ }
+
+//-----------------------------------------------------
+function diresDePiezaF(rotPieza)
+ /*
+    PROPÓSITO: devolver las direcciones de una F
+    PRECONDICIONES:
+      * la rotación es válida
+    OBSERVACIONES:
+      * en rotación 1, F es
+               Norte -> FF <- Norte,Este
+                         X
+                         F <- Sur
+        donde la X representa al pivote y
+        las Fs a las demás secciones
+ */
+ {
+   (dA,dB,dC1,dC2) := id(Norte,Sur,Norte,Este)
+   (dA,dB,dC1,dC2) := ajustarDires(dA,dB,dC1,dC2,rotPieza)
+   return (dA,dB,dC1,dC2)
+ }
+
+//-----------------------------------------------------
+function diresDePiezaO(rotPieza)
+ /*
+    PROPÓSITO: devolver las direcciones de una O
+    PRECONDICIONES:
+      * la rotación es válida
+    OBSERVACIONES:
+      * en rotación 1, O es
+               Norte -> OO <- Norte,Este
+                         XO <- Este
+        donde la X representa al pivote y
+        las Os a las demás secciones
+ */
+ {
+   (dA,dB,dC1,dC2) := id(Norte,Este,Norte,Este)
+   (dA,dB,dC1,dC2) := ajustarDires(dA,dB,dC1,dC2,rotPieza)
+   return (dA,dB,dC1,dC2)
+ }
+
+//-----------------------------------------------------
+function diresDePiezaS(rotPieza)
+ /*
+    PROPÓSITO: devolver las direcciones de una S
+    PRECONDICIONES:
+      * la rotación es válida
+    OBSERVACIONES:
+      * en rotación 1, S es
+               Norte -> SS <- Norte,Este
+               Oeste -> SX
+        donde la X representa al pivote y
+        las Ss a las demás secciones
+ */
+ {
+   (dA,dB,dC1,dC2) := id(Norte,Oeste,Norte,Este)
+   (dA,dB,dC1,dC2) := ajustarDires(dA,dB,dC1,dC2,rotPieza)
+   return (dA,dB,dC1,dC2)
+ }
+
+//-----------------------------------------------------
+function diresDePiezaT(rotPieza)
+ /*
+    PROPÓSITO: devolver las direcciones de una T
+    PRECONDICIONES:
+      * la rotación es válida
+    OBSERVACIONES:
+      * en rotación 1, T es
+               Oeste -> TXT <- Este
+                          T <- Sur
+        donde la X representa al pivote y
+        las Ts a las demás secciones
+      * se usa una dirección dD como dummy
+        para reutilizar ajustarDires
+ */
+ {
+   (dA,dB,dC,dD) := id(Oeste,Este,Sur,Sur)
+                                    --^--DUMMY!!
+   (dA,dB,dC,dD) := ajustarDires(dA,dB,dC,dD,rotPieza)
+   return (dA,dB,dC)
+ }
+
+//----------------------------------------------------
+function id(dA,dB,dC1,dC2)
+ /*
+    PROPÓSITO: retornar varios valores simultáneamente
+ */
+ { return (dA,dB,dC1,dC2) }
+
+//-----------------------------------------------------
+function ajustarDires(dirA,dirB,dirC1,dirC2,rotPieza)
+ /*
+    PROPÓSITO: ajustar las direcciones en base a la
+               rotación
+    PRECONDICIONES:
+      * la rotación es válida (y puede llevar una
+          marca de 7 bolitas rojas)
+ */
+ {
+   switch (rotPieza) to
+    1,8 -> -- La rotación ``natural''
+      {
+        ndirA := dirA
+        ndirB := dirB
+        ndirC1 := dirC1
+        ndirC2 := dirC2
+      }
+    2,9 -> -- 1/4 de giro en sentido horario
+      {
+        ndirA := siguiente(dirA)
+        ndirB := siguiente(dirB)
+        ndirC1 := siguiente(dirC1)
+        ndirC2 := siguiente(dirC2)
+      }
+    3,10 -> -- 1/2 giro
+      {
+        ndirA := opuesto(dirA)
+        ndirB := opuesto(dirB)
+        ndirC1 := opuesto(dirC1)
+        ndirC2 := opuesto(dirC2)
+      }
+    4,11 -> -- 1/4 de giro en sentido antihorario
+      {
+        ndirA := previo(dirA)
+        ndirB := previo(dirB)
+        ndirC1 := previo(dirC1)
+        ndirC2 := previo(dirC2)
+      }
+    _ -> { }
+ 
+   return (ndirA,ndirB,ndirC1,ndirC2)
+ }
+
+/*=SECCIÓN 2.2=====================================*
+ * Detección de piezas o su ausencia *
+ *=================================================*
+// function esSeccionDeAlgunaPieza()
+// function esSeccionPivoteDeAlgunaPieza()
+// function esSeccionPivoteDePieza(codPieza)
+// function hayPiezaActual()
+//
+// function leerCodigoDePiezaActual()
+// function leerTipoDePiezaActual()
+// function leerRotacionDePiezaActual()
+//
+// function hayLugarParaPiezaTipo(tipoPieza, rotPieza)
+// function hayLgPzClaseAEnDires(dirA,dirB,dirC1,dirC2)
+// function hayLgPzClaseBEnDires(dirA,dirB,dirC)
+// function esCeldaLibre()
+// function hayCeldaLibreAl(dir)
+// function hayCeldaLibreAlY(dir1,dir2)
+ *=================================================*/
+
+//-----------------------------------------------------
+//-----------------------------------------------------
+function esSeccionDeAlgunaPieza()
+ /*
+    PROPÓSITO: determinar si la celda actual es
+               sección pivote de alguna pieza
+ */
+ { return (hayBolitas(Verde)) }
+
+//----------------------------------------------------
+function esSeccionPivoteDeAlgunaPieza()
+ /*
+    PROPÓSITO: determinar si la celda actual es la
+               sección pivote de una pieza
+ */
+ {
+   return (esSeccionDeAlgunaPieza()
+        && hayBolitas(Negro)
+        && hayBolitas(Rojo))
+ }
+
+//-----------------------------------------------------
+function esSeccionPivoteDePieza(codPieza)
+ /*
+    PROPÓSITO: determinar si la celda actual es la
+               sección pivote de la pieza codPieza
+ */
+ { return (esSeccionPivoteDeAlgunaPieza()
+           && nroBolitas(Verde)==codPieza) }
+
+//----------------------------------------------------
+function hayPiezaActual()
+ /*
+    PROPÓSITO: establecer si la celda actual determina
+               una pieza seleccionada, lo cual por
+               convención quiere decir que está sobre
+               la sección pivote de una pieza
+ */
+ { return (esSeccionPivoteDeAlgunaPieza()) }
+
+//----------------------------------------------------
+//----------------------------------------------------
+function leerCodigoDePiezaActual()
+ /*
+    PROPÓSITO: determinar el código de la pieza actual
+    PRECONDICIONES:
+      * la celda actual es el pivote de una pieza
+ */
+ { return (nroBolitas(Verde)) }
+
+//----------------------------------------------------
+function leerTipoDePiezaActual()
+ /*
+    PROPÓSITO: determinar el tipo de la pieza actual
+    PRECONDICIONES:
+      * la celda actual es el pivote de una pieza
+ */
+ { return (nroBolitas(Negro)) }
+
+//----------------------------------------------------
+function leerRotacionDePiezaActual()
+ /*
+    PROPÓSITO: determinar la rotación de la pieza actual
+    PRECONDICIONES:
+      * la celda actual es el pivote de una pieza
+ */
+ { return (nroBolitas(Rojo)) }
+
+//----------------------------------------------------
+//----------------------------------------------------
+function hayLugarParaPiezaTipo(tipoPieza, rotPieza)
+ /*
+     PROPÓSITO: informar si hay lugar en el tablero
+                para colocar una pieza de tipo tipoPieza
+                y rotación rotPieza con pivote en la
+                celda actual
+     PRECONDICIONES:
+       * tipoPieza es un tipo de pieza válido
+       * rotPieza es una rotación válida
+     OBSERVACIONES:
+       * puede no haber lugar porque se acaba el tablero
+         o porque está ocupada
+ */
+ {
+   if (esClaseA(tipoPieza))
+     {
+       (dirA,dirB,dirC1,dirC2)
+            := diresDePiezaClaseA(tipoPieza,rotPieza)
+       hayL := hayLgPzClaseAEnDires(dirA,dirB,dirC1,dirC2)
+     }
+   else // Si no es clase A, es clase B
+     {
+       (dirA,dirB,dirC)
+            := diresDePiezaClaseB(tipoPieza,rotPieza)
+       hayL := hayLgPzClaseBEnDires(dirA,dirB,dirC)
+     }
+
+   return (hayL)
+ }
+
+//----------------------------------------------------
+function hayLgPzClaseAEnDires(dirA,dirB,dirC1,dirC2)
+ /*
+    PROPÓSITO: completar el trabajo de hayLugarParaPiezaTipo
+               para las piezas de clase A
+    PRECONDICIONES:
+      * está parado sobre el lugar en el que va el pivote
+        de la pieza
+      * las direcciones dadas codifican la pieza
+        correctamente
+ */
+  {
+    return(esCeldaLibre()
+           && hayCeldaLibreAl(dirA)
+           && hayCeldaLibreAl(dirB)
+           && hayCeldaLibreAlY(dirC1,dirC2))
+  }
+
+//----------------------------------------------------
+function hayLgPzClaseBEnDires(dirA,dirB,dirC)
+ /*
+    PROPÓSITO: completar el trabajo de hayLugarParaPiezaTipo
+               para las piezas de clase B
+    PRECONDICIONES:
+      * está parado sobre el lugar en el que va el pivote
+        de la pieza
+      * las direcciones dadas codifican la pieza
+        correctamente
+ */
+  {
+    return(esCeldaLibre()
+           && hayCeldaLibreAl(dirA)
+           && hayCeldaLibreAl(dirB)
+           && hayCeldaLibreAl(dirC))
+  }
+
+//-----------------------------------------------------
+function esCeldaLibre()
+ /*
+    PROPÓSITO: determinar si la celda actual es una
+               celda libre
+    PRECONDICIONES:
+      * la celda actual se encuentra en la zona de
+        juego
+    OBSERVACIONES:
+      * abstrae a la función de Biblioteca que verifica
+        si una celda está vacía
+ */
+ { return (esCeldaVacia()) }
+
+//-----------------------------------------------------
+function hayCeldaLibreAl(dir)
+ /*
+    PROPÓSITO: determinar si hay una celda libre en la
+               zona de juego, en la dirección indicada
+               por dir
+    PRECONDICIONES:
+      * la celda actual se encuentra en la zona de
+        juego
+    OBSERVACIONES:
+      * es libre si hay celda y no tiene pieza
+ */
+ {
+   return (puedeMoverEnZonaDeJuego(dir)
+           && esCeldaVaciaAl(dir))
+ }
+
+//-----------------------------------------------------
+function hayCeldaLibreAlY(dir1,dir2)
+ /*
+    PROPÓSITO: determinar si hay una celda libre en la
+               zona de juego, en la dirección indicada
+               por las direcciones dir1 y dir2
+    PRECONDICIONES:
+      * la celda actual se encuentra en la zona de
+        juego
+      * las direcciones dadas no se "cancelan" mutuamente
+        (por ejemplo, no son Norte y Sur o Este y Oeste)
+    OBSERVACIONES:
+      * es libre si hay celda y no tiene pieza
+ */
+ {
+   if (puedeMoverEnZonaDeJuego(dir1))
+     { Mover(dir1)
+       if (puedeMoverEnZonaDeJuego(dir2))
+         { Mover(dir2)
+           celdaLibre := esCeldaLibre() }
+       else { celdaLibre := False }} -- No existe la celda2
+   else { celdaLibre := False } -- No existe la celda1
+
+   return (celdaLibre)
+ }
+
+/*=SECCIÓN 3=======================================*
+ * Procesamiento de piezas *
+ *=================================================*
+// 3.1 procedure IrAPiezaSiExiste(codPieza)
+// 3.2 procedure ColocarPieza(codPieza, tipoPieza, rotPieza)
+// procedure QuitarPiezaActual()
+// 3.3 Operaciones de movimiento de piezas
+ *=================================================*/
+
+/*=SECCIÓN 3.1=====================================*
+ * Procesamiento de piezas (IrAPiezaSiExiste) *
+ *=================================================*
+// procedure IrAPiezaSiExiste(codPieza)
+ *=================================================*/
+
+//----------------------------------------------------
+procedure IrAPiezaSiExiste(codPieza)
+ /*
+    PROPÓSITO: va a la celda pivote de la pieza de
+               código codPieza, si existeexiste
+    PRECONDICIONES:
+      * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+      * se estructura como un recorrido NE sobre las
+        celdas de la zona de juego
+      * si la pieza no existe, queda en un extremo
+        de la zona de juego
+ */
+ {
+   IrAlOrigenDeZonaDeJuego()
+   while (not esFinDelRecorridoNEDeZonaDeJuego()
+          && not esSeccionPivoteDePieza(codPieza))
+    { AvanzarEnRecorridoNEDeZonaDeJuego() }
+ }
+
+/*=SECCIÓN 3.2.1===================================*
+ * Procesamiento de piezas (ColocarPieza) *
+ *=================================================*
+// procedure ColocarPieza(codPieza, tipoPieza, rotPieza)
+// procedure ColocarPzClaseA(codPieza,tipoPieza,rotPieza
+// ,dirA,dirB,dirC1,dirC2)
+// procedure ColocarPzClaseB(codPieza,tipoPieza,rotPieza
+// ,dirA,dirB,dirC)
+// procedure ColocarSeccionDePieza(codPieza)
+// procedure ColocarPivote(codPieza,tipoPieza,rotPieza)
+// procedure ColocarSeccionDePiezaEn(codPieza,dir)
+// procedure ColocarSeccionDePiezaEnY(codPieza,dir1,dir2)
+ *=================================================*/
+
+//-----------------------------------------------------
+procedure ColocarPieza(codPieza, tipoPieza, rotPieza)
+ /*
+    PROPÓSITO: coloca la pieza codPieza en el tablero
+    PRECONDICIONES:
+      * no hay otra pieza codPieza en el tablero
+      * hay lugar para colocar la pieza
+      * tipoPieza es un tipo válido
+      * rotPieza es una rotación válida
+    OBSERVACIONES:
+      * la celda actual será el centro de la pieza
+        codPieza
+      * la pieza codPieza será de tipo tipoPieza
+      * la rotación estará dada por rotPieza
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+   if (esClaseA(tipoPieza))
+     {
+       (dirA,dirB,dirC1,dirC2)
+             := diresDePiezaClaseA(tipoPieza,rotPieza)
+       ColocarPzClaseA(codPieza,tipoPieza,rotPieza
+                      ,dirA,dirB,dirC1,dirC2)
+     }
+   else // Si no es clase A, es clase B
+     {
+       (dirA,dirB,dirC)
+             := diresDePiezaClaseB(tipoPieza,rotPieza)
+       ColocarPzClaseB(codPieza,tipoPieza,rotPieza
+                      ,dirA,dirB,dirC)
+     }
+ }
+
+//----------------------------------------------------
+procedure ColocarPzClaseA(codPieza,tipoPieza,rotPieza
+                         ,dirA,dirB,dirC1,dirC2)
+ /*
+    PROPÓSITO: completar el trabajo de ColocarPieza
+               para las piezas de clase A
+    PRECONDICIONES:
+      * hay lugar para colocar la pieza
+      * no hay otra pieza de código codPieza en el
+        tablero
+      * rotPieza es una rotación válida
+      * tipoPieza es un tipo válido
+      * las direcciones coinciden con el tipoPieza
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+  {
+    ColocarPivote(codPieza,tipoPieza,rotPieza)
+    ColocarSeccionDePiezaEn(codPieza,dirA)
+    ColocarSeccionDePiezaEn(codPieza,dirB)
+    ColocarSeccionDePiezaEnY(codPieza,dirC1,dirC2)
+  }
+
+//----------------------------------------------------
+procedure ColocarPzClaseB(codPieza,tipoPieza,rotPieza
+                         ,dirA,dirB,dirC)
+ /*
+    PROPÓSITO: completar el trabajo de ColocarPieza
+               para las piezas de clase B
+    PRECONDICIONES:
+      * hay lugar para colocar la pieza
+      * no hay otra pieza de código codPieza en el
+        tablero
+      * rotPieza es una rotación válida
+      * tipoPieza es un tipo válido
+      * las direcciones coinciden con el tipoPieza
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+  {
+    ColocarPivote(codPieza,tipoPieza,rotPieza)
+    ColocarSeccionDePiezaEn(codPieza,dirA)
+    ColocarSeccionDePiezaEn(codPieza,dirB)
+    ColocarSeccionDePiezaEn(codPieza,dirC)
+  }
+
+//-----------------------------------------------------
+procedure ColocarSeccionDePieza(codPieza)
+ /*
+    PROPÓSITO: coloca una sección de la pieza codPieza
+    PRECONDICIONES:
+      * la celda actual está libre
+      * no hay otra pieza codPieza en el tablero
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ { PonerN(Verde,codPieza) }
+
+//-----------------------------------------------------
+procedure ColocarPivote(codPieza, tipoPieza, rotPieza)
+ /*
+    PROPÓSITO: coloca el pivote de la pieza codPieza
+    PRECONDICIONES:
+      * la celda actual está libre
+      * no hay otra pieza codPieza en el tablero
+      * tipoPieza es un tipo válido
+      * rotPieza es una rotación válida
+    OBSERVACIONES:
+      * la celda actual será el centro de la pieza
+        codPieza
+      * la pieza codPieza será de tipo tipoPieza
+      * la rotación estará dada por rotPieza
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+    ColocarSeccionDePieza(codPieza)
+    PonerN(Negro,tipoPieza)
+    PonerN(Rojo,rotPieza)
+ }
+
+//-----------------------------------------------------
+procedure ColocarSeccionDePiezaEn(codPieza,dir)
+ /*
+    PROPÓSITO: coloca una sección de la pieza codPieza
+               en la celda lindante al dir
+    PRECONDICIONES:
+      * la celda lindante al dir existe y está libre
+      * no hay otra pieza codPieza en el tablero
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+   Mover(dir)
+   ColocarSeccionDePieza(codPieza)
+   Mover(opuesto(dir))
+ }
+
+//-----------------------------------------------------
+procedure ColocarSeccionDePiezaEnY(codPieza,dir1,dir2)
+ /*
+    PROPÓSITO: coloca una sección de la pieza codPieza
+               en la celda lindante al dir1 y dir2
+    PRECONDICIONES:
+      * la celda lindante mencionada existe y está libre
+      * no hay otra pieza codPieza en el tablero
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+   Mover(dir1);Mover(dir2)
+   ColocarSeccionDePieza(codPieza)
+   Mover(opuesto(dir1));Mover(opuesto(dir2))
+ }
+
+/*=SECCIÓN 3.2.2===================================*
+ * Procesamiento de piezas (QuitarPiezaActual) *
+ *=================================================*
+// procedure QuitarSeccionDePiezaActual()
+// procedure QuitarPiezaActual()
+// procedure QuitarPzClaseA(codPieza,tipoPieza,rotPieza
+// ,dirA,dirB,dirC1,dirC2)
+// procedure QuitarPzClaseB(codPieza,tipoPieza,rotPieza
+// ,dirA,dirB,dirC)
+// procedure QuitarSeccionDePieza(codPieza)
+// procedure QuitarPivote(codPieza,tipoPieza,rotPieza)
+// procedure QuitarSeccionDePiezaDe(codPieza,dir)
+// procedure QuitarSeccionDePiezaDeY(codPieza,dir1,dir2)
+ *=================================================*/
+
+//----------------------------------------------------
+//-----------------------------------------------------
+procedure QuitarSeccionDePiezaActual()
+ /*
+    PROPÓSITO: quita una sección de la pieza actual
+    PRECONDICIONES:
+      * la celda es una sección de pieza
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+   SacarTodasLasDeColor(Verde)
+   SacarTodasLasDeColor(Negro)
+   SacarTodasLasDeColor(Rojo)
+ }
+
+//-----------------------------------------------------
+//-----------------------------------------------------
+procedure QuitarPiezaActual()
+ /*
+    PROPÓSITO: quita la pieza actual del tablero
+    PRECONDICIONES:
+      * la celda actual es el pivote de una pieza
+      * la pieza no está marcada
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+   codPieza := leerCodigoDePiezaActual()
+   tipoPieza := leerTipoDePiezaActual()
+   rotPieza := leerRotacionDePiezaActual()
+   if (esClaseA(tipoPieza))
+     {
+       (dirA,dirB,dirC1,dirC2)
+             := diresDePiezaClaseA(tipoPieza,rotPieza)
+       QuitarPzClaseA(codPieza,tipoPieza,rotPieza
+                     ,dirA,dirB,dirC1,dirC2)
+     }
+   else // Si no es clase A, es clase B
+     {
+       (dirA,dirB,dirC)
+             := diresDePiezaClaseB(tipoPieza,rotPieza)
+       QuitarPzClaseB(codPieza,tipoPieza,rotPieza
+                     ,dirA,dirB,dirC)
+     }
+ }
+
+//----------------------------------------------------
+procedure QuitarPzClaseA(codPieza,tipoPieza,rotPieza
+                        ,dirA,dirB,dirC1,dirC2)
+ /*
+    PROPÓSITO: completar el trabajo de QuitarPieza
+               para las piezas de clase A
+    PRECONDICIONES:
+      * hay celdas de la pieza en los lugares correctos
+      * rotPieza es una rotación válida
+      * tipoPieza es un tipo válido
+      * las direcciones coinciden con el tipoPieza
+      * la pieza no está marcada
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+  {
+    QuitarPivote(codPieza,tipoPieza,rotPieza)
+    QuitarSeccionDePiezaDe(codPieza,dirA)
+    QuitarSeccionDePiezaDe(codPieza,dirB)
+    QuitarSeccionDePiezaDeY(codPieza,dirC1,dirC2)
+  }
+
+//----------------------------------------------------
+procedure QuitarPzClaseB(codPieza,tipoPieza,rotPieza
+                        ,dirA,dirB,dirC)
+ /*
+    PROPÓSITO: completar el trabajo de QuitarPieza
+               para las piezas de clase B
+    PRECONDICIONES:
+      * hay celdas de la pieza en los lugares correctos
+      * rotPieza es una rotación válida
+      * tipoPieza es un tipo válido
+      * las direcciones coinciden con el tipoPieza
+      * la pieza no está marcada
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+  {
+    QuitarPivote(codPieza,tipoPieza,rotPieza)
+    QuitarSeccionDePiezaDe(codPieza,dirA)
+    QuitarSeccionDePiezaDe(codPieza,dirB)
+    QuitarSeccionDePiezaDe(codPieza,dirC)
+  }
+
+//-----------------------------------------------------
+procedure QuitarSeccionDePieza(codPieza)
+ /*
+    PROPÓSITO: quita una sección de la pieza codPieza
+    PRECONDICIONES:
+      * la celda es una sección de la pieza codPieza
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ { SacarN(Verde,codPieza) }
+
+//-----------------------------------------------------
+procedure QuitarPivote(codPieza, tipoPieza, rotPieza)
+ /*
+    PROPÓSITO: quita el pivote de la pieza codPieza
+    PRECONDICIONES:
+      * hay celdas de la pieza en los lugares correctos
+      * tipoPieza es un tipo válido
+      * rotPieza es una rotación válida
+      * la pieza no está marcada
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+    QuitarSeccionDePieza(codPieza)
+    SacarN(Negro,tipoPieza)
+    SacarN(Rojo,rotPieza)
+ }
+
+//-----------------------------------------------------
+procedure QuitarSeccionDePiezaDe(codPieza,dir)
+ /*
+    PROPÓSITO: quita una sección de la pieza codPieza
+               en la celda lindante al dir
+    PRECONDICIONES:
+      * la celda lindante al dir es una sección de
+        la pieza codPieza
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+   Mover(dir)
+   QuitarSeccionDePieza(codPieza)
+   Mover(opuesto(dir))
+ }
+
+//-----------------------------------------------------
+procedure QuitarSeccionDePiezaDeY(codPieza,dir1,dir2)
+ /*
+    PROPÓSITO: quitar una sección de la pieza codPieza
+               en la celda lindante al dir1 y dir2
+    PRECONDICIONES:
+      * la celda lindante al dir1 y dir2 es una sección de
+        la pieza codPieza
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+   Mover(dir1);Mover(dir2)
+   QuitarSeccionDePieza(codPieza)
+   Mover(opuesto(dir1));Mover(opuesto(dir2))
+ }
+
+/*=SECCIÓN 3.3=====================================*
+ * Operaciones de movimiento de piezas *
+ *=================================================*
+// function puedeMoverPiezaActual(dir)
+// procedure MoverPiezaActual(dir)
+//
+// function puedeBajarPiezaActual()
+// procedure BajarPiezaActual()
+//
+// procedure RotarPiezaActual(rotacionSentidoHorario)
+ *=================================================*/
+
+//-----------------------------------------------------
+//-----------------------------------------------------
+function puedeMoverPiezaActual(dir)
+ /*
+    PROPÓSITO: determina si la pieza actual se puede
+               mover en la dirección dir
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+      * para saber si puede mover, se la quita y se
+        determina si hay lugar en la celda
+        correspondiente (si es que existe)
+      * si no hay pieza, no la puede mover...
+ */
+ {
+   if (esSeccionPivoteDeAlgunaPieza()
+    && puedeMoverEnZonaDeJuego(dir))
+    {
+     tipoPieza := leerTipoDePiezaActual()
+     rotPieza := leerRotacionDePiezaActual()
+     QuitarPiezaActual() // Se puede pues hay pieza
+     Mover(dir) // Se puede pues hay lugar
+     puedeM := hayLugarParaPiezaTipo(tipoPieza,rotPieza)
+    }
+   else
+    { puedeM := False }
+
+   return (puedeM)
+ }
+
+//-----------------------------------------------------
+procedure MoverPiezaActual(dir)
+ /*
+    PROPÓSITO: mover la pieza actual en dirección dir,
+              si se puede o nada si no se puede
+    PRECONDICIONES:
+      * la celda actual está sobre el pivote de una
+        pieza
+    OBSERVACIONES:
+      * para mover una pieza se la quita toda y se la
+        pone de nuevo en el nuevo lugar, si hay lugar
+      * la celda actual queda en el pivote de la pieza
+        ya sea que se movió o no
+ */
+ {
+   codPieza := leerCodigoDePiezaActual()
+   tipoPieza := leerTipoDePiezaActual()
+   rotPieza := leerRotacionDePiezaActual()
+   if (puedeMoverEnZonaDeJuego(dir))
+     {
+       QuitarPiezaActual()
+       Mover(dir) // Puede, porque se verificó
+       if (hayLugarParaPiezaTipo(tipoPieza,rotPieza))
+         {
+           // Coloca la pieza en la nueva posición
+           ColocarPieza(codPieza, tipoPieza, rotPieza)
+         }
+       else
+         {
+           // Coloca la pieza en la celda inicial
+           Mover(opuesto(dir))
+           ColocarPieza(codPieza, tipoPieza, rotPieza)
+         }
+     }
+ }
+
+//-----------------------------------------------------
+//-----------------------------------------------------
+function puedeBajarPiezaActual()
+ /*
+    PROPÓSITO: determina si la pieza actual se puede bajar
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+      * para saber su puede bajar, se la quita y se determina
+        si hay lugar una celda más abajo (si es que hay
+        celda más abajo)
+      * si no hay pieza, no la puede bajar...
+ */
+ { return (puedeMoverPiezaActual(Sur)) }
+
+//-----------------------------------------------------
+procedure BajarPiezaActual()
+ /*
+    PROPÓSITO: baja la pieza actual
+    PRECONDICIONES:
+      * la celda actual es el pivote de una pieza
+      * la pieza actual se puede bajar
+    OBSERVACIONES:
+      * para bajar una pieza se la quita toda y se la
+        pone más abajo (se puede porque se pregunta si
+        se puede bajar antes, y entonces hay lugar)
+      * la celda actual queda en el pivote de la pieza
+ */
+ { MoverPiezaActual(Sur) }
+
+//-----------------------------------------------------
+procedure RotarPiezaActual(sentidoHorario)
+ /*
+    PROPÓSITO: rotar la pieza actual, si se puede
+               o nada si no se puede
+    PRECONDICIONES:
+      * la celda actual está sobre el pivote de una
+        pieza
+    OBSERVACIONES:
+      * para rotar una pieza se la quita toda y se la
+        pone rotada,si hay lugar
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+   codPieza := leerCodigoDePiezaActual()
+   tipoPieza := leerTipoDePiezaActual()
+   rotPieza := leerRotacionDePiezaActual()
+   nuevaRot := rotar(rotPieza, sentidoHorario)
+   QuitarPiezaActual()
+   if (hayLugarParaPiezaTipo(tipoPieza,nuevaRot))
+     { ColocarPieza(codPieza, tipoPieza, nuevaRot) }
+   else
+     { ColocarPieza(codPieza, tipoPieza, rotPieza) }
+ }
+
+/*=SECCIÓN 4=======================================*
+ * Mecánica del juego *
+ *=================================================*
+// 4.1 procedure ColocarNuevaPieza(codPieza,tipoPieza,ubicacion)
+// 4.2 procedure BajarPiezasDeZonaDeJuego()
+// 4.3 procedure ExtenderElPiso()
+// 4.4 procedure EliminarFilasLlenas()
+// 4.5 procedure GenerarLogoZILFOST()
+ *=================================================*/
+
+/*=SECCIÓN 4.1=======================================*
+ * Operaciones del juego (ColocarNuevaPieza) *
+ *===================================================*
+// procedure ColocarNuevaPieza(codPieza,tipoPieza,ubicacion)
+ *===================================================*/
+
+//-----------------------------------------------------
+procedure ColocarNuevaPieza(codPieza,tipoPieza,ubicacion)
+ /*
+    PROPÓSITO: coloca una nueva pieza de código
+               codPieza y tipo tipoPieza en la zona de
+               juego, en la columna indicada por
+               ubicacion
+    PRECONDICIONES:
+      * la pieza codPieza no existe en la zona de juego
+      * ubicación es mayor o igual a 0 y menor que el
+        ancho de la zona de juego
+    OBSERVACIONES:
+      * se coloca la pieza en la 2da fila desde arriba
+        en rotación 1 (posición original)
+        (ATENCION: para colocarla en otra rotación hay
+          que analizar dónde quedaría el pivote, para
+          bajar acorde. En rotación 1 todos los pivotes
+          van en fila 2 desde arriba)
+      * si no hay lugar, no hace nada
+ */
+ {
+   IrACoordenadaDeZonaDeJuego(ubicacion
+                             ,altoDeZonaDeJuego()-1)
+   if (tipoPieza /= 7)
+     { Mover(Sur) }
+          // Ajuste para estar 1 más abajo
+          // pues los pivotes van acá siempre en
+          // rotación 1, excepto en la pieza 7 (T)
+   if (hayLugarParaPiezaTipo(tipoPieza,1))
+     { ColocarPieza(codPieza,tipoPieza,1) }
+ }
+
+/*=SECCIÓN 4.2=====================================*
+ * Procesamiento del juego (BajarPiezas...) *
+ *=================================================*
+// procedure BajarPiezasDeZonaDeJuego()
+// procedure UnicamenteBajarPiezas()
+// procedure IrAPiezaBajableNoMarcadaSiExiste()
+// function esSeccionPivoteDePiezaNoMarcadaBajable()
+// function esCeldaConMarcaDePieza()
+// procedure MarcarPiezaActual()
+// procedure QuitarMarcasDePiezas()
+// procedure DesmarcarPiezaActualSiHay()
+ *=================================================*/
+
+//-----------------------------------------------------
+procedure BajarPiezasDeZonaDeJuego()
+ /*
+    PROPÓSITO: bajar un lugar todas las piezas que
+               pueden bajar
+    OBSERVACIONES:
+      * al bajar piezas se puede generar nuevo piso
+        y por eso se invoca a la operación de extender
+        el piso
+ */
+ {
+   UnicamenteBajarPiezas()
+   ExtenderElPiso()
+ }
+
+//-----------------------------------------------------
+procedure UnicamenteBajarPiezas()
+ /*
+    PROPÓSITO: bajar un lugar todas las piezas que
+               pueden bajar
+    OBSERVACIONES:
+      * luego de bajar una pieza, la misma se marca
+        para no volver a procesarla
+      * esto es necesario cuando hay varias piezas
+        bajables que se enciman y unas bloquean a
+        otras para bajar
+        Ej: (las piezas son 1,2,3 y 4, todas S)
+           11223344
+          11223344
+        Todas las piezas deberían bajar, pero solo
+        la 4 lo hace en una primera vuelta; la
+        marca garantiza que solo bajará un lugar
+      * se estructura como un recorrido de piezas
+        sin marcar
+      * el proceso de pasar al siguiente puede
+        excederse si no hay más, terminando siempre
+        en el final de un recorrido de celdas (sin
+        pieza); de ahí que se llame "IrAPiezaSiExiste"
+ */
+ {
+   IrAPiezaBajableNoMarcadaSiExiste()
+   while (puedeBajarPiezaActual())
+     {
+       BajarPiezaActual()
+       MarcarPiezaActual()
+       IrAPiezaBajableNoMarcadaSiExiste()
+     }
+   QuitarMarcasDePiezas()
+ }
+
+//-----------------------------------------------------
+procedure IrAPiezaBajableNoMarcadaSiExiste()
+ /*
+    PROPÓSITO: va a un pieza de la zona
+               de juego que puede ser bajada
+               y no tiene marca
+    OBSERVACIONES:
+     * se estructura como un recorrido de búsqueda
+       sobre las celdas de la zona de juego
+     * si no hay pieza, no hay marca y no puede bajar
+       con lo cual sigue buscando
+     * si para, es porque encontró una pieza no
+       marcada que puede bajar o porque se terminaron
+       las celdas sin que haya ninguna
+ */
+ {
+   IrAlOrigenDeZonaDeJuego()
+   while(not esFinDelRecorridoNEDeZonaDeJuego()
+         && not esSeccionPivoteDePiezaNoMarcadaBajable())
+     { AvanzarEnRecorridoNEDeZonaDeJuego() }
+ }
+
+//-----------------------------------------------------
+function esSeccionPivoteDePiezaNoMarcadaBajable()
+ /*
+    PROPÓSITO: informa si la celda actual es celda
+               pivote de una pieza no marcada que
+               puede bajar
+ */
+ {
+   return (esSeccionPivoteDeAlgunaPieza()
+           && not esCeldaConMarcaDePieza()
+           && puedeBajarPiezaActual())
+ }
+
+//-----------------------------------------------------
+function esCeldaConMarcaDePieza()
+ /*
+    OBSERVACIONES:
+      la marca de 7 se superpone con la
+      codificación de giro (de 1 a 4), por eso
+      pregunta por mayor
+ */
+ { return (nroBolitas(Rojo)>7) }
+
+//-----------------------------------------------------
+//-----------------------------------------------------
+procedure MarcarPiezaActual()
+ /*
+    PROPÓSITO: marcar la pieza actual
+    PRECONDICIONES:
+      * la celda actual es el pivote de una pieza
+        y la misma no está marcada
+    OBSERVACIONES:
+      * se marca con 7 bolitas rojas (verificar que
+          otras marcas no usen esta misma codificación)
+ */
+ { PonerN(Rojo,7) }
+
+//-----------------------------------------------------
+procedure QuitarMarcasDePiezas()
+ /*
+    PROPÓSITO: quita todas las marcas de las piezas
+    OBSERVACIONES:
+      * se estructura como un recorrido sobre las
+        celdas de la zona de juego, quitando todas
+        las marcas de pieza
+ */
+ {
+   // Iniciar recorrido NE en la zona de juego
+   IrAlOrigenDeZonaDeJuego()
+   while (not esFinDelRecorridoNEDeZonaDeJuego())
+    {
+      // Procesar es sacar la marca de pieza, si existe
+      DesmarcarPiezaActualSiHay()
+      AvanzarEnRecorridoNEDeZonaDeJuego()
+    }
+   // Procesar último
+   DesmarcarPiezaActualSiHay()
+ }
+
+//-----------------------------------------------------
+procedure DesmarcarPiezaActualSiHay()
+ /*
+    PROPÓSITO: desmarcar la pieza actual, si existe
+               y está marcada; si no, no hacer nada
+    OBSERVACIONES:
+      * se marca con 7 bolitas rojas (verificar que
+          otras marcas no usen esta misma codificación)
+ */
+ { if (nroBolitas(Rojo)>7) { SacarN(Rojo,7) } }
+
+/*=SECCIÓN 4.3=====================================*
+ * Procesamiento del juego (ExtenderElPiso) *
+ *=================================================*
+// procedure ExtenderElPiso()
+// procedure MarcarTodasLasCeldasDelPiso()
+// procedure ExtenderElPisoEnLaFilaBase()
+// procedure MarcarLaPosicionDeBase()
+// procedure IrAMarcaDePosicionDeBaseYDesmarcar()
+// function esPiso()
+// function hayPisoAl(dir)
+// procedure PonerPiso()
+// function esCeldaDePisoMarcada()
+// procedure MarcarElPiso()
+// procedure DesmarcarElPiso()
+// procedure IrACeldaDePisoMarcada()
+//
+// procedure TransformarEnPisoSiEsPieza(marca)
+// procedure TransformarEnPisoPiezaActual(marca)
+// procedure TransfPzClaseA(codPieza,tipoPieza,rotPieza
+// ,dirA,dirB,dirC1,dirC2, marca)
+// procedure TransfPzClaseB(codPieza,tipoPieza,rotPieza
+// ,dirA,dirB,dirC, marca)
+// procedure TransformarCeldaEnPiso(marca)
+// procedure TransformarCeldaEnPisoAl(dir, marca)
+// procedure TransformarCeldaEnPisoAlY(dir1,dir2, marca)
+ *===================================================*/
+
+//-----------------------------------------------------
+procedure ExtenderElPiso()
+ /*
+    PROPÓSITO: analiza si hay nuevas posiciones que pueden
+               estar en el piso, y las convierte en piso
+    PRECONDICIONES:
+      * default <hay un tablero de Zilfost codificado>
+      * en particular, el piso NO está marcado!
+    OBSERVACIONES:
+      * no hace falta procesar el último elemento pues
+        seguro está en la fila más al Norte y no puede
+        tener nada encima
+      * se estructura como un recorrido NE sobre celdas
+      * para cada celda de piso, se transforma la pieza
+        al Norte en piso (este nuevo piso puede producir
+        la transformación de más celdas)
+ */
+ {
+   ExtenderElPisoEnLaFilaBase()
+   MarcarTodasLasCeldasDelPiso()
+   IrACeldaDePisoMarcadaSiExiste()
+   while (esCeldaDePisoMarcada())
+     {
+       DesmarcarElPiso()
+       if (puedeMoverEnZonaDeJuego(Norte))
+         {
+           Mover(Norte)
+           TransformarEnPisoSiEsPieza(True)
+                                   //-^- Piso marcado
+               // La pieza se transforma en piso marcado!
+               // Esta operación mueve el cabezal de lugar
+         }
+       IrACeldaDePisoMarcadaSiExiste()
+     }
+   EliminarFilasLlenas()
+ }
+
+//-----------------------------------------------------
+procedure MarcarTodasLasCeldasDelPiso()
+ /*
+    PROPÓSITO: marca todas las celdas del piso en
+               la zona de juego
+    OBSERVACIONES:
+      * se estructura como un recorrido sobre las celdas
+        de la zona de juego
+ */
+ {
+   IrAlOrigenDeZonaDeJuego()
+   while (not esFinDelRecorridoNEDeZonaDeJuego())
+    {
+      if (esPiso()) { MarcarElPiso() }
+      AvanzarEnRecorridoNEDeZonaDeJuego()
+    }
+   if (esPiso()) { MarcarElPiso() }
+ }
+
+//-----------------------------------------------------
+procedure ExtenderElPisoEnLaFilaBase()
+ /*
+    PROPÓSITO: analiza si hay piezas en la fila
+               base que puedan estar en el piso, y las
+               convierte en piso
+    OBSERVACIONES:
+      * se estructura como un recorrido sobre las
+        celdas de la fila base
+      * las piezas se transforman a piso sin marcar
+ */
+ {
+   IrAlOrigenDeZonaDeJuego()
+   while (puedeMoverEnZonaDeJuego(Este))
+     {
+       MarcarLaPosicionDeBase()
+          // Necesario para volver al mismo lugar
+
+       TransformarEnPisoSiEsPieza(False)
+                               //-^- Piso sin marcar
+       // Esta operación mueve el cabezal de lugar
+
+       IrAMarcaDePosicionDeBaseYDesmarcar()
+          // Vuelve al mismo lugar para continuar
+          // el recorrido
+       Mover(Este)
+     }
+   TransformarEnPisoSiEsPieza(False)
+      // Esta operación mueve el cabezal de lugar
+ }
+
+//-----------------------------------------------------
+procedure MarcarLaPosicionDeBase()
+ /*
+    PROPÓSITO: marca el piso DEBAJO de la línea de base
+               para poder volver.
+    OBSERVACIÓN: ¡no marca en la misma posición, porque
+                 la misma va a cambiar!
+ */
+ {
+   Mover(Sur)
+   MarcarElPiso()
+   Mover(Norte)
+ }
+
+//-----------------------------------------------------
+procedure IrAMarcaDePosicionDeBaseYDesmarcar()
+ /*
+    PROPÓSITO: ejecuta la acción de volver a una posición
+               de piso marcada en la fila base
+    OBSERVACIÓN: la marca está en la base y no en la misma
+                 posición, porque el piso cambió ahí
+ */
+ {
+  IrAPrimerCeldaNEConBolitas(Azul, 64)
+    // Son 64 por las 60 de la marca, y las 4 del borde
+    // y es la única marcada de esta forma
+  DesmarcarElPiso()
+  Mover(Norte)
+ }
+
+//-----------------------------------------------------
+function esPiso()
+ /*
+    PROPÓSITO: informa si la celda actual es piso
+               no marcado
+ */
+ { return(nroBolitas(Azul)==8) }
+
+//-----------------------------------------------------
+function hayPisoAl(dir)
+ /*
+    PROPÓSITO: informa si la celda lindante al dir
+               es piso no marcado
+    PRECONDICIONES:
+      * hay una celda lindante al dir en la zona de
+        juego
+ */
+ {
+   Mover(dir)
+   return(esPiso())
+ }
+
+//-----------------------------------------------------
+function esCeldaDePisoMarcada()
+ /*
+    PROPÓSITO: informa si la celda actual es piso con
+               marca de piso (simple)
+ */
+ { return(nroBolitas(Azul)>60) }
+
+//-----------------------------------------------------
+procedure MarcarElPiso()
+ /*
+    PROPÓSITO: marcar el piso
+ */
+ { PonerN(Azul,60) }
+
+//-----------------------------------------------------
+procedure DesmarcarElPiso()
+ /*
+    PROPÓSITO: desmarca el piso
+    PRECONDICIONES:
+     * está sobre una celda de piso marcada
+ */
+ { SacarN(Azul,60) }
+
+//-----------------------------------------------------
+procedure IrACeldaDePisoMarcadaSiExiste()
+ /*
+    PROPÓSITO: va a una celda con marca de piso
+    OBSERVACIONES:
+     * si no hay celda con marca de piso, termina
+       en la última celda del recorrido NE de la
+       zona de juego
+ */
+ {
+   IrAlOrigenDeZonaDeJuego()
+   while (not esFinDelRecorridoNEDeZonaDeJuego()
+          && not esCeldaDePisoMarcada())
+    { AvanzarEnRecorridoNEDeZonaDeJuego() }
+ }
+
+//-----------------------------------------------------
+procedure TransformarEnPisoSiEsPieza(marca)
+ /*
+    PROPÓSITO: transforma en piso a la pieza que
+               intersecciona con la celda actual,
+               si existe, y agrega la marca si
+               corresponde
+    OBSERVACIONES:
+      * si no hay pieza, entonces no hace nada
+ */
+ {
+   if (esSeccionDeAlgunaPieza())
+    {
+      IrAPiezaSiExiste(leerCodigoDePiezaActual())
+      TransformarEnPisoPiezaActual(marca)
+    }
+ }
+
+//-----------------------------------------------------
+procedure TransformarEnPisoPiezaActual(marca)
+ /*
+    PROPÓSITO: transforma en piso la pieza actual
+               y agrega la marca si corresponde
+    PRECONDICIONES:
+      * la celda actual es el pivote de una pieza
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+ {
+    codPieza := leerCodigoDePiezaActual()
+    tipoPieza := leerTipoDePiezaActual()
+    rotPieza := leerRotacionDePiezaActual()
+    if (esClaseA(tipoPieza))
+      {
+        (dirA,dirB,dirC1,dirC2)
+              := diresDePiezaClaseA(tipoPieza,rotPieza)
+        TransfPzClaseA(codPieza,tipoPieza,rotPieza
+                      ,dirA,dirB,dirC1,dirC2,marca)
+      }
+    else // Si no es clase A, es clase B
+      {
+        (dirA,dirB,dirC)
+              := diresDePiezaClaseB(tipoPieza,rotPieza)
+        TransfPzClaseB(codPieza,tipoPieza,rotPieza
+                      ,dirA,dirB,dirC,marca)
+      }
+ }
+
+//----------------------------------------------------
+procedure TransfPzClaseA(codPieza,tipoPieza,rotPieza
+                        ,dirA,dirB,dirC1,dirC2,marca)
+ /*
+    PROPÓSITO: completar el trabajo de
+               TransformarEnPisoPiezaActual
+               para las piezas de clase A
+    PRECONDICIONES:
+      * hay celdas de la pieza en los lugares correctos
+      * rotPieza es una rotación válida
+      * tipoPieza es un tipo válido
+      * las direcciones coinciden con el tipoPieza
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+  {
+    TransformarCeldaEnPiso(marca)
+    TransformarCeldaEnPisoAl(dirA,marca)
+    TransformarCeldaEnPisoAl(dirB,marca)
+    TransformarCeldaEnPisoAlY(dirC1,dirC2,marca)
+  }
+
+//----------------------------------------------------
+procedure TransfPzClaseB(codPieza,tipoPieza,rotPieza
+                        ,dirA,dirB,dirC,marca)
+ /*
+    PROPÓSITO: completar el trabajo de
+               TransformarEnPisoPiezaActual
+               para las piezas de clase B
+    PRECONDICIONES:
+      * hay celdas de la pieza en los lugares correctos
+      * rotPieza es una rotación válida
+      * tipoPieza es un tipo válido
+      * las direcciones coinciden con el tipoPieza
+    OBSERVACIONES:
+      * la celda actual queda en el mismo lugar que
+        empezó
+ */
+  {
+    TransformarCeldaEnPiso(marca)
+    TransformarCeldaEnPisoAl(dirA, marca)
+    TransformarCeldaEnPisoAl(dirB, marca)
+    TransformarCeldaEnPisoAl(dirC, marca)
+  }
+
+//-----------------------------------------------------
+procedure TransformarCeldaEnPiso(marca)
+ /*
+    PROPÓSITO: transforma en piso la celda actual
+               y agrega la marca si corresponde
+    PRECONDICIONES:
+      * la celda es sección de una pieza
+ */
+ {
+   QuitarSeccionDePiezaActual()
+   PonerPiso()
+   if (marca) { MarcarElPiso() }
+ }
+
+//-----------------------------------------------------
+procedure PonerPiso()
+ /*
+    PROPÓSITO: pone piso en la celda actual
+    PRECONDICIONES:
+      * la celda está vacía
+    OBSERVACIONES:
+      * el piso se indica con 8 bolitas azules
+ */
+ { PonerN(Azul,8) }
+
+//-----------------------------------------------------
+procedure TransformarCeldaEnPisoAl(dir, marca)
+ /*
+    PROPÓSITO: transforma en piso la celda lindante
+               al dir si la misma es sección de pieza
+    PRECONDICIONES:
+      * hay una celda lindante al dir y es sección de
+        una pieza
+    OBSERVACIONES:
+      * no cambia la celda actual
+ */
+ {
+   Mover(dir)
+   TransformarCeldaEnPiso(marca)
+   Mover(opuesto(dir))
+ }
+
+//-----------------------------------------------------
+procedure TransformarCeldaEnPisoAlY(dir1,dir2, marca)
+ /*
+    PROPÓSITO: transforma en piso la celda lindante
+               al dir1 y dir2 si la misma es sección
+               de pieza
+    PRECONDICIONES:
+      * hay una celda lindante en las dir1 y dir2
+        y es sección de una pieza
+    OBSERVACIONES:
+      * no cambia la celda actual
+ */
+ {
+   Mover(dir1);Mover(dir2)
+   TransformarCeldaEnPiso(marca)
+   Mover(opuesto(dir1));Mover(opuesto(dir2))
+ }
+
+/*=SECCIÓN 4.4=====================================*
+ * Procesamiento del juego (EliminarFilasLlenas) *
+ *=================================================*
+// procedure EliminarFilasLlenas()
+// procedure EliminarMientrasSigaLlena()
+// function esFilaLlena()
+// procedure BajarFilasSobreEsta()
+// procedure BajarFilaSuperior()
+// procedure VaciarDePisoLaFilaActual()
+// procedure QuitarPiso()
+ *=================================================*/
+
+//----------------------------------------------------
+procedure EliminarFilasLlenas()
+ /*
+    PROPÓSITO:
+      eliminar todo el piso de las filas llenas de
+      la zona de juego, bajando el piso de las superiores
+      a la eliminada
+    PRECONDICIONES:
+      * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+      * debe ir de abajo-arriba para no repetir trabajo
+      * se estructura como un recorrido sobre filas
+  */
+ {
+   IrAlOrigenDeZonaDeJuego()
+   while(puedeMoverEnZonaDeJuego(Norte))
+     {
+       EliminarMientrasSigaLlena()
+       Mover(Norte)
+     }
+   // Procesa la fila más al Norte
+   EliminarMientrasSigaLlena()
+ }
+
+//----------------------------------------------------
+procedure EliminarMientrasSigaLlena()
+ /*
+    PROPÓSITO:
+      eliminar las secciones de piso de la fila
+      actual bajando las de piso que están sobre ella,
+      hasta que la fila actual no esté llena
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+      * al bajar las filas sobre la actual, se borra
+        la que estaba, y la condición puede cambiar
+      * al terminar, la fila actual no está llena
+  */
+ {
+   while (esFilaLlena())
+    { BajarFilasSobreEsta() }
+ }
+
+//----------------------------------------------------
+function esFilaLlena()
+ /*
+    PROPÓSITO:
+      determinar si la fila actual está llena de piso
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+      * la variable esLlena indica si hasta el momento
+        se encontró evidencia que la fila no está
+        llena
+      * se estructura como un recorrido de búsqueda
+        sobre las celdas de la fila actual
+  */
+ {
+   IrAlBordeDeZonaDeJuego(Oeste)
+   esLlena := True
+   while(esLlena && puedeMoverEnZonaDeJuego(Este))
+     {
+       esLlena := esLlena && esPiso()
+       Mover(Este)
+     }
+   esLlena := esLlena && esPiso()
+   return(esLlena)
+ }
+
+//----------------------------------------------------
+procedure BajarFilasSobreEsta()
+ /*
+    PROPÓSITO:
+      bajar todas las filas de piso sobre la actual,
+      sobreescribiendo la fila actual,
+      solo en la zona de juego
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+      * al bajar, se quita todo el piso de la fila
+        más al Norte
+      * el cabezal no se debe mover de la fila
+        actual (por lo que debe devolvérselo a su
+        lugar al terminar)
+      * la variables desplazamiento guarda
+        cuántos lugares debe volverse al Sur
+      * se estructura como un recorrido sobre
+        las filas arriba de la actual
+  */
+ {
+   desplazamiento := 0
+   while (puedeMoverEnZonaDeJuego(Norte))
+     {
+       BajarFilaSuperior()
+       desplazamiento := desplazamiento + 1
+       Mover(Norte)
+     }
+   VaciarDePisoLaFilaActual()
+   MoverN(Sur, desplazamiento)
+ }
+
+//----------------------------------------------------
+procedure BajarFilaSuperior()
+ /*
+    PROPÓSITO:
+      duplica la fila sobre la actual en la actual
+      borrando el contenido de la fila actual,
+      solo en la zona de juego
+    PRECONDICIONES:
+      * no está en la fila más al Norte
+    OBSERVACIONES:
+      * se estructura como un recorrido sobre
+        las celdas de la fila actual
+      * solo baja las celdas de piso; las de piezas
+        no se bajan
+      * Si al bajar el piso puede romper una pieza,
+        entonces no baja (y puede resultar "aplastado"
+        por otros pisos sobre él)
+  */
+ {
+   IrAlBordeDeZonaDeJuego(Oeste)
+   while (puedeMoverEnZonaDeJuego(Este))
+     {
+       BajarCeldaAlNorte()
+       Mover(Este)
+     }
+   BajarCeldaAlNorte()
+ }
+
+//----------------------------------------------------
+procedure BajarCeldaAlNorte()
+ /*
+    PROPÓSITO:
+      baja la celda al norte de la actual,
+      si corresponde
+    PRECONDICIONES:
+      * no está en la fila más al Norte
+    OBSERVACIONES:
+      * solo baja las celdas de piso; las de piezas
+        no se bajan
+      * Si al bajar el piso puede romper una pieza,
+        entonces es absorvido (no rompe la pieza)
+  */
+ {
+   if (not esSeccionDeAlgunaPieza())
+     // Con este if, las piezas no resultan destruidas
+     // por el piso
+     {
+       if (hayPisoAl(Norte))
+         // con este if, las piezas arriba de este
+         // piso no bajan
+         { if (not esPiso()) { PonerPiso() } }
+       else
+         // si arriba no hay piso (está vacío o hay
+         // pieza), debe vaciarse porque las celdas
+         // de pieza no bajan
+         { VaciarCelda() }
+     }
+ }
+
+//----------------------------------------------------
+procedure VaciarDePisoLaFilaActual()
+ /*
+    PROPÓSITO:
+          vacía la fila actual de piso de la zona
+          de juego
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+      * se estructura como un recorrido sobre
+        las celdas de la fila actual
+  */
+ {
+   IrAlBordeDeZonaDeJuego(Oeste)
+   while (puedeMoverEnZonaDeJuego(Este))
+    {
+      if (esPiso()) { QuitarPiso() }
+      Mover(Este)
+    }
+   if (esPiso()) { QuitarPiso() }
+ }
+
+//-----------------------------------------------------
+procedure QuitarPiso()
+ /*
+    PROPÓSITO: quita el piso de la celda actual
+    PRECONDICIONES:
+      * la celda actual tiene piso
+ */
+ { SacarN(Azul,8) }
+
+/*=SECCIÓN 4.5=======================================*
+ * Generación del logo ZILFOST *
+ *===================================================*
+// procedure GenerarLogoZILFOST()
+// procedure VaciarZonaDeJuego()
+ *===================================================*/
+
+//----------------------------------------------------
+procedure GenerarLogoZILFOST()
+ /*
+    PROPÓSITO: Dibuja ZILFOST con piezas
+    PRECONDICIONES:
+     * la zona de juego tiene un ancho mínimo de 9
+ */
+ {
+    VaciarZonaDeJuego()
+    ColocarNuevaPieza(1,1,1)
+    ColocarNuevaPieza(6,6,6)
+    BajarPiezasDeZonaDeJuego()
+    BajarPiezasDeZonaDeJuego()
+    ColocarNuevaPieza(3,3,3)
+    ColocarNuevaPieza(5,5,5)
+    BajarPiezasDeZonaDeJuego()
+    BajarPiezasDeZonaDeJuego()
+    ColocarNuevaPieza(7,7,7)
+    BajarPiezasDeZonaDeJuego()
+    ColocarNuevaPieza(2,2,2)
+    ColocarNuevaPieza(4,4,4)
+    BajarPiezasDeZonaDeJuego()
+    BajarPiezasDeZonaDeJuego()
+    BajarPiezasDeZonaDeJuego()
+}
+
+//-----------------------------------------------------
+procedure VaciarZonaDeJuego()
+ /*
+    PROPÓSITO: quita todas las piezas y el piso
+               de la zona de juego
+    PRECONDICIONES:
+     * default <hay un tablero de Zilfost codificado>
+    OBSERVACIONES:
+      * se estructura como un recorrido sobre las
+        celdas de la zona de juego, quitando todas
+        las piezas
+ */
+ {
+   // Iniciar recorrido NE en la zona de juego
+   IrAlOrigenDeZonaDeJuego()
+   while (not esFinDelRecorridoNEDeZonaDeJuego())
+    {
+      VaciarCelda()
+      AvanzarEnRecorridoNEDeZonaDeJuego()
+    }
+   VaciarCelda()
+ }
+
+/*=SECCIÓN 5=======================================*
+ * Operaciones para interfaz *
+ *=================================================*
+// 5.1 function determinarNuevaPieza(semilla)
+// 5.2 Operaciones de interacción
+ *=================================================*/
+
+/*=SECCIÓN 5.1======================================*
+ * Operaciones para interfaz (determinarNuevaPieza) *
+ *==================================================*
+// function determinarNuevaPieza(semilla)
+ *==================================================*/
+
+//----------------------------------------------------
+function determinarNuevaPieza(semilla)
+ /*
+    PROPÓSITO: devolver código, tipo y ubicación para
+               una nueva pieza de manera seudorandómica
+               en base a una semilla. También devuelve
+               la nueva semilla
+    OBSERVACIONES:
+      * la semilla de parámetro se usa como semilla inicial
+      * el resultado de cada número seudorandómico generado
+        se usa como próxima semilla, y el final se retorna
+ */
+ {
+   (ubicacion,nuevaSemilla)
+      := randomEntre0YConSemilla(anchoDeZonaDeJuego()-1
+                                ,semilla)
+   (tipoPieza,nuevaSemilla)
+      := randomEntre0YConSemilla(6
+                                ,nuevaSemilla)
+   return(leerZonaDeProximaPieza(), tipoPieza+1
+         ,ubicacion , nuevaSemilla)
+ }
+
+/*=SECCIÓN 5.2======================================*
+ * Operaciones de interacción *
+ *==================================================*
+// procedure OperacionColocarNuevaPieza()
+// procedure OperacionMoverPiezaAl(dir)
+// procedure OperacionRotarPieza(sentidoHorario)
+// procedure OperacionAgregarDigitoASeleccion(dig)
+// procedure OperacionBajarPiezas()
+ *==================================================*/
+
+//----------------------------------------------------
+procedure OperacionColocarNuevaPieza()
+ /*
+    PROPÓSITO:
+      combinar las acciones necesarias para la aparición
+      de una nueva pieza en la zona de juego (si entra)
+  */
+ {
+   semilla := leerSemilla()
+   (codPz,tipoPz,ubicPz,semilla) := determinarNuevaPieza(semilla)
+   GrabarSemilla(semilla)
+   ColocarNuevaPieza(codPz,tipoPz,ubicPz)
+
+   // Al exceder el máximo, vuelve a 1
+   IncrementarZonaDeProximaPieza()
+   BorrarZonaDeSeleccion()
+ }
+
+//----------------------------------------------------
+procedure OperacionMoverPiezaAl(dir)
+ /*
+    PROPÓSITO:
+      combinar las acciones necesarias para mover la
+      pieza indicada en la zona de selección (si existe)
+  */
+ {
+   IrAPiezaSiExiste(leerZonaDeSeleccion())
+   if (hayPiezaActual())
+     { MoverPiezaActual(dir); ExtenderElPiso() }
+   BorrarZonaDeSeleccion()
+ }
+
+//----------------------------------------------------
+procedure OperacionRotarPieza(sentidoHorario)
+ /*
+    PROPÓSITO:
+      combinar las acciones necesarias para rotar la
+      pieza indicada en la zona de selección (si existe)
+  */
+ {
+   IrAPiezaSiExiste(leerZonaDeSeleccion())
+   if (hayPiezaActual())
+     { RotarPiezaActual(sentidoHorario); ExtenderElPiso() }
+   BorrarZonaDeSeleccion()
+ }
+
+//----------------------------------------------------
+procedure OperacionAgregarDigitoASeleccion(dig)
+ /*
+    PROPÓSITO:
+      agregar un dígito a la selección actual, y bajar
+      las piezas al terminar de ingresar un código válido
+    OBSERVACIONES:
+      * como los dígitos se ingresan de izquierda a derecha
+        pero se leen de derecha a izquierda, determinar si
+        se completó el ingreso de un código válido se puede
+        realizar leyendo el número y viendo que es distinto
+        de cero
+  */
+ {
+   AgregarDigitoASeleccion(dig)
+   if (leerZonaDeSeleccion()/=0) // Al terminar de seleccionar
+                                 // una pieza, baja todas
+     { BajarPiezasDeZonaDeJuego() }
+ }
+
+//----------------------------------------------------
+procedure OperacionBajarPiezas()
+ /*
+    PROPÓSITO:
+      baja todas las piezas y resetea la zona de selección
+  */
+ {
+   BajarPiezasDeZonaDeJuego()
+   BorrarZonaDeSeleccion()
+ }

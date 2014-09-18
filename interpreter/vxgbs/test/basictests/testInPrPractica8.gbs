@@ -1,0 +1,267 @@
+#!assert
+#!board=boards/empty.gbb
+
+"""
+	Implementación de la práctica 8 completa de Introducción a la Programación.
+	Año 2013, Segundo semestre
+	https://sites.google.com/site/inpr2013s2/repositorio
+"""
+
+# Ejercicio 1
+
+type Coord is record {
+    field fila
+    field columna
+}
+
+function filaCoord(c) {
+    return(fila(c))
+}
+
+function columnaCoord(c) {
+    return(columna(c))
+}
+
+function eqCoord(c1, c2) {
+    return(filaCoord(c1) == filaCoord(c2) && 
+           columnaCoord(c1) == columnaCoord(c2))
+}
+
+function gtCoord(c1, c2) {
+    return((filaCoord(c1) > filaCoord(c2) && columnaCoord(c1) > columnaCoord(c2)) ||
+           (filaCoord(c1) >= filaCoord(c2)))
+}
+
+function mkCoord(fil, col) {
+    return(Coord(fila <- fil, columna <- col))
+}
+
+function mkOrigen() {
+    return(mkCoord(0,0))
+}
+
+function mkUltima(t) {
+    return(mkCoord(medirTablero(t, alto()) -1, medirTablero(t, ancho()) -1))
+}
+
+procedure t.IrACoord(c) {
+    t.IrAlOrigen()
+    t.MoverN(Norte, filaCoord(c))
+    t.MoverN(Este, columnaCoord(c))
+}
+
+function coordActual(t) {
+    return(mkCoord(medirHacia(t, Sur)-1, medirHacia(t, Oeste) -1))
+}
+
+function reflejo(c) {
+    return(mkCoord(columnaCoord(c), filaCoord(c)))
+}
+
+function sobreLaDiagonal(c) {
+    return(filaCoord(c) > columnaCoord(c))
+}
+
+function enDiagonal(c) {
+    return(filaCoord(c) == columnaCoord(c))
+}
+
+function puedeMoverT(t, d1, d2) {
+    return(puedeMover(t, d1) || puedeMover(t, d2))
+}
+
+function testEjercicio1(tablero) {
+    passed := True
+    t := tablero
+    t.IrACoord(mkOrigen())
+    passed.Deny(puedeMover(t, Sur) || puedeMover(t, Oeste))
+    t.Mover(Este)
+    t.IrACoord(reflejo(coordActual(t)))
+    passed.Deny(puedeMover(t, Oeste))
+    t.IrACoord(mkUltima(t))
+    passed.Deny(puedeMoverT(t, Norte, Este))
+    t.Mover(Sur)    
+    passed.Assert(gtCoord(mkUltima(t), coordActual(t)) && 
+                  gtCoord(coordActual(t), mkOrigen()))
+    t.IrAlBorde(Oeste)
+    
+    passed.Assert(sobreLaDiagonal(coordActual(t)))    
+    passed.Deny(sobreLaDiagonal(reflejo(coordActual(t))))
+    return(passed)
+}
+
+# Ejercicio 2
+
+type Cell is record {
+    field nAzul
+    field nNegro
+    field nRojo
+    field nVerde
+}
+
+function mkCelda(azules, negros, rojos, verdes) {
+    return(Cell(nAzul <- azules, 
+                 nNegro <- negros,
+                 nRojo <- rojos,
+                 nVerde <- verdes))
+}
+
+function mkCeldaActual(t) {
+    return(mkCelda(nroBolitas(t, Azul),
+                   nroBolitas(t, Negro),
+                   nroBolitas(t, Rojo),
+                   nroBolitas(t, Verde)))
+}
+
+function mkCeldaEnCoord(tablero, crd) {
+    t := tablero
+    t.IrACoord(crd)
+    return(mkCeldaActual(t))
+}
+
+procedure t.VolcarCelda(celda) {
+    t.PonerN(Azul, nAzul(celda))
+    t.PonerN(Negro, nNegro(celda))
+    t.PonerN(Rojo, nRojo(celda))
+    t.PonerN(Verde, nVerde(celda))
+}
+
+procedure t.IntercambiarCelda(crd1, crd2) {
+    crdActual := coordActual(t)
+    celdaCrd1 := mkCeldaEnCoord(t, crd1)
+    t.IrACoord(crd1)
+    t.VaciarCelda()
+    t.VolcarCelda(mkCeldaEnCoord(t, crd2))
+    t.IrACoord(crd2)
+    t.VaciarCelda()
+    t.VolcarCelda(celdaCrd1)
+    t.IrACoord(crdActual)
+}
+
+procedure t.ReflejarCelda(crd) {    
+    t.IntercambiarCelda(crd, reflejo(crd))
+}
+
+procedure t.MoverT(dir1, dir2) {
+    if (puedeMover(t, dir1)) {
+        t.Mover(dir1)
+    } else {
+        t.IrAlBorde(opuesto(dir1))
+        t.Mover(dir2)
+    }    
+}
+
+procedure t.ReflejarTablero() {
+    t.IrAlOrigen()
+    while (puedeMoverT(t, Este, Norte)) {
+        crdAct := coordActual(t)
+        if (sobreLaDiagonal(crdAct)) {
+            t.ReflejarCelda(crdAct)
+        }
+        
+        t.MoverT(Este, Norte)
+    }    
+}
+
+function celdaEqActual(t, celda) {    
+    return(eqCelda(mkCeldaActual(t), celda))
+}
+
+function eqCelda(celda1, celda2) {
+    return(nAzul(celda1) == nAzul(celda2) &&
+           nNegro(celda1) == nNegro(celda2) &&
+           nRojo(celda1) == nRojo(celda2) &&
+           nVerde(celda1) == nVerde(celda2))
+}
+
+procedure t.VaciarCelda() {
+    t.SacarTodas(Azul)
+    t.SacarTodas(Negro)
+    t.SacarTodas(Rojo)
+    t.SacarTodas(Verde)
+}
+
+procedure t.MoverDiagonal(d1, d2) {
+    t.Mover(d1)
+    t.Mover(d2)
+}
+
+function diagonalesIguales(tablero1, tablero2) {
+    t1 := tablero1
+    t2 := tablero2
+    
+    t1.IrAlOrigen()
+    t2.IrAlOrigen()
+    
+    passed := True
+    cellT1 := mkCeldaActual(t1)
+    cellT2 := mkCeldaActual(t2)
+    while (puedeMoverT(t1, Este, Norte)) {
+        passed.Assert(eqCelda(cellT1, cellT2))     
+        t1.MoverDiagonal(Este, Norte)
+        t2.MoverDiagonal(Este, Norte)
+        cellT1 := mkCeldaActual(t1)
+        cellT2 := mkCeldaActual(t2)
+    }
+    passed.Assert(eqCelda(cellT1, cellT2))  
+    return (passed)
+}
+
+function tablerosInversos(tablero1, tablero2) {
+    // Precondición: Ambos tableros son de nxn celdas
+    
+    t1 := tablero1
+    t2 := tablero2
+    
+    t1.IrAlOrigen()
+    t2.IrAlOrigen()
+    passed := True
+    cellT1 := mkCeldaActual(t1)
+    cellT2 := mkCeldaActual(t2)
+    while (puedeMoverT(t1, Este, Norte) && passed) {
+        if (not enDiagonal(coordActual(t1))) {
+            passed.Assert(eqCelda(cellT1, cellT2))        
+        }
+        t1.MoverT(Este, Norte)
+        t2.MoverT(Norte, Este)
+        cellT1 := mkCeldaActual(t1)
+        cellT2 := mkCeldaActual(t2)
+    }    
+    passed.Assert(eqCelda(mkCeldaActual(t1), mkCeldaActual(t2)))
+    
+    passed.Assert(diagonalesIguales(t1, t2))
+    return(passed)
+}
+
+function testEjercicio2(tablero) {
+    t := tablero
+    passed := True
+    
+    celda := mkCeldaActual(t)
+    passed.Assert(celdaEqActual(t, celda))
+    
+    t.VaciarCelda()
+    t.VolcarCelda(celda)
+    passed.Assert(celdaEqActual(t, celda))
+    
+    t.IrACoord(mkCoord(0,1))
+    celda := mkCeldaActual(t)
+    t.ReflejarCelda(coordActual(t))    
+    t.IrACoord(reflejo(coordActual(t)))       
+    passed.Assert(celdaEqActual(t, celda))
+    
+    t2 := t
+    t2.ReflejarTablero()            
+    passed.Assert(tablerosInversos(t, t2))
+    
+    return(passed)
+}
+
+# Test program
+
+t.program {    
+    passed := True
+	passed.Assert(testEjercicio1(t))
+    passed.Assert(testEjercicio2(t))
+	return(passed)
+}

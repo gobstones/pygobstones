@@ -1,0 +1,27 @@
+// compile with: dot gui.dot -o gui.png -T png
+digraph {
+
+  S [label="[start]"]
+
+  A [label="tamaño aleatorio\ncontenido aleatorio"]
+
+  B [label="tamaño fijo\ncontenido aleatorio"]
+
+  C [label="tamaño fijo\ncontenido fijo"]
+
+  S -> A
+
+  A -> A [label="Modo aleatorio\nTamaño aleatorio"]
+  B -> B [label="Modo aleatorio\nCambiar tamaño"]
+  C -> C [label="Vaciar/modificar"]
+
+  A -> B [label="Cambiar tamaño"]
+  B -> A [label="Tamaño aleatorio"]
+
+  A -> C [label="Vaciar/modificar"]
+  C -> A [label="Tamaño aleatorio"]
+
+  C -> B [label="Modo aleatorio\nCambiar tamaño"]
+  B -> C [label="Vaciar/modificar"]
+
+}

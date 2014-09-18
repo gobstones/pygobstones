@@ -1,0 +1,231 @@
+/* ----------------------------------------------- *
+ *    Biblioteca.gbs                               *
+ * ----------------------------------------------- *
+// procedure PonerN(color,n)
+// procedure SacarN(color,n)
+// procedure MoverN(dir,n)
+// procedure DejarN(color,n)
+// procedure SacarTodasLasDeColor(color)
+// procedure VaciarCelda()
+// function esCeldaVacia()
+// function hayCeldaVaciaAl(dir)
+//
+// procedure IrALaEsquina(dir1,dir2)
+// procedure IrACoordenada(x,y)
+//
+// function nroBolitasAl(col,dir)
+// procedure CopiarAcaCeldaAl(dir)
+//
+// procedure IrAPrimerCeldaNEConBolitas(col,n)
+// function medirDistanciaAlBorde(dir)
+//
+//-----------------------------------------------------
+//  De recorrido
+//-----------------------------------------------------
+// procedure IniciarRecorridoDeCeldas(dirE,dirI)
+// function esFinDelRecorridoDeCeldas(dirE,dirI)
+// procedure AvanzarASiguienteDelRecorridoDeCeldas(dirE,dirI)
+//
+//-----------------------------------------------------
+//  De generación de números randómicos 
+//-----------------------------------------------------
+// function randomEntre0YConSemilla(maximo,semilla)
+//   function min_stand(semilla)
+ * ----------------------------------------------- */
+
+//----------------------------------------------------
+procedure PonerN(color, n)
+ { repeat(n) { Poner(color) } }
+
+//----------------------------------------------------
+procedure SacarN(color,n)
+ /* PRECONDICIÓN: hay al menos n bolitas de color */
+ { repeat(n) { Sacar(color) } }
+
+//----------------------------------------------------
+procedure MoverN(dir,n)
+ /* PRECONDICIÓN: el cabezal puede moverse n veces
+                  en dirección dir
+ */
+ { repeat(n) { Mover(dir)   } }
+
+//----------------------------------------------------
+procedure DejarN(color,n)
+ { SacarTodasLasDeColor(color); PonerN(color,n) }
+
+//----------------------------------------------------
+procedure SacarTodasLasDeColor(color)
+ { SacarN(color, nroBolitas(color)) }
+
+//----------------------------------------------------
+procedure VaciarCelda()
+ {
+   foreach color in [minColor()..maxColor()]
+     { SacarTodasLasDeColor(color) }
+ }
+
+//----------------------------------------------------
+function esCeldaVacia()
+ {
+   return (not hayBolitas(Azul) && not hayBolitas(Negro)
+        && not hayBolitas(Rojo) && not hayBolitas(Verde))
+ }
+
+//----------------------------------------------------
+function esCeldaVaciaAl(dir)
+ /* PRECONDICIÓN: el cabezal puede moverse 
+                  en dirección dir
+ */
+ { 
+   Mover(dir)
+   return (esCeldaVacia())
+ }
+
+//----------------------------------------------------
+function hayCeldaVaciaAl(dir)
+ { return (puedeMover(dir) && esCeldaVaciaAl(dir)) }
+
+//----------------------------------------------------
+//----------------------------------------------------
+procedure IrALaEsquina(dir1,dir2)
+ { IrAlBorde(dir1); IrAlBorde(dir2) }
+
+//----------------------------------------------------
+procedure IrACoordenada(x,y)
+ /* PRECONDICIÓN: coordenada x,y esta en el tablero */
+ { IrALaEsquina(Sur,Oeste); MoverN(Este,x); MoverN(Norte,y) }
+
+//----------------------------------------------------
+//----------------------------------------------------
+function nroBolitasAl(col,dir)
+ /* PRECONDICIÓN: el cabezal puede moverse al dir */
+ {
+   Mover(dir)
+   return (nroBolitas(col))
+ }
+
+//----------------------------------------------------
+procedure CopiarAcaCeldaAl(dir)
+ /* PRECONDICIÓN: el cabezal puede moverse al dir */
+ {
+   foreach color in [minColor()..maxColor()]
+     { DejarN(color, nroBolitasAl(color,dir)) }
+ }
+
+//----------------------------------------------------
+//----------------------------------------------------
+procedure IrAPrimerCeldaNEConBolitas(col,n)
+ /* PRECONDICIÓN: existe una celda con n bolitas de 
+                  color col en el tablero
+ */
+ {
+   IniciarRecorridoDeCeldas(Norte,Este)
+   while (not (nroBolitas(col)==n))
+    { AvanzarASiguienteDelRecorridoDeCeldas(Norte,Este) }
+ }
+
+//----------------------------------------------------
+function medirDistanciaAlBorde(dir)
+ {
+   cont:=0
+   while (puedeMover(dir))
+    { 
+      cont := cont + 1
+      Mover(dir)
+    }
+   return(cont)
+ }
+
+//----------------------------------------------------
+//  Operaciones de recorridos genericas
+//----------------------------------------------------
+procedure IniciarRecorridoDeCeldas(dirE,dirI)
+ { 
+   IrAlBorde(opuesto(dirE))
+   IrAlBorde(opuesto(dirI))
+ }
+
+//----------------------------------------------------
+function esFinDelRecorridoDeCeldas(dirE,dirI)
+ { return (not puedeMover(dirE) 
+        && not puedeMover(dirI)) 
+ }
+
+//----------------------------------------------------
+procedure AvanzarASiguienteDelRecorridoDeCeldas(dirE,dirI)
+ /* PRECONDICION: no esta en el final del recorrido */
+ { 
+   if (puedeMover(dirI))
+     { Mover(dirI) }
+   else 
+     { IrAlBorde(opuesto(dirI)); Mover(dirE) }
+ }
+
+//----------------------------------------------------
+//----------------------------------------------------
+function randomEntre0YConSemilla(maximo,semilla)
+ /*
+    PROPÓSITO: calcula en base a una semilla dada (x_i),
+               un número seudoaleatorio entre 0 y el 
+               máximo dado, y una nueva semilla (x_{i+1})
+               a ser usada en invocaciones futuras           
+    OBSERVACIONES:
+      * este código fue copiado del artículo "Functional 
+        Programming with Overloading and Higher-Order 
+        Polymorphism" de Mark Jones, publicado en "Advanced 
+        Functional Programming", J.Jeuring y E.Meijer, editores, 
+        LNCS 925, Springer Verlag, 1995.
+      * para usarlo correctamente, la nuevaSemilla debe ser 
+        usada como siguiente semilla en posteriores llamados, 
+        como en
+         semilla := 42
+         repeat(17)
+          { 
+            (n,semilla) := randomEntre0YConSemilla(10,semilla)
+            PonerN(Verde,n)
+            Mover(Norte)
+          } 
+ */
+ {
+   nuevaSemilla := min_stand(semilla)
+   return(nuevaSemilla mod maximo, nuevaSemilla)
+ }
+
+//----------------------------------------------------
+function min_stand(semilla)
+ /*
+    PROPÓSITO: calcula un número seudoaleatorio según una semilla dada
+    OBSERVACIONES:
+      * auxiliar para randomEntre0YConSemilla(maximo, semilla)
+      * Mark Jones lo atribuye a "Random Number Generators: Good
+        Ones are Hard to Find" de S.K.Park y K.W.Miller, publicado
+        en la revista "Communications of the ACM", 31(10):1192-1201, 
+        en octubre de 1988.
+      * este artículo en realidad lo toma de una propuesta de 1969 
+        por Lewis, Goodman and Miller y lo propone como estándar 
+        mínimo de generación de números seudoaleatorios
+      * el comentario sobre su funcionamiento fue agregado por mí, 
+        en base a alguna lectura que encontré alguna vez que lo 
+        explicaba, y de la que no recuerdo la cita:
+          x_{i+1} = a*x_i mod m
+        donde
+          a = 7^5 = 16807
+          m = 2^31 - 1 = 2147483647
+          q = m div a = 127773
+          r = m mod a = 2836
+        y entonces
+          x_{i+1} = a*(x_i mod q) - r*(x_i div q) + delta*m
+        siendo
+          delta = 1 si (a*(x_i mod q) - r*(x_i div q) > 0)
+          delta = 0 si no
+ */
+ {
+   hi := semilla div 12773  -- semilla div (2^31 mod 7^5)
+   lo := semilla mod 12773  -- semilla mod (2^31 mod 7^5)
+   preresultado := 16807 * lo - 2836 * hi
+                --  7^5  * lo - (2^31 mod 7^5) * hi
+   if (preresultado > 0) { delta := 0 }
+   else                  { delta := 1 }
+   return (preresultado + delta * 2147483647)
+                      --  delta * 2^31
+ }

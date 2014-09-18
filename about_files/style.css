@@ -1,0 +1,23 @@
+#credits {
+position: absolute; top: 100px;
+width: 500px; height: 100px; background: white;
+    -webkit-animation-name: shift;
+    -webkit-animation-duration: 10s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-direction: reverse;
+  }
+ @-webkit-keyframes shift{
+    from{
+        top: -200px;
+        left: 40%;    
+    }
+    to {
+        top:  100%;
+        left: 40%;
+    }   
+ }
+
+#header{
+position: fixed ; top: 0; right: 10%;
+width: 800px; height: 300px; background: white;
+}

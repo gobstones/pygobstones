@@ -1,0 +1,112 @@
+procedure IrAlOrigen() {
+	IrAlBorde(Oeste)
+	IrAlBorde(Sur)
+}
+
+function nroTotalBolitas() {
+	total := 0
+	foreach c in [minColor()..maxColor()] {
+		total := total + nroBolitas(c)
+	}
+	return(total)
+}
+
+function medirTablero(unaDireccion) {
+	IrAlBorde(opuesto(unaDireccion))
+	count := 1
+	while (puedeMover(unaDireccion)) {			
+		Mover(unaDireccion)
+		count := count + 1
+	}
+	return(count)
+}
+
+function ancho() {
+	return(Este)
+}
+
+function alto() {
+	return(Norte)
+}
+
+function puedeMoverTablero() {
+	return(puedeMover(Norte) || puedeMover(Este))
+}
+
+procedure MoverTablero() {
+	if (puedeMover(Norte)) {
+		Mover(Norte)
+	} else {
+		IrAlBorde(Sur)
+		Mover(Este)
+	}
+}
+
+procedure ReemplazarColor(unColor, otroColor) {
+	PonerN(otroColor, nroBolitas(unColor))
+	SacarTodas(unColor)
+}
+
+procedure SacarTodas(unColor) {
+	SacarN(unColor, nroBolitas(unColor))
+}
+
+procedure ReemplazarColorEnTablero(unColor, otroColor) {
+	IrAlOrigen()
+	while (puedeMoverTablero()) {
+		ReemplazarColor(unColor, otroColor)
+		MoverTablero()
+	}
+	ReemplazarColor(unColor, otroColor)
+}
+
+procedure PonerN(unColor, cantidad) {
+	repeat cantidad {
+		Poner(unColor)
+	}
+}
+
+procedure SacarN(unColor, cantidad) {
+	repeat cantidad {
+		Sacar(unColor)
+	}
+}
+
+procedure LlenarFilaConBolitas(unColor, cantidad) {
+	IrAlBorde(Oeste)
+	while (puedeMover(Este)) {
+		PonerN(unColor, cantidad)
+		Mover(Este)
+	}
+	PonerN(unColor, cantidad)
+}
+
+procedure LlenarConBolitas(unColor, cantidad) {
+	IrAlOrigen()
+	while (puedeMoverTablero()) {
+		PonerN(unColor, cantidad)
+		MoverTablero()
+	}
+	PonerN(unColor, cantidad)
+}
+
+function contarBolitas(unColor) {
+	count := 0
+	IrAlOrigen()
+	while (puedeMoverTablero()) {
+		count := count + nroBolitas(unColor)
+		MoverTablero()
+	}
+	return(count + nroBolitas(unColor))
+}
+
+function aplicarNumOps(n, m) {
+	return ((n + m) + (n*m) + (n div m) + (n mod m))
+}
+
+function aplicarLogOps(p, q) {
+	res := (p && q)
+	res := (p || q)
+	res := not p 
+	return(not q || res)
+}
