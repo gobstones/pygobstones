@@ -1,0 +1,10 @@
+program {
+    if (True) then {
+    Poner(Verde)
+    }
+
+if (True) {
+    Poner(Verde)
+    }
+
+}

@@ -22,6 +22,8 @@ import functools
 import common.utils as utils
 from lang.gbs_io import GobstonesKeys
 
+explicit_builtins = True
+
 from lang.gbs_type import (
     BasicTypes,
     GbsTypeVar,
@@ -71,10 +73,10 @@ class GbsRuntimeTypeException(GbsRuntimeException):
         return i18n.i18n('Runtime type error')
 
 def is_defined(name):
-    return name in BUILTINS_BY_NAME.keys()
+    return name in get_builtins_by_name().keys()
 
 def is_builtin_constant(name):
-    return is_defined(name) and isinstance(BUILTINS_BY_NAME[name], BuiltinConstant)
+    return is_defined(name) and isinstance(get_builtins_by_name()[name], BuiltinConstant)
 
 TYPEVAR_X = GbsTypeVar()
 TYPEVAR_Y = GbsTypeVar()
@@ -781,43 +783,7 @@ def str_concat(global_state, str1, str2):
         msg = global_state.backtrace(i18n.i18n('%s was expected') % (i18n.i18n('string type value'),))
         raise GbsRuntimeException(msg, global_state.area())
 
-BUILTINS = [
-
-    #### Internal operations
-    
-    BuiltinFunction(
-      i18n.i18n('_read'),
-      GbsFunctionType(GbsTupleType([]), GbsTupleType([GbsIntType()])),
-      internal_read
-    ),
-            
-    BuiltinProcedure(
-      i18n.i18n('_Show'),
-      GbsProcedureType(GbsTupleType([GbsBoardType()])),
-      internal_show
-    ),
-    
-    BuiltinFunction(
-        i18n.i18n('_typecheck_vals'),
-        GbsForallType(
-            [TYPEVAR_X, TYPEVAR_Y],
-            GbsFunctionType(
-                GbsTupleType([TYPEVAR_X, TYPEVAR_Y]),
-                GbsTupleType([TYPEVAR_X]))),
-        typecheck_vals
-    ),
-        
-    BuiltinFunction(
-        i18n.i18n('_typecheck_val'),
-        GbsForallType(
-            [TYPEVAR_X],
-            GbsFunctionType(
-                GbsTupleType([TYPEVAR_X, GbsStringType()]),
-                GbsTupleType([TYPEVAR_X]))),
-        typecheck_val
-    ),
-            
-
+BUILTINS_EXPLICIT_BOARD = [
     #### Procedures
 
     BuiltinProcedure(
@@ -837,12 +803,6 @@ BUILTINS = [
         GbsProcedureType(GbsTupleType([GbsBoardType(), GbsDirType()])),
         lambda gs, board, v: board_binary_operation(gs, board, v, board_move)
     ),
-
-#    BuiltinProcedure(
-#        i18n.i18n('GoToOrigin'),
-#        GbsProcedureType(GbsTupleType([GbsBoardType()])),
-#        lambda gs, board: board_unary_operation(gs, board, board_go_to_origin)
-#    ),
             
     BuiltinProcedure(
         i18n.i18n('GoToBoundary'),
@@ -881,6 +841,113 @@ BUILTINS = [
             GbsTupleType([GbsBoolType()])),
         board_can_move
     ),
+]
+
+def implicit_board_func(f):
+    def ff(gs, *values):
+        return f(gs, gs.board.clone(), *values)
+    return ff
+
+def implicit_board_proc(f):
+    def ff(gs, *values): 
+        f(gs, GbsObject(gs.board, 'Board'), *values)
+    return ff
+
+BUILTINS_IMPLICIT_BOARD = [
+    #### Procedures
+
+    BuiltinProcedure(
+        i18n.i18n('PutStone'),
+        GbsProcedureType(GbsTupleType([GbsColorType()])),
+        implicit_board_proc(board_put_stone)
+    ),
+
+    BuiltinProcedure(
+        i18n.i18n('TakeStone'),
+        GbsProcedureType(GbsTupleType([GbsColorType()])),
+        implicit_board_proc(board_take_stone)
+    ),
+
+    BuiltinProcedure(
+        i18n.i18n('Move'),
+        GbsProcedureType(GbsTupleType([GbsDirType()])),
+        implicit_board_proc(board_move)
+    ),
+            
+    BuiltinProcedure(
+        i18n.i18n('GoToBoundary'),
+        GbsProcedureType(GbsTupleType([GbsDirType()])),
+        implicit_board_proc(board_go_to_boundary)
+    ),
+
+    BuiltinProcedure(
+        i18n.i18n('ClearBoard'),
+        GbsProcedureType(GbsTupleType([])),
+        implicit_board_proc(board_clear)
+    ),
+
+    #### Functions
+
+    BuiltinFunction(
+        i18n.i18n('numStones'),
+        GbsFunctionType(
+            GbsTupleType([GbsColorType()]),
+            GbsTupleType([GbsIntType()])),
+        implicit_board_func(board_num_stones)
+    ),
+
+    BuiltinFunction(
+        i18n.i18n('existStones'),
+        GbsFunctionType(
+            GbsTupleType([GbsColorType()]),
+            GbsTupleType([GbsBoolType()])),
+        implicit_board_func(board_exist_stones)
+    ),
+
+    BuiltinFunction(
+        i18n.i18n('canMove'),
+        GbsFunctionType(
+            GbsTupleType([GbsDirType()]),
+            GbsTupleType([GbsBoolType()])),
+        implicit_board_func(board_can_move)
+    ),
+]
+
+BUILTINS = [
+
+    #### Internal operations
+    
+    BuiltinFunction(
+      i18n.i18n('_read'),
+      GbsFunctionType(GbsTupleType([]), GbsTupleType([GbsIntType()])),
+      internal_read
+    ),
+            
+    BuiltinProcedure(
+      i18n.i18n('_Show'),
+      GbsProcedureType(GbsTupleType([GbsBoardType()])),
+      internal_show
+    ),
+    
+    BuiltinFunction(
+        i18n.i18n('_typecheck_vals'),
+        GbsForallType(
+            [TYPEVAR_X, TYPEVAR_Y],
+            GbsFunctionType(
+                GbsTupleType([TYPEVAR_X, TYPEVAR_Y]),
+                GbsTupleType([TYPEVAR_X]))),
+        typecheck_vals
+    ),
+        
+    BuiltinFunction(
+        i18n.i18n('_typecheck_val'),
+        GbsForallType(
+            [TYPEVAR_X],
+            GbsFunctionType(
+                GbsTupleType([TYPEVAR_X, GbsStringType()]),
+                GbsTupleType([TYPEVAR_X]))),
+        typecheck_val
+    ),                
 
     BuiltinFunction(
         i18n.i18n('minBool'),
@@ -1776,19 +1843,17 @@ def _initialize_poly_builtins():
 
 _initialize_poly_builtins()
 
-BUILTIN_NAMES = [b.name() for b in BUILTINS]
 
-CORRECT_NAMES = BUILTIN_NAMES
-
-BUILTINS_BY_NAME = {}
-
-def _initialize_builtins_by_name():
+def _initialize_builtins_by_name(builtins):
     """Initialize the dictionary of builtins mapping builtin
     names to constructs."""
-    for builtin in BUILTINS:
-        BUILTINS_BY_NAME[builtin.name()] = builtin
+    dic = {}
+    for builtin in builtins:
+        dic[builtin.name()] = builtin
+        
+    return dic
 
-_initialize_builtins_by_name()
+
 
 ##
 
@@ -1797,9 +1862,31 @@ def parse_constant(string):
     an object representing that value."""
     if _is_int_constant(string):
         return int(string)
-    if string in BUILTINS_BY_NAME:
-        return BUILTINS_BY_NAME[string].primitive()
+    if string in get_builtins_by_name():
+        return get_builtins_by_name()[string].primitive()
     else:
         return None
 
 
+# Builtins getters
+
+def get_builtins():
+    if explicit_builtins:
+        return BUILTINS + BUILTINS_EXPLICIT_BOARD
+    else:
+        return BUILTINS + BUILTINS_IMPLICIT_BOARD
+
+BUILTINS_NAMES = []
+def get_builtins_names():    
+    if len(BUILTINS_NAMES) == 0:
+        BUILTINS_NAMES.extend([b.name() for b in get_builtins()])
+    return BUILTINS_NAMES
+    
+BUILTINS_BY_NAME = {}
+def get_builtins_by_name():
+    if len(BUILTINS_BY_NAME.keys()) == 0:
+        BUILTINS_BY_NAME.update(_initialize_builtins_by_name(get_builtins()))
+    return BUILTINS_BY_NAME
+    
+def get_correct_names():
+    return get_builtins_names()

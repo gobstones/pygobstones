@@ -1,0 +1,22 @@
+function pepe() {
+    return([Azul, 1])
+}
+program {
+  foreach x in [1,2..10] {
+    Poner(Azul)
+  }
+  
+  foreach x in [1,2,3,7,6,5,4,3,10] {
+    Poner(Azul)
+  }
+  
+  foreach x in [minDir()..maxDir()] {
+  	Poner(Azul)
+  }
+  
+  foreach x in [1,2..10] {
+    Poner(Azul)
+  }
+  xs := [2]
+  return(xs)
+}

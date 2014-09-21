@@ -52,10 +52,12 @@ function testOpsSobreLista() {
 	return(suma)
 }
  
-function testGeneratorRepeat() {
+function testGeneratorRepeat(n) {
 	rpns := []
+	count := 1
 	repeat n { 
-		rpns := rpns ++ [n]
+		rpns := rpns ++ [count]
+		count := count + 1
 	}
 	
 	return(eqLists(rpns, [1,1..n])) 

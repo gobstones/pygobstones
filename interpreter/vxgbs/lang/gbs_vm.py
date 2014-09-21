@@ -62,7 +62,7 @@ class GbsCompiledProgram(object):
     self.tree = tree
     self.module_prefix = module_prefix
     self.builtins = {}
-    for b in lang.gbs_builtins.BUILTINS:
+    for b in lang.gbs_builtins.get_builtins():
       bname, b = b.name(), b.underlying_construct()
       self.builtins[bname] = b
     self.routines = {}
@@ -87,7 +87,7 @@ class GbsCompiledProgram(object):
 
 
 class GbsCompiledCode(object):
-    def __init__(self, tree, prfn, name, params):
+    def __init__(self, tree, prfn, name, params, explicit_board=True):
         self.tree = tree
         self.prfn = prfn
         self.name = name
@@ -95,6 +95,7 @@ class GbsCompiledCode(object):
         self.ops = []
         self.label_table = {}
         self.nearby_elems = {}
+        self.explicit_board = explicit_board
         
     def is_function(self):
         return self.prfn == 'function'
@@ -126,7 +127,10 @@ class GbsCompiledCode(object):
             self.add_leave_return_to_entrypoint()
         elif len(self.ops) == 0 or self.ops[-1][0] != 'return':
             assert self.prfn == 'procedure'
-            self.push(('return', 1))
+            if self.explicit_board:
+                self.push(('return', 1))
+            else:
+                self.push(('return', 0))
         elif len(self.ops) > 0 and self.ops[-1][0] == 'return' and self.prfn == 'function':
             self.ops.insert(-1, ('leave',))
       
@@ -198,11 +202,13 @@ class ActivationRecord(object):
 class GlobalState(object):
   def __init__(self, interpreter, board):
     self.interpreter = interpreter
+    self.board_states = []
     self.board = board
   def push(self):
-    pass
+    self.board_states.append(self.board)
+    self.board = self.board.clone()
   def pop(self):
-    pass
+    self.board = self.board_states.pop()
   def backtrace(self, msg):
     return self.interpreter.backtrace(msg)
   def area(self):
@@ -247,7 +253,9 @@ class GbsVmInterpreter(object):
     self.callstack = []
     self.stack = []          
     self.global_state = GlobalState(self, board)
-    self.ar.bindings[self.ar.routine.params[0]] = lang.gbs_builtins.GbsObject(board, 'Board')
+    self.explicit_board = len(self.ar.routine.params) > 0
+    if self.explicit_board:
+        self.ar.bindings[self.ar.routine.params[0]] = lang.gbs_builtins.GbsObject(board, 'Board')
     
   def push_stack(self, value):
       self.stack.append(value)
@@ -462,7 +470,10 @@ class GbsVmInterpreter(object):
         # TODO: Result to str mapping should be done in a later stage, not here. 
         return_vals = map(repr, self.stack[-len(return_vars):])
         
-        return 'END', list(zip(return_vars, return_vals)), self.get_binding(self.ar.routine.params[0])
+        if self.explicit_board:
+          return 'END', list(zip(return_vars, return_vals)), self.get_binding(self.ar.routine.params[0])
+        else:
+          return 'END', list(zip(return_vars, return_vals)), lang.gbs_builtins.GbsObject(self.global_state.board, 'Board')
       else:
         # pop the return results in case of having a recursive Main
         # (Main is a procedure, so the values it returns are not used)

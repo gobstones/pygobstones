@@ -18,7 +18,7 @@
 
 import lang.gbs_def_helper as def_helper
 from common.utils import StaticException
-from lang.gbs_builtins import BUILTINS_BY_NAME, BUILTINS, BUILTIN_NAMES
+import lang.gbs_builtins
 from lang.gbs_constructs import BuiltinProcedure
 from lang.gbs_type import GbsProcedureType, GbsTypeVar, GbsTupleType
 import inspect

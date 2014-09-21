@@ -56,12 +56,17 @@ class GbsCompiler(object):
         self.module_handler = None
         self._current_def_name = None
 
-    def compile_program(self, tree, module_prefix=''):
+    def compile_program(self, tree, module_prefix='', explicit_board=None):
         """Given an AST for a full program, compile it to virtual machine
 code, returning an instance of lang.gbs_vm.GbsCompiledProgram.
 The Main module should be given the empty module prefix ''.
 Every other module should be given the module name as a prefix.
 """
+        if explicit_board is None:
+            entrypoint_tree = def_helper.find_def(tree.children[2], def_helper.is_entrypoint_def)
+            self.explicit_board = not entrypoint_tree.annotations["varProc"] is None
+        else:
+            self.explicit_board = explicit_board
         self.module_handler = tree.module_handler
         self.compile_imported_modules(tree)
 
@@ -83,7 +88,7 @@ Every other module should be given the module name as a prefix.
             compiler = GbsCompiler()
             try:
                 code = compiler.compile_program(
-                           mdl_tree, module_prefix=mdl_name
+                           mdl_tree, module_prefix=mdl_name, explicit_board=self.explicit_board
                        )
             except common.utils.SourceException as exception:
                 self.module_handler.reraise(
@@ -143,13 +148,13 @@ namespace of routines.
         elif prfn == 'procedure' and len(params) > 1:
             immutable_params = params[1:]
             
-        code = lang.gbs_vm.GbsCompiledCode(tree, prfn, name, params)
+        code = lang.gbs_vm.GbsCompiledCode(tree, prfn, name, params, self.explicit_board)
         code.add_enter()
         for p in immutable_params:
                 code.push(('setImmutable', p), near=tree)            
         self.compile_commands(def_helper.get_def_body(tree), code)
-        if prfn == 'procedure':            
-            code.push(('pushVar', params[0]), near=tree)
+        if prfn == 'procedure' and self.explicit_board:            
+            code.push(('pushVar', params[0]), near=tree)                
         code.add_leave_return()
         code.build_label_table()
         self.code.routines[name] = code
@@ -207,8 +212,10 @@ namespace of routines.
     def compile_proc_call(self, tree, code):
         "Compile a procedure call."
         procname = tree.children[1].value
-        args = tree.children[2].children        
-        inout_var = args[0]
+        args = tree.children[2].children     
+        
+        if self.explicit_board:           
+            inout_var = args[0]
         
         type_annotation = None
         if hasattr(tree, 'type_annotation'):
@@ -219,7 +226,10 @@ namespace of routines.
             if type_annotation:
                 self.compile_typecheck_value(type_annotation[i], arg, code)
         code.push(('call', procname, len(args)), near=tree)
-        code.push(('assign', inout_var.children[1].value), near=tree)
+        
+        if self.explicit_board:
+            code.push(('assign', inout_var.children[1].value), near=tree)
+
 
     def compile_var_decl(self, tree, code):
         "Compile a variable type declaration: var <var> := <type>"

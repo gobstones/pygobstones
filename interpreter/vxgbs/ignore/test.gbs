@@ -1,0 +1,17 @@
+type REC is record {
+	field cnt
+}
+
+function f(p) {
+	p2 := p
+	p2.cnt := 4	
+	return(p2)
+}
+
+program {
+	v2 := f(REC(cnt <- 3))
+	v3 := REC(cnt <- 4)
+	res := v2 == v3
+	res2 := [minDir()..maxDir()] == [minDir()..maxDir()]
+	return(v2, res, res2)    
+}

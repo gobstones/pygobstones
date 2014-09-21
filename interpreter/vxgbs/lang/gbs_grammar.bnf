@@ -95,14 +95,18 @@
         ;;
 <def>  ::= function <funcName> <params> <funcTypeDecl> <procFuncBody>
              @ function  $2 $3 $5 $4
-         | <varName-0> . program <procTypeDecl> <procFuncBody>
-             @ entrypoint $3 [] $5 $4 $1
-         | interactive <varName-0> . program <procTypeDecl> <interactiveBody>
-             @ entrypoint $1 [] $6 $5 $2
-         | procedure <varName-0> . <procName> <params> <procTypeDecl> <procFuncBody>
-             @ procedure $4 $5 $7 $6 $2
+         | <varProc?> program <procTypeDecl> <procFuncBody>
+             @ entrypoint $2 [] $4 $3 $1
+         | interactive <varProc?> program <procTypeDecl> <interactiveBody>
+             @ entrypoint $1 [] $5 $4 $2
+         | procedure <varProc?> <procName> <params> <procTypeDecl> <procFuncBody>
+             @ procedure $3 $4 $6 $5 $2
          | <typedef>
         ;;
+
+<varProc?> ::= <EMPTY> 		 @ None
+		   	 | <varName-0> . @ $1
+		   ;;
 
 <params> ::= <varTuple> ;;
 
@@ -126,11 +130,9 @@
 <simplecmd> ::= Skip                         @ Skip None
               | THROW_ERROR ( string )       @ THROW_ERROR $3
               | <procCallAssignVarName>      @ procCall/assignVarName $1
+              | <procName> <args> 			 @ procCall $1 $2
               | <varTuple1> := <funcCall>    @ assignVarTuple1 $1 $3
              ;;
-
-##<assignment> ::= <variable> := <gexp>        @ assignVarName $1 $3 ;;
-##<procCall> ::= <varName> . <procName> <args> @ procCall $3 $4 $1 ;;
 
 <compcmd> ::= if ( <gexp> ) <then?> <blockcmd> <else?>  @ if $3 $6 $7
             | switch ( <gexp> ) to <branches>   @ case $3 $6

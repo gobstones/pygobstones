@@ -1,0 +1,10 @@
+procedure MoverSi(d, b) {
+	if (b) {
+		Mover(d)
+	}
+}
+
+program {
+	Poner(Verde)
+	MoverSi(Este, nroBolitas(Verde) > 1 && hayBolitas(Verde))
+}

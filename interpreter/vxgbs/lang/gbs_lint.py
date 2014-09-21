@@ -261,17 +261,27 @@ class GbsSemanticChecker(object):
     """Checks semantic correction of Gobstones programs and
     subprograms, given an abstract syntax tree."""
     
-    def __init__(self, strictness='lax', warn=std_warn):
+    def __init__(self, strictness='lax', warn=std_warn, explicit_board=None):
         self.warn = warn
         self.strictness = strictness
         self.symbol_table = SymbolTableManager(normalize_id=NORMALIZE_ID[strictness])
         self.type_getters = {}
-        for b in lang.gbs_builtins.BUILTINS:
+        self.explicit_board = explicit_board
+        
+    def setup(self, tree):
+        if self.explicit_board is None:
+            entrypoint_tree = find_def(tree.children[2], is_entrypoint_def)
+            self.explicit_board = not entrypoint_tree.annotations["varProc"] is None
+        
+        lang.gbs_builtins.explicit_builtins = self.explicit_board
+        for b in lang.gbs_builtins.get_builtins():
             self.symbol_table.add(b)
         for name, type in lang.gbs_type.BasicTypes.items():
             self.symbol_table.add(lang.gbs_constructs.BuiltinType(name, type))
 
     def check_program(self, tree, loaded_modules=[], is_main_program=True):
+        self.setup(tree)
+        
         self.loaded_modules = loaded_modules
         self.is_main_program = is_main_program
 
@@ -310,7 +320,7 @@ class GbsSemanticChecker(object):
             pos = common.position.ProgramAreaNear(tree.children[1])
             raise GbsLintException(i18n.i18n('Recursive modules'), pos)
 
-        mdl_lint = GbsSemanticChecker(strictness=self.strictness, warn=self.warn)
+        mdl_lint = GbsSemanticChecker(strictness=self.strictness, warn=self.warn, explicit_board=self.explicit_board)        
         try:
             mdl_lint.check_program(mdl_tree, self.loaded_modules + [mdl_name], is_main_program=False)
         except common.utils.SourceException as exception:
@@ -331,7 +341,7 @@ class GbsSemanticChecker(object):
                     newcons.append(construct)
                     imported.append(construct.name)
                     if isinstance(construct, lang.gbs_constructs.UserType):
-                        newcons.extend(mdl_link.field_getters_for_type(construct.name))                    
+                        newcons.extend(mdl_lint.field_getters_for_type(construct.name))                    
             constructs = newcons
             invalid_imports = set(imports).difference(set(imported))
             if len(invalid_imports) > 0:
@@ -359,7 +369,7 @@ class GbsSemanticChecker(object):
                 pos = common.position.ProgramAreaNear(tree)
                 raise GbsLintException(i18n.i18n('Empty program'), pos)
         else:
-            self._check_EntryPoint(tree)        
+            self._check_EntryPoint(tree)
             
             for def_ in tree.children:
                 self.check_definition1(def_)           
@@ -370,10 +380,10 @@ class GbsSemanticChecker(object):
     def _check_EntryPoint(self, tree):
         if not self._check_ProgramEntryPoint(tree) and self.is_main_program:
             pos = common.position.ProgramAreaNear(tree.children[-1])
-            raise GbsLintException(i18n.i18n('There should be an entry point (Main procedure or program block).'), pos)            
+            raise GbsLintException(i18n.i18n('There should be an entry point (Main procedure or program block).'), pos)
     
     def _check_ProgramEntryPoint(self, tree):
-        entrypoint_tree = find_def(tree, is_entrypoint_def)        
+        entrypoint_tree = find_def(tree, is_entrypoint_def)
         return entrypoint_tree != None             
     
     def _is_upperid(self, name, tok):
@@ -494,6 +504,18 @@ class GbsSemanticChecker(object):
 
     def check_procedure_definition(self, tree):
         prfn, name, params, body, typeDecl = tree.children
+        if self.explicit_board and tree.annotations["varProc"] is None:
+            name = name.value
+            area = common.position.ProgramAreaNear(tree)
+            msg = i18n.i18n('procedure "%s" should have a procedure variable') % (name,)
+            raise GbsLintException(msg, area)
+        
+        if not self.explicit_board and not tree.annotations["varProc"] is None:
+            name = name.value
+            area = common.position.ProgramAreaNear(tree)
+            msg = i18n.i18n('procedure "%s" should not have a procedure variable') % (name,)
+            raise GbsLintException(msg, area)
+        
         if self._body_has_return(body):
             name = name.value
             area = common.position.ProgramAreaNear(body.children[-1])

@@ -1,5 +1,5 @@
 #!/bin/bash
-INTERP=python    # for the standard CPython implementation
+INTERP=python    # for the standard Python implementation
 #INTERP=python2.3  # 2.3 version
 #INTERP=pypy      # PyPy
 

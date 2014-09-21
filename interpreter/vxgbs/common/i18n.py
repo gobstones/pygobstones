@@ -216,6 +216,10 @@ ES = {
     'La función "%s" debería tener un return',
   'procedure "%s" should not have a return':
     'El procedimiento "%s" no debería tener un return',
+  'procedure "%s" should not have a procedure variable':
+    'El procedimiento "%s" no debería tener una variable de procedimiento',
+  'procedure "%s" should have a procedure variable':
+    'El procedimiento "%s" debería tener una variable de procedimiento',
   'Unknown command: %s': 'Comando no reconocido: %s',
   'Unknown expression: %s': 'Expresión no reconocida: %s',
 

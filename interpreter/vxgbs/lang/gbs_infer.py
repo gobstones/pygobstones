@@ -68,7 +68,7 @@ class GbsTypeInference(object):
 
     def init_builtins(self):
         "Initialize a global context with types for all the builtins."
-        for b in lang.gbs_builtins.BUILTINS:
+        for b in lang.gbs_builtins.get_builtins():
             bname, b = b.name(), b.underlying_construct()
             set_add(self.ribs[0], b.name())
             self.global_context[b.name()] = b.gbstype()

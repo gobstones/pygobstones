@@ -156,6 +156,7 @@ class ASTNode(common.position.ProgramElement):
         self.live_in = None
         self.live_out = None
         self.live_gen = None
+        self.annotations = {}
 
     def __repr__(self):
         return 'AST(' + repr(self.children) + ')'
@@ -465,15 +466,22 @@ class ASTBuilder(object):
     def _expand_action_procedure_def(self, subtrees, _):
         """Expands a procedure definition inserting inout parameter to 
         params list."""
-        procname = subtrees[4]
-        params = subtrees[5]
-        proctype = subtrees[6]
-        body = subtrees[7]
-        params.children.insert(0, subtrees[2].children[1])
-        return ASTNode(
+        procname = subtrees[3]
+        params = subtrees[4]
+        proctype = subtrees[5]
+        body = subtrees[6]
+        procVar = subtrees[2]
+        
+        result = ASTNode(
             ['procedure', procname, params, body, proctype],
             self._pos_begin(subtrees),
             self._pos_end(subtrees))
+        result.annotations["varProc"] = procVar
+        
+        if not procVar is None:
+            params.children.insert(0, procVar.children[1])            
+                
+        return result 
         
     def _expand_action_entrypoint_def(self, subtrees, _):
         """Expands a procedure definition inserting inout parameter to 
@@ -482,18 +490,21 @@ class ASTBuilder(object):
         if isinstance(subtrees[1], lang.bnf_parser.Token) and subtrees[1].value == 'interactive':        
             epvar = subtrees[2]
             epname = subtrees[1]
-            body = subtrees[6]
+            body = subtrees[5]
         else:
             epvar = subtrees[1]
-            epname = subtrees[3]
-            body = subtrees[5]
+            epname = subtrees[2]
+            body = subtrees[4]
         params = ASTNode([],self._pos_begin(subtrees), self._pos_end(subtrees))
         eptype = None
-        params.children.insert(0, epvar.children[1])
-        return ASTNode(
+        if not epvar is None:
+            params.children.insert(0, epvar.children[1])
+        result = ASTNode(
             ['entrypoint', epname, params, body, eptype],
             self._pos_begin(subtrees),
             self._pos_end(subtrees))
+        result.annotations["varProc"] = epvar
+        return result
     
     def _expand_action_varname_funccall(self, subtrees, _):
         """Expands a varName/funcCall, transforming "varName/funcCall"

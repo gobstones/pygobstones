@@ -45,7 +45,7 @@ class GbsLexer(lang.bnf_parser.Lexer):
         self.reserved_lower = {}
         for x in reserved:
             self.reserved_lower[x.lower()] = x
-        for x in lang.gbs_builtins.CORRECT_NAMES:
+        for x in lang.gbs_builtins.get_correct_names():
             self.reserved_lower[x.lower()] = x
 
     def _tokenize_solve_conflict(self, string, filename):

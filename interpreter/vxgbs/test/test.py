@@ -1,6 +1,10 @@
+import sys
+import os
 import os.path
+import importlib
+import inspect
 from test_logger import log
-from test_utils import read_file_lines, is_module, parent_dir, module_dir, delete_files_in_dir, dir_has_tests
+from test_utils import read_file_lines, is_module, parent_dir, module_dir, run_cmd, delete_files_in_dir, dir_has_tests
 import autotests
 
 def cleanup():
@@ -162,7 +166,7 @@ class FileTestCase(TestCase):
         return [ GobstonesFileTest(os.path.join(PATH, f)) for f in os.listdir(PATH) if ".gbs" in f and self.is_test_file(PATH, f)]        
     
     def is_test_file(self, path, filename):
-        return os.path.isfile(os.path.join(path, filename)) and filename.startswith("test")
+        return os.path.isfile(os.path.join(path, filename)) and filename.startswith("test") and filename.endswith(".gbs")
             
 
 class Tester(object):
