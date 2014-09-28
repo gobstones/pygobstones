@@ -644,6 +644,9 @@ class GbsSemanticChecker(object):
         self.check_return_arity(def_, tree, ret_arity)
 
     def check_procCall(self, tree):
+        if self.explicit_board != tree.annotations.get('explicit_board', False):            
+            raise GbsLintException(i18n.i18n('Can not use passing by reference when using the implicit board.'), 
+                                   common.position.ProgramAreaNear(tree))
         self._check_callable('procedure', tree)
 
     def check_assignVarName(self, tree):

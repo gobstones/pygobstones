@@ -218,6 +218,8 @@ ES = {
     'El procedimiento "%s" no debería tener un return',
   'procedure "%s" should not have a procedure variable':
     'El procedimiento "%s" no debería tener una variable de procedimiento',
+  'Can not use passing by reference when using the implicit board.':
+    'No se puede utilizar pasaje por referencia cuanto se está utilizando el tablero implícito.',
   'procedure "%s" should have a procedure variable':
     'El procedimiento "%s" debería tener una variable de procedimiento',
   'Unknown command: %s': 'Comando no reconocido: %s',

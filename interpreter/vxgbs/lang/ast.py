@@ -455,7 +455,8 @@ class ASTBuilder(object):
             var = content[1]
             if len(var.children) < 3:
                 var.children = var.children + [ASTNode([], self._pos_begin(subtrees), self._pos_end(subtrees))]            
-            params.children.insert(0, var)            
+            params.children.insert(0, var)         
+            content[2].annotations['explicit_board'] = True   
             return content[2]
         else:            
             return ASTNode(
