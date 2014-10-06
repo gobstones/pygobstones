@@ -1,0 +1,32 @@
+/* Interactive Board
+ *************************************************
+ * Interactive Board es un programa interactivo que
+ * permite la manipulación del tablero en ejecución 
+ * mediante el uso del teclado. 
+ *
+ * Las teclas K_<InicialDeColor> colocan el color
+ * en la celda actual. Las teclas 
+ * K_SHIFT_<inicialDeColor> saca un color de la
+ * celda actual.
+ *
+ * Las flechas del teclado mueven el cabezal.
+ **************************************************
+ * Autor: Ary Pablo Batista <arypbatista@gmail.com>
+ */
+
+interactive program
+{
+  K_A           -> { Poner(Azul) }
+  K_SHIFT_A     -> { Sacar(Azul) }
+  K_N           -> { Poner(Rojo) }
+  K_SHIFT_N     -> { Sacar(Rojo) }
+  K_R           -> { Poner(Rojo) }
+  K_SHIFT_R     -> { Sacar(Rojo) }
+  K_V           -> { Poner(Rojo) }
+  K_SHIFT_V     -> { Sacar(Rojo) }
+  K_ARROW_UP    -> { Mover(Norte) }
+  K_ARROW_DOWN  -> { Mover(Sur) }
+  K_ARROW_RIGHT -> { Mover(Este) }
+  K_ARROW_LEFT  -> { Mover(Oeste) }
+  _             -> { Skip }
+}
