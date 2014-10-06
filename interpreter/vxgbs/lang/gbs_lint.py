@@ -589,7 +589,10 @@ class GbsSemanticChecker(object):
         if len(params.children) > 0:
             inout_var = params.children[0]
             set_add(parnames, inout_var.value)
-            self.symbol_table.add(lang.gbs_constructs.UserVariable(inout_var.value, inout_var))
+            if prfn == 'function' or not self.explicit_board:
+                self.symbol_table.add(lang.gbs_constructs.UserParameter(inout_var.value, inout_var))
+            else:
+                self.symbol_table.add(lang.gbs_constructs.UserVariable(inout_var.value, inout_var))
         if len(params.children) > 1:
             for var in params.children[1:]:
                 if var.value in parnames:
