@@ -1,0 +1,123 @@
+/* Gobstones Little Game.
+ *************************************************
+ * Juego básico en Gobstones en el cuál se muestra
+ * como manipular un personaje utilizando el modo
+ * interactivo. El objetivo del juego es agarrar
+ * todas las monedas evitando pisar las bombas.
+ *
+ * Autor: Ary Pablo Batista <arypbatista@gmail.com>
+ */
+
+/* Propósito: Inicializa el juego al presionar la
+   tecla ENTER. Mueve al personaje utilizando las
+   flechas del teclado. */
+interactive program
+{
+  # Movimiento del personaje
+  K_ARROW_UP    -> { MoverPersonaje(Norte)
+                     ChequearFinDelJuego() }
+  K_ARROW_DOWN  -> { MoverPersonaje(Sur)
+                     ChequearFinDelJuego() }
+  K_ARROW_RIGHT -> { MoverPersonaje(Este)
+                     ChequearFinDelJuego() }
+  K_ARROW_LEFT  -> { MoverPersonaje(Oeste)
+                     ChequearFinDelJuego() }
+  
+  # Control del juego
+  K_ENTER       -> { InicializarJuego() }
+
+  _ -> { Skip }
+}
+
+/* Propósito: Coloca monedas, bombas y al personaje
+   en el tablero. */
+procedure InicializarJuego()
+{
+  VaciarTablero()
+  
+  # Pone bombas y monedas.
+  contador := 1
+  IrAlOrigen()
+  while (not finDeTablero())
+	{
+    SiguienteCelda()    
+    if (contador mod 7 == 0) { Poner(moneda()) }    
+    if (contador mod 13 == 0) { Poner(bomba()) }    
+    contador := contador + 1
+  }
+  
+  # Coloca al personaje en el origen.
+  IrAlOrigen()
+  Poner(personaje())
+}
+
+/* Propósito: Denota a la entidad moneda */
+function moneda() { return (Verde) }
+
+/* Propósito: Denota a la entidad bomba */
+function bomba() { return (Rojo) }
+
+/* Propósito: Denota a la entidad personaje */
+function personaje() { return (Azul) }
+
+/* Propósito: Mueve al personaje tomando monedas
+   o destruyendo al personaje si se topa con una
+   bomba. */
+procedure MoverPersonaje(d)
+{
+  Sacar(personaje())
+  Mover(d)
+  if (esEntidad(moneda()))
+	{ Sacar(moneda()) }
+
+  if (esEntidad(bomba())) 
+  { Sacar(bomba()) }
+  else 
+  { Poner(personaje()) }
+}
+
+/* Propósito: Indica si hay una entidad e en la
+   celda actual. */
+function esEntidad(e) { return (hayBolitas(e)) }
+
+/* Propósito: Verifica si hay que finalizar el
+   juego y muestra la pantalla de fin de juego. */
+procedure ChequearFinDelJuego()
+{
+  if (not personajeVivo()) 
+	{ Derrota() }
+	else
+	{
+  	if (not quedanMonedas()) { Victoria() }
+	}
+}
+
+/* Propósito: Indica si quedan monedas en
+   el juego. */
+function quedanMonedas() 
+{
+  return(hayBolitasEnTablero(moneda()))
+}
+
+/* Propósito: Indica si el personaje está
+   vivo. */
+function personajeVivo() 
+{
+  return(hayBolitasEnTablero(personaje()))
+}
+
+/* Propósito: Muestra una pantalla indicando 
+   la derrota. */
+procedure Derrota() 
+{
+  VaciarTablero()
+  LlenarTableroConBolitas(bomba())
+}
+
+/* Propósito: Muestra una pantalla indicando 
+   la victoria. */
+procedure Victoria() 
+{
+  VaciarTablero()
+  LlenarTableroConBolitas(moneda())
+}

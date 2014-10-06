@@ -1,0 +1,23 @@
+<BoardCoding>
+	<Cell>
+	    <Blue>0</Blue>
+        <Black>0</Black>
+        <Red>1</Red>
+        <Green>0</Green>
+        <Image>bomb.png</Image>   
+	</Cell>
+	<Cell>
+	    <Blue>0</Blue>
+        <Black>0</Black>
+        <Red>0</Red>
+        <Green>1</Green>
+        <Image>coin.png</Image>   
+	</Cell>
+	<Cell>
+	    <Blue>1</Blue>
+        <Black>0</Black>
+        <Red>0</Red>
+        <Green>0</Green>
+        <Image>char.png</Image>   
+	</Cell>
+</BoardCoding>

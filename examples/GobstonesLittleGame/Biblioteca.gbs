@@ -1,0 +1,53 @@
+/* Propósito: Llena el tablero con bolitas
+   de color c */
+procedure LlenarTableroConBolitas(c) 
+{
+  IrAlOrigen()
+  Poner(c)
+  while (not finDeTablero()) 
+  {
+    SiguienteCelda()
+    Poner(c)
+  }
+}
+
+/* Propósito: denota el fin del tablero. */
+function finDeTablero() 
+{
+  return (not puedeMover(Este) &&
+          not puedeMover(Norte))
+}
+
+/* Propósito: Mueve el cabezal a la siguiente 
+   celda del tablero.
+   Precondición: Debe haber una celda en 
+   dirección Este o Norte.  */
+procedure SiguienteCelda() 
+{
+  if (puedeMover(Este)) 
+  { Mover(Este) } 
+  else 
+  { 
+    IrAlBorde(Oeste)
+    Mover(Norte)
+  }
+}
+
+/* Propósito: Indica si hay alguna bolita
+   de color c en el tablero. */
+function hayBolitasEnTablero(c)
+{
+  IrAlOrigen()
+  hay := hayBolitas(c)
+  while (not finDeTablero()) 
+  {
+    SiguienteCelda()
+    hay := hay || hayBolitas(c)
+  }
+  return (hay)
+}
+
+procedure IrAlOrigen() {
+	IrAlBorde(Sur)
+	IrAlBorde(Oeste)
+}
