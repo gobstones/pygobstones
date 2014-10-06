@@ -32,6 +32,8 @@ class GbsMacroExploder(object):
         return implementation_program
     
     def explode(self, program_tree):
+        entrypoint_tree = defhelper.find_def(program_tree.children[2], defhelper.is_entrypoint_def)
+        self.explicit_board = not entrypoint_tree.annotations["varProc"] is None
         """ Explodes program macros """
         self._explode_interactive(program_tree)
     
@@ -39,7 +41,11 @@ class GbsMacroExploder(object):
         """ Replaces interactive macro with it's implementation in the program tree """
         interactive = defhelper.find_def(program_tree.children[2], defhelper.is_interactive_def)
         if interactive != None:
-            implementation_program = self._load_implementation("interactive_program.gbs", ["lastKey", "read", "Show"])
+            if self.explicit_board:
+                macro_filename = "interactive_program.gbs"
+            else:
+                macro_filename = "interactive_program_implicit.gbs"
+            implementation_program = self._load_implementation(macro_filename, ["lastKey", "read", "Show"])
             interactive_impl = defhelper.find_def(implementation_program.children[2], defhelper.is_entrypoint_def)
             interactive_impl_case = defhelper.recursive_find_node(interactive_impl, functools.partial(defhelper.is_node, 'case'))
             interactive_impl_case.children = [interactive_impl_case.children[0], interactive_impl_case.children[1]]

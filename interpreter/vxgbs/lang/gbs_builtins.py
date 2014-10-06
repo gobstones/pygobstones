@@ -785,7 +785,12 @@ def str_concat(global_state, str1, str2):
 
 BUILTINS_EXPLICIT_BOARD = [
     #### Procedures
-
+    BuiltinProcedure(
+      i18n.i18n('_Show'),
+      GbsProcedureType(GbsTupleType([GbsBoardType()])),
+      internal_show
+    ),
+                           
     BuiltinProcedure(
         i18n.i18n('PutStone'),
         GbsProcedureType(GbsTupleType([GbsBoardType(), GbsColorType()])),
@@ -855,7 +860,12 @@ def implicit_board_proc(f):
 
 BUILTINS_IMPLICIT_BOARD = [
     #### Procedures
-
+    BuiltinProcedure(
+      i18n.i18n('_Show'),
+      GbsProcedureType(GbsTupleType([])),
+      implicit_board_proc(internal_show)
+    ),
+                           
     BuiltinProcedure(
         i18n.i18n('PutStone'),
         GbsProcedureType(GbsTupleType([GbsColorType()])),
@@ -923,12 +933,6 @@ BUILTINS = [
       internal_read
     ),
             
-    BuiltinProcedure(
-      i18n.i18n('_Show'),
-      GbsProcedureType(GbsTupleType([GbsBoardType()])),
-      internal_show
-    ),
-    
     BuiltinFunction(
         i18n.i18n('_typecheck_vals'),
         GbsForallType(
