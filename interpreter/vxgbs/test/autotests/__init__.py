@@ -1,6 +1,10 @@
 import itertools
+import random
 import functools
+from test_logger import log
 from test import TestCase, GobstonesTest, run_gobstones
+
+randint = lambda x: random.randint(0,x-1)
 
 def read_file(fn):
     f = open(fn, 'r')
@@ -53,6 +57,10 @@ def nats(start, end):
         l = list(range(end, start+1))
         l.reverse()
         return l
+    
+COLORS = ["Azul", "Negro", "Rojo", "Verde"]
+DIRS = ["Norte", "Este", "Sur", "Oeste"]
+BOOLS = ["True", "False"]
     
 BINOPS = {
     "+": lambda x, y: x + y,
@@ -165,6 +173,43 @@ class TestOpInject(TestScript):
             ys = tail(ys)
         return res
     
+    
+class TestEnumeration(TestScript):
+    def __init__(self):
+        super(TestEnumeration, self).__init__({"list": self.generate_cases(20)})
+        
+    def generate_cases(self, n):
+        types = [COLORS, DIRS, BOOLS]
+
+        def gen_case():
+            vals = types[randint(len(types))]            
+            return [vals[randint(len(vals))] for _ in range(randint(16) + 4)]  
+        
+        cases = []
+        for _ in range(n):
+            cases += ["[%s]" % (", ".join(gen_case()),)]
+        return cases
+        
+    def nretvals(self):
+        return 1
+        
+    def gbs_code(self):
+        return '''
+            last := head(@list)
+            first_ocurr := 0
+            foreach i in @list {
+                if (i == last) {
+                    first_ocurr := first_ocurr + 1
+                }
+            }
+            return(first_ocurr)
+        '''
+        
+    def pyresult(self, args):
+        vals = args["list"][1:-1].split(", ")
+        return vals.count(vals[0])
+
+    
 class TestListGenerator(TestScript):
     def __init__(self):
         super(TestListGenerator, self).__init__({"low": [1, 11, 33], "high": [11, 51, 22]})
@@ -197,32 +242,35 @@ class TestListGenerator(TestScript):
     
 TESTS_GROUPS = group(flatten([cls().build_tests() for cls in TestScript.__subclasses__()]), 128)
 
+
 def program_for(exprs):
-  variables = []
-  def expr_eval(i, e):
-    if isinstance(e, Operation):
-      if e.nretvals == 1: 
-        variables.append('x_%i' % (i,))
-        return 'x_%i := f0_%i()' % (i, i,)
-      else:
-        vs = ['x_%i_%i' % (i, j) for j in range(e.nretvals)]
-        variables.extend(vs)
-        return '(%s) := f0_%i()' % (','.join(vs), i,)
-    else:
-      variables.append('x_%i' % (i,))
-      return 'x_%i := %s' % (i, e)
-  R = range(len(exprs))
-  prog = []
-  for i, e in zip(R, exprs):
-    if isinstance(e, Operation):
-      prog.append('function f0_%i() {' % (i,))
-      prog.append(e.code)
-      prog.append('}')
-  prog.append('t.program {')
-  prog.append(''.join(['  %s\n' % (expr_eval(i, e),) for i, e in zip(R, exprs)]))
-  prog.append('  return (%s)\n' % (', '.join(variables),))
-  prog.append('}\n')
-  return '\n'.join(prog)
+    variables = []
+  
+    def expr_eval(i, e):
+        if isinstance(e, Operation):
+            if e.nretvals == 1: 
+                variables.append('x_%i' % (i,))
+                return 'x_%i := f0_%i()' % (i, i,)
+            else:
+                vs = ['x_%i_%i' % (i, j) for j in range(e.nretvals)]
+                variables.extend(vs)
+                return '(%s) := f0_%i()' % (','.join(vs), i,)
+        else:
+            variables.append('x_%i' % (i,))
+            return 'x_%i := %s' % (i, e)
+      
+    R = range(len(exprs))
+    prog = []
+    for i, e in zip(R, exprs):
+        if isinstance(e, Operation):
+            prog.append('function f0_%i() {' % (i,))
+            prog.append(e.code)
+            prog.append('}')
+    prog.append('t.program {')
+    prog.append(''.join(['  %s\n' % (expr_eval(i, e),) for i, e in zip(R, exprs)]))
+    prog.append('  return (%s)\n' % (', '.join(variables),))
+    prog.append('}\n')
+    return '\n'.join(prog)
 
 
 def eqValue(gbsv, pyv):

@@ -153,6 +153,11 @@ class GbsObject(object):
             new_bindings[key] = clone_value(value)
         
         return GbsObject(new_value, self.type, new_bindings)
+    
+    def __getattr__(self, name):
+        return self.value.__getattribute__(name)
+        
+        
 
 class GbsListBindings(object):
     def __init__(self, lstobj):
