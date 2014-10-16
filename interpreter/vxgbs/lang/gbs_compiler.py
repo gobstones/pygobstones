@@ -499,6 +499,7 @@ namespace of routines.
         xs0 = self.temp_varname()
         lbegin = GbsLabel()
         lend = GbsLabel()
+        lend2 = GbsLabel()
         # xs0 := xs
         self.compile_expression(xs, code)
         code.push(('assign', xs0), near=tree)
@@ -514,7 +515,7 @@ namespace of routines.
         # body
         self.compile_block(body, code)
         # if (isNil(xs0)) break
-        jumpIfIsNil(xs0, lend)
+        jumpIfIsNil(xs0, lend2)
         # x := head(xs0)
         code.push(('unsetImmutable', x), near=tree)
         head(xs0, x)
@@ -523,9 +524,10 @@ namespace of routines.
         tail(xs0, xs0)
         # end while
         code.push(('jump', lbegin), near=tree)
-        code.push(('label', lend), near=tree)
+        code.push(('label', lend2), near=tree)
         code.push(('delVar', x), near=tree)
-
+        code.push(('label', lend), near=tree)
+        
     def compile_repeat_with(self, tree, code):
         "Compile a repeatWith statement."
         #

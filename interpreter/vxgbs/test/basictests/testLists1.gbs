@@ -38,5 +38,7 @@ t.program {
 	anchoTablero := medirTablero(t, ancho())
 	passed.Assert(sumarElementos(cantidadesFila) == 2 * 4 * anchoTablero)
 	
+	foreach i in [] {}
+	
 	return(passed)
 }
