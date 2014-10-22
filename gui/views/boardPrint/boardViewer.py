@@ -15,10 +15,14 @@ class BoardViewer(QtGui.QWidget):
     def __init__(self, mainW, board, clothing):
         super(BoardViewer, self).__init__()
         self.setMinimumSize(320, 320)
+        self.lastBoard = None
         self.board = board
+        self.lastClothing = None
         self.clothing = clothing
         self.mainW = mainW
         self.show()
+        self.lastDimensions = (0,0)
+        self.surface = None
 
     def getBoard(self):
         return self.board
@@ -43,75 +47,109 @@ class BoardViewer(QtGui.QWidget):
     def setClothing(self, clothing):
         self.clothing = clothing
 
+    def dimensionsChanged(self):
+        return self.lastDimensions != (self.parent.width(), self.parent.height())
+            
+    def clothingChanged(self):
+        return id(self.lastClothing) != id(self.clothing)
+    
+    def boardChanged(self):
+        return id(self.lastBoard) != id(self.board)
+    
+    def contentChanged(self):
+        return self.clothingChanged() or self.dimensionsChanged() or self.boardChanged()
+
+    def updateState(self):
+        self.lastDimensions = (self.parent.width(), self.parent.height())
+        self.lastClothing = self.clothing
+        self.lastBoard = self.board
+
     def paintEvent(self, event):
-
-        width = self.parent.width()
-        height = self.parent.height() - self.parent.tabBar().height()
-        self.size().setWidth(width)
-        self.size().setHeight(height)
-        
-        x = self.board.size[0]
-        y = self.board.size[1]
-        
-        if (x > y):
-            sideX = width / (x + 2)
-            sideY = height / (y + 2)
+        if self.contentChanged():
+            print ("Content changed")
+            self.surface = QtGui.QPixmap(self.parent.width(), self.parent.height()) 
+            self.updateState()
             
-            sizeHeight = sideX * (y + 2)
-            sizeWidth = sideY * (x + 2)
+            width = self.parent.width()
+            height = self.parent.height() - self.parent.tabBar().height()
+            self.size().setWidth(width)
+            self.size().setHeight(height)
             
-            if (sizeHeight < height):
-                self.newSide = sideX
+            x = self.board.size[0]
+            y = self.board.size[1]
+            
+            if (x > y):
+                sideX = width / (x + 2)
+                sideY = height / (y + 2)
+                
+                sizeHeight = sideX * (y + 2)
+                sizeWidth = sideY * (x + 2)
+                
+                if (sizeHeight < height):
+                    self.newSide = sideX
+                else:
+                    self.newSide = sideY
             else:
-                self.newSide = sideY
+                side = min(width, height)        
+                self.newSide = side / (max(x, y) + 2)
+            
+            self.offset = (width - ((self.board.getX() + 2) * self.newSide)) / 2
+            
+            try:
+                self.painter = self.createPainter()
+                painter = QtGui.QPainter()
+                painter.begin(self.surface)
+                painter.fillRect(QtCore.QRect(0,0, self.parent.width(), self.parent.height()), QtGui.QColor(255, 255, 255))
+                painter.setRenderHint(QtGui.QPainter.Antialiasing)
+                pen = QtGui.QPen(QtGui.QColor(200, 50, 50))
+                pen.setWidth(1)
+                painter.setPen(pen)
+                y0 = self.newSide * self.board.getY() + self.newSide
+                for y in range(self.board.getY()):
+                    x0 = self.offset
+                    y0 = y0 - self.newSide
+                    for x in range(self.board.getX()):
+                        pen = QtGui.QPen(QtGui.QColor(200, 50, 50))
+                        pen.setWidth(1)
+                        painter.setPen(pen)
+                        painter.setBrush(QtGui.QColor(255, 255, 255))
+                        x0 = x0 + self.newSide
+                        rect = QtCore.QRect(x0, y0, self.newSide, self.newSide)
+                        '''
+                        painter.drawRect(rect)
+                        '''
+                        
+                        imgName = self.board.getImageName(x, y)
+                        img = QtGui.QImage(':/' + imgName + '.png')
+                        painter.drawImage(rect, img)
+                        
+                        if(not self.board.isEmptyCell(x, y)):
+                            self.painter.draw(painter, rect, self.board.getCell(x, y))
+                        else:
+                            self.painter.draw(painter, rect, Cell(0, 0, 0, 0))
+    
+                        self.roundCellBordersOnClothing(x, y, rect, painter)
+    
+                x0 = self.offset + self.newSide + self.newSide * self.board.getXCurrentCell()
+                y0 = (self.newSide * self.board.getY()) - (self.newSide * self.board.getYCurrentCell())
+                self.painter.markCurrentCell(QtCore.QRect(x0, y0, self.newSide, self.newSide), painter)
+                self.drawRoseOfWinds(painter)
+                self.drawCellNumbers(painter)
+                painter.end()
+                painter = QtGui.QPainter()
+                painter.begin(self)
+                painter.drawPixmap(0, 0, self.surface) #load graph from Bitmap
+                painter.end()
+            except ParseError as e:
+                self.closeResultsAndShowTheXMLError(e.position)
         else:
-            side = min(width, height)        
-            self.newSide = side / (max(x, y) + 2)
-        
-        self.offset = (width - ((self.board.getX() + 2) * self.newSide)) / 2
-        
-        try:
-            self.painter = self.createPainter()
-            painter = QtGui.QPainter()
-            painter.begin(self)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            pen = QtGui.QPen(QtGui.QColor(200, 50, 50))
-            pen.setWidth(1)
-            painter.setPen(pen)
-            y0 = self.newSide * self.board.getY() + self.newSide
-            for y in range(self.board.getY()):
-                x0 = self.offset
-                y0 = y0 - self.newSide
-                for x in range(self.board.getX()):
-                    pen = QtGui.QPen(QtGui.QColor(200, 50, 50))
-                    pen.setWidth(1)
-                    painter.setPen(pen)
-                    painter.setBrush(QtGui.QColor(255, 255, 255))
-                    x0 = x0 + self.newSide
-                    rect = QtCore.QRect(x0, y0, self.newSide, self.newSide)
-                    '''
-                    painter.drawRect(rect)
-                    '''
-                    
-                    imgName = self.board.getImageName(x, y)
-                    img = QtGui.QImage(':/' + imgName + '.png')
-                    painter.drawImage(rect, img)
-                    
-                    if(not self.board.isEmptyCell(x, y)):
-                        self.painter.draw(painter, rect, self.board.getCell(x, y))
-                    else:
-                        self.painter.draw(painter, rect, Cell(0, 0, 0, 0))
-
-                    self.roundCellBordersOnClothing(x, y, rect, painter)
-
-            x0 = self.offset + self.newSide + self.newSide * self.board.getXCurrentCell()
-            y0 = (self.newSide * self.board.getY()) - (self.newSide * self.board.getYCurrentCell())
-            self.painter.markCurrentCell(QtCore.QRect(x0, y0, self.newSide, self.newSide), painter)
-            self.drawRoseOfWinds(painter)
-            self.drawCellNumbers(painter)
-            painter.end()
-        except ParseError as e:
-            self.closeResultsAndShowTheXMLError(e.position)
+            try:
+                painter = QtGui.QPainter()
+                painter.begin(self)
+                painter.drawPixmap(0, 0, self.surface) #load graph from Bitmap
+                painter.end()
+            except ParseError as e:
+                self.closeResultsAndShowTheXMLError(e.position)
 
     def roundCellBordersOnClothing(self, x, y, rect, painter):
         if not self.clothing.startswith('Gobstones') and not self.clothing.startswith('PixelBoard'):
