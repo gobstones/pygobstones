@@ -36,7 +36,7 @@ class BoardViewer(QtGui.QWidget):
     def createPainter(self):
         if self.clothing == "Gobstones.xml":
             return GobstonesStandard()
-        elif self.clothing == "PixelBoard.xml":
+        elif "PixelBoard.xml" in self.clothing:
             return GobstonesPixelBoard()
         else:
             return GobstonesClothing(self.clothing)
@@ -152,7 +152,7 @@ class BoardViewer(QtGui.QWidget):
                 self.closeResultsAndShowTheXMLError(e.position)
 
     def roundCellBordersOnClothing(self, x, y, rect, painter):
-        if not self.clothing.startswith('Gobstones') and not self.clothing.startswith('PixelBoard'):
+        if not self.clothing.startswith('Gobstones') and "PixelBoard" in self.clothing:
             imgName = self.board.getRoundedBorderTranslucentImageName(x, y)
             img = QtGui.QImage(':/' + imgName + '.png')
             painter.drawImage(rect, img)

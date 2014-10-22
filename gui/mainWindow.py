@@ -511,7 +511,7 @@ class InteractiveWindow(QtGui.QDialog):
                 self.next_clothing = 'Gobstones.xml'
                 self.switcher = Switcher(i18n('Disable clothing'), i18n('Enable clothing'), self.ui.pushButton)
 
-    def onActivated(self, text):
+    def onActivated(self, text):        
         if not text == 'Gobstones':
             if clothing_for_file_exists(self.mainW.fileOption.moduleFile):
                 fn = str(text) + ".xml"

@@ -54,6 +54,8 @@ class Results(QtGui.QWidget):
         self.current_clothing = clothingPath
         if clothingPath == "Gobstones.xml":
             self.ui.combo.setCurrentIndex(self.filesNames.index('Gobstones'))
+        elif clothingPath == "PixelBoard.xml":
+            self.ui.combo.setCurrentIndex(self.filesNames.index('PixelBoard'))
         else:
             fileName, fileExtension = os.path.splitext(clothingPath)
             self.ui.combo.setCurrentIndex(self.filesNames.index(fileName))
