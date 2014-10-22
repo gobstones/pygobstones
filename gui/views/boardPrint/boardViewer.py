@@ -32,6 +32,8 @@ class BoardViewer(QtGui.QWidget):
     def createPainter(self):
         if self.clothing == "Gobstones.xml":
             return GobstonesStandard()
+        elif self.clothing == "PixelBoard.xml":
+            return GobstonesPixelBoard()
         else:
             return GobstonesClothing(self.clothing)
 
@@ -102,7 +104,9 @@ class BoardViewer(QtGui.QWidget):
 
                     self.roundCellBordersOnClothing(x, y, rect, painter)
 
-            self.markCurrentCell(painter)
+            x0 = self.offset + self.newSide + self.newSide * self.board.getXCurrentCell()
+            y0 = (self.newSide * self.board.getY()) - (self.newSide * self.board.getYCurrentCell())
+            self.painter.markCurrentCell(QtCore.QRect(x0, y0, self.newSide, self.newSide), painter)
             self.drawRoseOfWinds(painter)
             self.drawCellNumbers(painter)
             painter.end()
@@ -110,7 +114,7 @@ class BoardViewer(QtGui.QWidget):
             self.closeResultsAndShowTheXMLError(e.position)
 
     def roundCellBordersOnClothing(self, x, y, rect, painter):
-        if not self.clothing.startswith('Gobstones'):
+        if not self.clothing.startswith('Gobstones') and not self.clothing.startswith('PixelBoard'):
             imgName = self.board.getRoundedBorderTranslucentImageName(x, y)
             img = QtGui.QImage(':/' + imgName + '.png')
             painter.drawImage(rect, img)
@@ -126,20 +130,6 @@ class BoardViewer(QtGui.QWidget):
             rect = QtCore.QRect(self.offset + (self.newSide + self.board.getX() * self.newSide), 10, self.newSide, self.newSide)
             img = QtGui.QImage(':/rosa_vientos_sobria.png')
             painter.drawImage(rect, img)
-
-    def markCurrentCell(self, painter):
-
-        x0 = self.offset + self.newSide + self.newSide * self.board.getXCurrentCell()
-        y0 = (self.newSide * self.board.getY()) - (self.newSide * self.board.getYCurrentCell())
-
-        pen = QtGui.QPen(QtGui.QColor("#CC0000"))
-        pen.setWidth(3)
-        painter.setPen(pen)
-
-        painter.drawRect(QtCore.QRect(x0, y0, self.newSide, 0))
-        painter.drawRect(QtCore.QRect(x0 + self.newSide, y0, 0, self.newSide))
-        painter.drawRect(QtCore.QRect(x0, y0 + self.newSide, self.newSide, 0))
-        painter.drawRect(QtCore.QRect(x0, y0, 0, self.newSide))
 
     def drawCellNumbers(self, painter):
         if gui.mainWindow.MainWindow.getPreference('cellNumbers'):
@@ -194,7 +184,42 @@ class BoardViewer(QtGui.QWidget):
         print("viewer")
         e.ignore()
 
-class GobstonesClothing():
+
+class GobstonesBoardPainter(object):
+    
+    def __init__(self):
+        pass
+    
+    def draw(self, painter, rect, cell):
+        pass
+    
+    def markCurrentCell(self, rect, painter):
+        pen = QtGui.QPen(QtGui.QColor("#CC0000"))
+        pen.setWidth(3)
+        painter.setPen(pen)
+        
+        painter.drawRect(QtCore.QRect(rect.left(), rect.top(), rect.width(), 0))
+        painter.drawRect(QtCore.QRect(rect.left() + rect.width(), rect.top(), 0, rect.height()))
+        painter.drawRect(QtCore.QRect(rect.left(), rect.top() + rect.height(), rect.width(), 0))
+        painter.drawRect(QtCore.QRect(rect.left(), rect.top(), 0, rect.height()))
+        
+        
+class GobstonesPixelBoard(GobstonesBoardPainter):    
+    
+    def draw(self, painter, rect, cell):
+        painter.fillRect(rect, self.cellToColor(cell))
+
+    def cellToColor(self, cell):
+        return QtGui.QColor(cell.getStones("red") * 10, 
+                            cell.getStones("green") * 10, 
+                            cell.getStones("blue") * 10, 
+                            cell.getStones("black") * 10)
+    
+    def markCurrentCell(self, rect, painter):
+        pass
+    
+
+class GobstonesClothing(GobstonesBoardPainter):
 
     def __init__(self, clothing):
         self.parser = ParseXML()
@@ -251,7 +276,7 @@ class GobstonesClothing():
         return (char == '*') or (char == '+')
 
 
-class GobstonesStandard():
+class GobstonesStandard(GobstonesBoardPainter):
 
     def __init__(self):
         self.complementaryColors = {"blue": QtGui.QColor(255, 255, 0),

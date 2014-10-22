@@ -127,19 +127,20 @@ class FileOption(object):
         self.mapper = QtCore.QSignalMapper(self.mainW)
         self.actions = {}
         for fn in self.filesNames:
-            (filepath, filename) = os.path.split(fn)
-            action = QtGui.QAction(filename, self.mainW)
-            self.actions[fn] = action
-            self.mapper.setMapping(action, fn)
-            action.triggered.connect(self.mapper.map)
-            self.mainW.ui.menuSelectResultView.addAction(action)
-        self.filesNames.append('Gobstones')
-        action = QtGui.QAction(i18n('Gobstones Standard'), self.mainW)
-        self.actions['Gobstones'] = action
-        self.mapper.setMapping(action, 'Gobstones')
+            (filepath, filename) = os.path.split(fn)            
+            self.addClothing(fn, filename)
+        
+        self.addClothing('Gobstones', i18n('Gobstones Standard'))        
+        self.addClothing('PixelBoard', i18n('Pixel Board'))
+        self.mapper.mapped['QString'].connect(self.handleButton)
+
+    def addClothing(self, clothing_filename, clothing_text):
+        self.filesNames.append(clothing_filename)
+        action = QtGui.QAction(clothing_text, self.mainW)
+        self.actions[clothing_filename] = action        
+        self.mapper.setMapping(action, clothing_filename)
         action.triggered.connect(self.mapper.map)
         self.mainW.ui.menuSelectResultView.addAction(action)
-        self.mapper.mapped['QString'].connect(self.handleButton)
 
     def handleButton(self, identifier):
         self.updateIconClothing()

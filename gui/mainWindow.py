@@ -525,7 +525,7 @@ class InteractiveWindow(QtGui.QDialog):
         self.switcher.change_state(text)
 
     def loadViewAlternatives(self):
-        self.filesNames = ['Gobstones']
+        self.filesNames = ['Gobstones', 'PixelBoard']
         if clothing_for_file_exists(self.mainW.fileOption.moduleFile):
             path = clothing_dir_for_file(self.mainW.fileOption.moduleFile)
             files = os.listdir(path)

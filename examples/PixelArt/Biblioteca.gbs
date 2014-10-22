@@ -1,0 +1,54 @@
+procedure PonerN(c, n) {
+	repeat n {
+		Poner(c)
+	}
+}
+
+procedure SacarN(c, n) {
+	repeat n {
+		Sacar(c)
+	}
+}
+
+procedure PonerHasta(c, n) {
+	PonerN(c, n - nroBolitas(c))
+}
+
+procedure SacarHasta(c, n) {
+	SacarN(c, nroBolitas(c) - n)
+}
+
+procedure PintarOpaco(r, g, b) {
+	Pintar(r, g, b, 255)
+}
+
+function puedeMoverT(dirI, dirE) {
+	return(puedeMover(dirI) || puedeMover(dirE))
+}
+
+procedure MoverT(dirI, dirE) {
+	if (puedeMover(dirI)) { Mover(dirI) }
+  else {
+    IrAlBorde(opuesto(dirI))
+    Mover(dirE)
+  }
+}
+
+procedure IrAInicioT(dirI, dirE) {
+  IrAlBorde(opuesto(dirI))
+  IrAlBorde(opuesto(dirE))
+}
+
+procedure Pintar(r, g, b, a) {
+	c := minColor()
+	foreach n in [b, a, r, g] {
+		PonerHasta(c, n div 10)
+		c := siguiente(c)
+	}
+}
+
+procedure MoverSiPuede(dir) {
+	if (puedeMover(dir)) {
+    Mover(dir)
+  }
+}

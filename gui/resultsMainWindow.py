@@ -111,7 +111,7 @@ class Results(QtGui.QWidget):
                 return
 
     def loadViewAlternatives(self):
-        self.filesNames = ['Gobstones']
+        self.filesNames = ['Gobstones', 'PixelBoard']
         program_file = str(self.main_window.fileOption.moduleFile)
         if clothing_for_file_exists(program_file):
             path = clothing_dir_for_file(program_file)
