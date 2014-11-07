@@ -459,7 +459,7 @@ def poly_typeof(value):
         return 'Int'
     elif isinstance(value, list):
         return 'List'
-    elif isinstance(value, str):
+    elif isinstance(value, str) or isinstance(value, unicode):
         return 'String'
     elif isinstance(value, GbsObject):
         return value.type
@@ -616,7 +616,10 @@ def poly_cmp(global_state, value1, value2, relop):
         msg = i18n.i18n('Relational operation different from equalities between values of %s are not allowed') % ('record types',)
         raise GbsRuntimeException(msg, global_state.area())
     else:
-        return relop(poly_ord(value1), poly_ord(value2))
+        if poly_typeof(value1) == "String":
+            return relop(value1.lower(), value2.lower())
+        else:
+            return relop(poly_ord(value1), poly_ord(value2))
         
 
 def arith_add(_, x, y):
