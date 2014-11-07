@@ -184,14 +184,14 @@ namespace of routines.
     def compile_assign_var_name(self, tree, code):
         "Compile a variable assignment: var := <expr>"
         self.compile_expression(tree.children[2], code)
-        code.push(('assign', tree.children[1].value), near=tree)
+        code.push(('popTo', tree.children[1].value), near=tree)
 
     def compile_assign_var_tuple1(self, tree, code):
         "Compile a tuple assignment: (v1, ..., vN) := f(...)"
         self.compile_expression(tree.children[2], code)
         varnames = [var.value for var in tree.children[1].children]
         for var in common.utils.seq_reversed(varnames):
-            code.push(('assign', var), near=tree)
+            code.push(('popTo', var), near=tree)
 
     def compile_if(self, tree, code):
         "Compile a conditional statement."
@@ -227,7 +227,7 @@ namespace of routines.
         value0 = self.temp_varname()
         # value0 := value
         self.compile_expression(value, code)
-        code.push(('assign', value0), near=tree)
+        code.push(('popTo', value0), near=tree)
         
         lend = GbsLabel()
         next_label = None
@@ -238,7 +238,7 @@ namespace of routines.
                 lits = [parse_literal(lit) for lit in branch.children[1].children]
                 next_label = GbsLabel()
                 # if value0 in LitsI
-                code.push(('pushVar', value0), near=tree)
+                code.push(('pushFrom', value0), near=tree)
                 code.push(('jumpIfNotIn', lits, next_label), near=tree)
                 # BodyI
                 self.compile_block(branch.children[2], code)
@@ -284,9 +284,9 @@ namespace of routines.
         lend = GbsLabel()
         # aux_index := {TIMES}
         self.compile_expression(times, code)
-        code.push(('assign', aux_index), near=tree)
+        code.push(('popTo', aux_index), near=tree)
         # if aux_index > 0
-        code.push(('pushVar', aux_index), near=tree)
+        code.push(('pushFrom', aux_index), near=tree)
         code.push(('pushConst', 0), near=tree)        
         code.push(('call', '>', 2), near=tree)
         code.push(('jumpIfFalse', lend), near=tree)
@@ -295,12 +295,12 @@ namespace of routines.
         # body
         self.compile_block(body, code)
         # aux_index := aux_index - 1
-        code.push(('pushVar', aux_index), near=tree)
+        code.push(('pushFrom', aux_index), near=tree)
         code.push(('pushConst', 1), near=tree)
         code.push(('call', '-', 2), near=tree)
-        code.push(('assign', aux_index), near=tree)            
+        code.push(('popTo', aux_index), near=tree)            
         # if (aux_index == 0) break;    
-        code.push(('pushVar', aux_index), near=tree)
+        code.push(('pushFrom', aux_index), near=tree)
         code.push(('pushConst', 0), near=tree)        
         code.push(('call', '>', 2), near=tree)
         code.push(('jumpIfFalse', lend), near=tree)
@@ -338,7 +338,7 @@ namespace of routines.
         for val in enum_values:
             # i := val_i
             self.compile_expression(val, code)
-            code.push(('assign', i), near=tree)
+            code.push(('popTo', i), near=tree)
             # body
             self.compile_block(body, code)
         code.push(('delVar', i), near=tree)
@@ -397,49 +397,49 @@ namespace of routines.
         
         # iter := 0        
         code.push(('pushConst', 0), near=tree)
-        code.push(('assign', iter), near=tree)
+        code.push(('popTo', iter), near=tree)
         # i := First
         self.compile_expression(first_value, code)
-        code.push(('assign', i), near=tree)
+        code.push(('popTo', i), near=tree)
         # second0 := Second || First + 1
         if second_value is None:
-            code.push(('pushVar', i), near=tree)            
+            code.push(('pushFrom', i), near=tree)            
             call_next()
         else:
             self.compile_expression(second_value, code)
-        code.push(('assign', second0), near=tree)
+        code.push(('popTo', second0), near=tree)
         # last0 := Last
         self.compile_expression(last_value, code)
-        code.push(('assign', last0), near=tree)
+        code.push(('popTo', last0), near=tree)
         # delta := second0 - First        
-        code.push(('pushVar', second0), near=tree)
+        code.push(('pushFrom', second0), near=tree)
         code.push(('call', i18n.i18n('_ord'), 1), near=tree)
-        code.push(('pushVar', i), near=tree)
+        code.push(('pushFrom', i), near=tree)
         code.push(('call', i18n.i18n('_ord'), 1), near=tree)
         code.push(('call', '-', 2), near=tree)
-        code.push(('assign', delta), near=tree)        
+        code.push(('popTo', delta), near=tree)        
         # while true
         code.push(('label', lbegin), near=tree)
         # if (_exceeded_range(i, last0, delta, iter)) break;
-        code.push(('pushVar', i), near=tree)
-        code.push(('pushVar', last0), near=tree)
-        code.push(('pushVar', delta), near=tree)
-        code.push(('pushVar', iter), near=tree)
+        code.push(('pushFrom', i), near=tree)
+        code.push(('pushFrom', last0), near=tree)
+        code.push(('pushFrom', delta), near=tree)
+        code.push(('pushFrom', iter), near=tree)
         code.push(('call', i18n.i18n('_exceeded_range'), 4), near=tree)
         code.push(('call', i18n.i18n('not'), 1), near=tree)
         code.push(('jumpIfFalse', lend), near=tree)
         # body
         self.compile_block(body, code)
         # i := _next_with_delta(i, delta)
-        code.push(('pushVar', i), near=tree)
-        code.push(('pushVar', delta), near=tree)
+        code.push(('pushFrom', i), near=tree)
+        code.push(('pushFrom', delta), near=tree)
         call_next_with_delta()
-        code.push(('assign', i), near=tree)
+        code.push(('popTo', i), near=tree)
         # iter := iter + 1
-        code.push(('pushVar', iter), near=tree)
+        code.push(('pushFrom', iter), near=tree)
         code.push(('pushConst', 1), near=tree)
         code.push(('call', '+', 2), near=tree)
-        code.push(('assign', iter), near=tree)
+        code.push(('popTo', iter), near=tree)
         # end while
         code.push(('jump', lbegin), near=tree)
         code.push(('label', lend), near=tree)
@@ -547,7 +547,7 @@ namespace of routines.
 
     def compile_var_name(self, tree, code):
         "Compile a variable name expression."
-        code.push(('pushVar', tree.children[1].value), near=tree)
+        code.push(('pushFrom', tree.children[1].value), near=tree)
 
     def compile_func_call(self, tree, code):
         "Compile a function call."

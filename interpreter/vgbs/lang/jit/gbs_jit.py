@@ -123,9 +123,9 @@ class JitCompiler(object):
       opcode = op[0]
       if opcode == 'pushConst':
         self._program.add(self._arch.PushConst(op[1]))
-      elif opcode == 'pushVar':
+      elif opcode == 'pushFrom':
         self._program.add(self._arch.PushVar(*vardict[op[1]]))
-      elif opcode == 'assign':
+      elif opcode == 'popTo':
         self._program.add(self._arch.Assign(*vardict[op[1]]))
       elif opcode == 'returnVars':
         self._main_varnames = op[2]
@@ -189,7 +189,7 @@ class JitCompiler(object):
         d[v] = ('local', local_id.next())
 
     for op in rtn.ops:
-      if op[0] in ['pushVar', 'assign', 'delVar']:
+      if op[0] in ['pushFrom', 'popTo', 'delVar']:
         addlocal(op[1])
       elif op[0] in ['returnVars']:
         for v in op[2]:

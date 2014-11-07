@@ -154,7 +154,7 @@ namespace of routines.
                 code.push(('setImmutable', p), near=tree)            
         self.compile_commands(def_helper.get_def_body(tree), code)
         if prfn == 'procedure' and self.explicit_board:            
-            code.push(('pushVar', params[0]), near=tree)                
+            code.push(('pushFrom', params[0]), near=tree)                
         code.add_leave_return()
         code.build_label_table()
         self.code.routines[name] = code
@@ -228,7 +228,7 @@ namespace of routines.
         code.push(('call', procname, len(args)), near=tree)
         
         if self.explicit_board:
-            code.push(('assign', inout_var.children[1].value), near=tree)
+            code.push(('popTo', inout_var.children[1].value), near=tree)
 
 
     def compile_var_decl(self, tree, code):
@@ -239,7 +239,7 @@ namespace of routines.
         "Compile a typecheck between value and variable"
         lend = GbsLabel()    
         code.push(('jumpIfNotDefined', var, lend), near=tree)                
-        code.push(('pushVar', var), near=tree)
+        code.push(('pushFrom', var), near=tree)
         code.push(('call', '_typecheck_vals', 2), near=tree)
         code.push(('label', lend), near=tree)
     
@@ -262,7 +262,7 @@ namespace of routines.
             #calculate assignment reference       
             var = tree.children[1].children[1].value
             self.compile_projectable_var_check(tree, code, var)
-            code.push(('pushVar', var), near=tree)                                
+            code.push(('pushFrom', var), near=tree)                                
             for offset in offsets:
                 if offset.children[0] == 'index':
                     self.compile_expression(offset.children[1], code)
@@ -280,14 +280,14 @@ namespace of routines.
             #assign varname
             full_varname = '.'.join([tok.value for tok in tree.children[1].children[1:]])
             self.compile_typecheck_value_against_variable(full_varname, tree, code)        
-            code.push(('assign', full_varname), near=tree)
+            code.push(('popTo', full_varname), near=tree)
     
     def compile_assign_var_tuple1(self, tree, code):
         "Compile a tuple assignment: (v1, ..., vN) := f(...)"
         self.compile_expression(tree.children[2], code)
         varnames = [var.value for var in tree.children[1].children]
         for var in common.utils.seq_reversed(varnames):
-            code.push(('assign', var), near=tree)
+            code.push(('popTo', var), near=tree)
 
     def compile_if(self, tree, code):
         "Compile a conditional statement."
@@ -326,7 +326,7 @@ namespace of routines.
         # This is a runtime function to extract type name
         code.push(('call', '_runtime_extract_type', 1), near=tree)
         # value0 := value
-        code.push(('assign', value0), near=tree)
+        code.push(('popTo', value0), near=tree)
         
         lend = GbsLabel()
         next_label = None
@@ -337,7 +337,7 @@ namespace of routines.
                 lits = [parse_literal(lit) for lit in branch.children[1].children]
                 next_label = GbsLabel()
                 # if value0 in LitsI
-                code.push(('pushVar', value0), near=tree)
+                code.push(('pushFrom', value0), near=tree)
                 code.push(('jumpIfNotIn', lits, next_label), near=tree)
                 # BodyI
                 self.compile_block(branch.children[2], code)
@@ -369,7 +369,7 @@ namespace of routines.
         # This is a runtime function to extract type name
         code.push(('call', '_runtime_extract_type', 1), near=tree)
         # value0 := value
-        code.push(('assign', value0), near=tree)
+        code.push(('popTo', value0), near=tree)
         
         lend = GbsLabel()
         next_label = None
@@ -381,7 +381,7 @@ namespace of routines.
                 lits = [parse_literal(lit) for lit in branch.children[1].children]
                 next_label = GbsLabel()
                 # if value0 in LitsI
-                code.push(('pushVar', value0), near=tree)
+                code.push(('pushFrom', value0), near=tree)
                 code.push(('jumpIfNotIn', lits, next_label), near=tree)
                 # BodyI
                 self.compile_expression(branch.children[2], code)
@@ -432,9 +432,9 @@ namespace of routines.
         lend = GbsLabel()
         # aux_index := {TIMES}
         self.compile_expression(times, code)
-        code.push(('assign', aux_index), near=tree)
+        code.push(('popTo', aux_index), near=tree)
         # if aux_index > 0
-        code.push(('pushVar', aux_index), near=tree)
+        code.push(('pushFrom', aux_index), near=tree)
         code.push(('pushConst', 0), near=tree)        
         code.push(('call', '>', 2), near=tree)
         code.push(('jumpIfFalse', lend), near=tree)
@@ -443,12 +443,12 @@ namespace of routines.
         # body
         self.compile_block(body, code)
         # aux_index := aux_index - 1
-        code.push(('pushVar', aux_index), near=tree)
+        code.push(('pushFrom', aux_index), near=tree)
         code.push(('pushConst', 1), near=tree)
         code.push(('call', '-', 2), near=tree)
-        code.push(('assign', aux_index), near=tree)            
+        code.push(('popTo', aux_index), near=tree)            
         # if (aux_index == 0) break;    
-        code.push(('pushVar', aux_index), near=tree)
+        code.push(('pushFrom', aux_index), near=tree)
         code.push(('pushConst', 0), near=tree)        
         code.push(('call', '>', 2), near=tree)
         code.push(('jumpIfFalse', lend), near=tree)
@@ -480,18 +480,18 @@ namespace of routines.
         #   }
         #
         def jumpIfIsNil(var, label):
-            code.push(('pushVar', var), near=tree)
+            code.push(('pushFrom', var), near=tree)
             code.push(('call', i18n.i18n('isNil'), 1), near=tree)
             code.push(('call', 'not', 1), near=tree)
             code.push(('jumpIfFalse', label), near=tree)
         def head(listVar, var):
-            code.push(('pushVar', listVar), near=tree)
+            code.push(('pushFrom', listVar), near=tree)
             code.push(('call', i18n.i18n('head'), 1), near=tree)
-            code.push(('assign', var), near=tree)
+            code.push(('popTo', var), near=tree)
         def tail(listVar, var):
-            code.push(('pushVar', listVar), near=tree)
+            code.push(('pushFrom', listVar), near=tree)
             code.push(('call', i18n.i18n('tail'), 1), near=tree)
-            code.push(('assign', var), near=tree)
+            code.push(('popTo', var), near=tree)
             
         x = tree.children[1].value
         xs = tree.children[2]
@@ -502,7 +502,7 @@ namespace of routines.
         lend2 = GbsLabel()
         # xs0 := xs
         self.compile_expression(xs, code)
-        code.push(('assign', xs0), near=tree)
+        code.push(('popTo', xs0), near=tree)
         # if (isNil(xs0)) break;
         jumpIfIsNil(xs0, lend)
         # x := head(xs0)
@@ -567,14 +567,14 @@ which operates on any iterable value.
         lend = GbsLabel()
         # i := Lower
         self.compile_expression(limit_lower, code)
-        code.push(('assign', i), near=tree)
+        code.push(('popTo', i), near=tree)
         code.push(('setImmutable', i), near=tree)
         # upper0 := Upper
         self.compile_expression(limit_upper, code)
-        code.push(('assign', upper0), near=tree)
+        code.push(('popTo', upper0), near=tree)
         # if i <= upper0
-        code.push(('pushVar', i), near=tree)
-        code.push(('pushVar', upper0), near=tree)
+        code.push(('pushFrom', i), near=tree)
+        code.push(('pushFrom', upper0), near=tree)
         code.push(('call', '<=', 2), near=tree)
         code.push(('jumpIfFalse', lend), near=tree)
         # while true
@@ -582,15 +582,15 @@ which operates on any iterable value.
         # body
         self.compile_block(body, code)
         # if (i == upper0) break
-        code.push(('pushVar', i), near=tree)
-        code.push(('pushVar', upper0), near=tree)
+        code.push(('pushFrom', i), near=tree)
+        code.push(('pushFrom', upper0), near=tree)
         code.push(('call', '/=', 2), near=tree)
         code.push(('jumpIfFalse', lend), near=tree)
         # i := next(i)
-        code.push(('pushVar', i), near=tree)
+        code.push(('pushFrom', i), near=tree)
         call_next()
         code.push(('unsetImmutable', i), near=tree)
-        code.push(('assign', i), near=tree)
+        code.push(('popTo', i), near=tree)
         code.push(('setImmutable', i), near=tree)
         # end while
         code.push(('jump', lbegin), near=tree)
@@ -733,7 +733,7 @@ which operates on any iterable value.
         "Compile a variable name expression."        
         offsets = tree.children[2].children
         var = tree.children[1].value
-        code.push(('pushVar', var), near=tree)      
+        code.push(('pushFrom', var), near=tree)      
         if len(offsets) > 0:
             self.compile_projectable_var_check(tree, code, var)
             #calculate assignment reference                   

@@ -78,8 +78,8 @@ class Mangler(object):
 
 Opcode_to_compact = {
  'pushConst':    'p',
- 'pushVar':      'v',
- 'assign':       'a',
+ 'pushFrom':      'v',
+ 'popTo':       'a',
  'call':         'c',
  'THROW_ERROR':         'b',
  'label':        'l',
@@ -187,7 +187,7 @@ class GbsVmWriter(object):
   def dump_routine(self, prog, rtn):
     def showop(op):
       # preprocess (mangle)
-      if op[0] in ['pushVar', 'assign', 'delVar']:
+      if op[0] in ['pushFrom', 'popTo', 'delVar']:
         op = op[0], self._mangler.mangle_var(prog, rtn, op[1])
       elif op[0] in ['label', 'jump', 'jumpIfFalse']:
         op = op[0], self._mangler.mangle_label(op[1])

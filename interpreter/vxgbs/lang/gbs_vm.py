@@ -329,7 +329,7 @@ class GbsVmInterpreter(object):
       self.push_stack(op[1])
       self.ar.ip += 1
 
-    elif opcode == 'pushVar':
+    elif opcode == 'pushFrom':
         self.push_stack(self.get_binding(op[1]))
         self.ar.ip += 1
 
@@ -350,7 +350,7 @@ class GbsVmInterpreter(object):
       self.ar.unset_immutable(op[1])
       self.ar.ip += 1      
 
-    elif opcode == 'assign':
+    elif opcode == 'popTo':
         assert len(self.stack) > 0
         val = self.pop_stack()      
         self.ar.set_binding(op[1], clone_value(val))

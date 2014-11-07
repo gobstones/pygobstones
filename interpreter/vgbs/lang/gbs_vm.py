@@ -249,7 +249,7 @@ class GbsVmInterpreter(object):
       self.stack.append(op[1])
       self.ar.ip += 1
 
-    elif opcode == 'pushVar':
+    elif opcode == 'pushFrom':
       if op[1] not in self.ar.bindings:
        raise GbsVmException(i18n.i18n('Uninitialized variable: "%s"') % (op[1],),
                             self.current_area())
@@ -261,7 +261,7 @@ class GbsVmInterpreter(object):
       del self.ar.bindings[op[1]]
       self.ar.ip += 1
 
-    elif opcode == 'assign':
+    elif opcode == 'popTo':
       assert len(self.stack) > 0
       val = self.stack.pop()
       self.ar.bindings[op[1]] = val
