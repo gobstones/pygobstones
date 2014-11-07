@@ -1,4 +1,4 @@
-from ..interpreterWorker import *
+from interpreter.programWorker import *
 from common.tools import tools
 from lang.gbs_board import Board
 import common.utils
@@ -24,7 +24,7 @@ class GUIGobstonesApi(lang.GobstonesApi):
         self.comm.send('LOG', msg)    
 
 
-class Interpreter(InterpreterWorker):
+class GobstonesWorker(ProgramWorker):
 
     def prepare(self):
         self.api = GUIGobstonesApi(self.communicator)                
@@ -32,14 +32,14 @@ class Interpreter(InterpreterWorker):
     def start(self, filename, program_text, initial_board_string, run_mode):
         board = tools.board_format.from_string(initial_board_string)
         
-        if run_mode == Interpreter.RunMode.ONLY_CHECK:
+        if run_mode == GobstonesWorker.RunMode.ONLY_CHECK:
             options = lang.GobstonesOptions()
         else:
             options = lang.GobstonesOptions()
         self.gobstones = lang.Gobstones(options, self.api)
         
         try:
-            if run_mode == Interpreter.RunMode.FULL:
+            if run_mode == GobstonesWorker.RunMode.FULL:
                 self.success(self.gobstones.run(filename, program_text, board))
             else:
                 # Parse gobstones script

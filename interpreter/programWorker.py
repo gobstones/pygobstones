@@ -1,4 +1,4 @@
-class InterpreterWorker(object):
+class ProgramWorker(object):
     class RunMode:
         FULL = 'full'
         ONLY_CHECK = 'only_check'

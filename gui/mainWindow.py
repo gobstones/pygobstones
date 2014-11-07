@@ -11,7 +11,7 @@ from .preferencesWindow import PreferencesWindow
 from .editOption import EditOption
 from .boardOption import *
 from .helpOption import HelpOption
-from interpreter.interpreterRun import *
+from interpreter.programRun import *
 from views.boardPrint.board import *
 from views.boardPrint.boardViewer import *
 from resultsMainWindow import *
@@ -41,7 +41,7 @@ class MainWindow(QtGui.QMainWindow):
         self.initLoggerSize()
         self.initialBoardGenerator = InitialBoardGenerator()
         self.guiInterpreterHandler = GUIInterpreterHandler(self)
-        self.interpreterRun = InterpreterRun(self.getLang(),
+        self.programRun = ProgramRun(self.getLang(),
                                     self.guiInterpreterHandler)
         self.rootDirectory = root_path()
         self.runButton = RunButton(self, self.ui.actionRun,
@@ -220,8 +220,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.actionStop.setEnabled(True)
         self.ui.actionCheck.setEnabled(False)
         self.ui.statusbar.showMessage(QtCore.QString(i18n('Processing...')))
-        self.interpreterRun.handler = self.guiInterpreterHandler
-        self.runButton.start(self.interpreterRun)
+        self.programRun.handler = self.guiInterpreterHandler
+        self.runButton.start(self.programRun)
 
     def stop(self):
         self.guiInterpreterHandler.initialStatus()
@@ -276,7 +276,7 @@ class MainWindow(QtGui.QMainWindow):
         self.guiInterpreterHandler.showInLog(i18n
                             ("The languaje was changed to ") + self.lang)
         self.updateWindowTitle()
-        self.interpreterRun = InterpreterRun(self.getLang(),
+        self.programRun = ProgramRun(self.getLang(),
             self.guiInterpreterHandler)
 
     def getLang(self):
@@ -287,7 +287,7 @@ class MainWindow(QtGui.QMainWindow):
 
 # RUN BUTTON .....................
 
-class GUIInterpreterHandler(InterpreterExtendedFailureHandler, InterpreterHandler):
+class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
 
     def __init__(self, mainW):
         self.mainW = mainW
@@ -296,9 +296,9 @@ class GUIInterpreterHandler(InterpreterExtendedFailureHandler, InterpreterHandle
         self.interactiveW = InteractiveWindow(self.mainW)
         self.interactiveRunning = False
         self.failure_dict = {
-            InterpreterExtendedFailureHandler.PARSER_FAILURE: self.interpreter_log_failure,
-            InterpreterExtendedFailureHandler.STATIC_FAILURE: self.interpreter_log_failure,
-            InterpreterExtendedFailureHandler.DYNAMIC_FAILURE: self.interpreter_boom_failure,
+            EjecutionFailureHandler.PARSER_FAILURE: self.interpreter_log_failure,
+            EjecutionFailureHandler.STATIC_FAILURE: self.interpreter_log_failure,
+            EjecutionFailureHandler.DYNAMIC_FAILURE: self.interpreter_boom_failure,
         }
         super(GUIInterpreterHandler, self).__init__(self.failure_dict)
 
@@ -452,11 +452,11 @@ class CheckButton(QtGui.QWidget):
 
     def start(self):
         self.gui = GUIInterpreterHandler_CheckMode(self.mainW)
-        self.mainW.interpreterRun.handler = self.gui
-        self.mainW.interpreterRun.run(str(self.mainW.fileOption.getFileName()),
+        self.mainW.programRun.handler = self.gui
+        self.mainW.programRun.run(str(self.mainW.fileOption.getFileName()),
                              str(self.mainW.ui.textEditFile.toPlainText().toUtf8()),
                              self.mainW.initialBoardGenerator.getStringBoard(),
-                             InterpreterRun.RunMode.ONLY_CHECK)
+                             ProgramRun.RunMode.ONLY_CHECK)
 
 
 class GUIInterpreterHandler_CheckMode(GUIInterpreterHandler):
@@ -478,7 +478,7 @@ class GUIInterpreterHandler_CheckMode(GUIInterpreterHandler):
             self.log('----------------' +
                      str(datetime.datetime.now())[:19] +
                      '-----------------\n')
-        self.failure = InterpreterFailureHandler(fail_handler).failure
+        self.failure = EjecutionFailureHandler(fail_handler).failure
 
 
 class InteractiveWindow(QtGui.QDialog):
@@ -579,19 +579,19 @@ class InteractiveWindow(QtGui.QDialog):
             except:
                 if e.key() == QtCore.Qt.Key_Left:
                     self.setProcessingAKeyState()
-                    self.mainW.interpreterRun.send_input(1004)
+                    self.mainW.programRun.send_input(1004)
                 elif e.key() == QtCore.Qt.Key_Up:
                     self.setProcessingAKeyState()
-                    self.mainW.interpreterRun.send_input(1001)
+                    self.mainW.programRun.send_input(1001)
                 elif e.key() == QtCore.Qt.Key_Right:
                     self.setProcessingAKeyState()
-                    self.mainW.interpreterRun.send_input(1003)
+                    self.mainW.programRun.send_input(1003)
                 elif e.key() == QtCore.Qt.Key_Down:
                     self.setProcessingAKeyState()
-                    self.mainW.interpreterRun.send_input(1002)
+                    self.mainW.programRun.send_input(1002)
                 return
             self.setProcessingAKeyState()
-            self.mainW.interpreterRun.send_input(ordinalValue)
+            self.mainW.programRun.send_input(ordinalValue)
 
     def paintEvent(self, event):
         painter = QtGui.QPainter()
@@ -641,5 +641,5 @@ class InteractiveWindow(QtGui.QDialog):
 
     def closeEvent(self, e):
         self.mainW.ui.actionStop.setEnabled(False)
-        self.mainW.interpreterRun.send_input(4)
+        self.mainW.programRun.send_input(4)
         e.accept()

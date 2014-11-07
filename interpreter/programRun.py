@@ -6,14 +6,14 @@ import importlib
 import sys
 import os
 import commons.concurrent as concurrent
-from interpreter.interpreterWorker import InterpreterWorker
+from interpreter.programWorker import ProgramWorker
 
 debug = False
 
 def reverse_list(list):
     return [list.pop() for i in range(len(list))]
 
-class InterpreterHandler(object):
+class EjecutionHandler(object):
     def success(self, board_string, result):
         pass
     def failure(self, exception):
@@ -25,7 +25,7 @@ class InterpreterHandler(object):
     def partial(self, board_string):
         pass
 
-class InterpreterExtendedFailureHandler(object):
+class EjecutionFailureHandler(object):
     """ Serves exception based on an internal dictionary which
     specifies different failure handlers for each failure type.
     """
@@ -95,9 +95,9 @@ class InterpreterExtendedFailureHandler(object):
     def is_handler_defined(self, failure_type):
         return self.PARSER_FAILURE in self.exception_handlers.keys()
 
-class InterpreterRun(object):
-    RunMode = InterpreterWorker.RunMode
-    def __init__(self, gobstones_version, handler=InterpreterHandler()):
+class ProgramRun(object):
+    RunMode = ProgramWorker.RunMode
+    def __init__(self, gobstones_version, handler=EjecutionHandler()):
         self.running = False
         self.process = None
         self.worker = None
@@ -136,7 +136,7 @@ class InterpreterRun(object):
     def create_worker_process(self):
         if self.process is None:
             self.comm = messaging.MessageCommunicator()
-            self.worker = self.gbs_interpreter.Interpreter(self.comm.opposite())
+            self.worker = self.gbs_interpreter.GobstonesWorker(self.comm.opposite())
             
             if debug:
                 self.process = concurrent.Thread(target=self.worker.run)
