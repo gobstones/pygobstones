@@ -40,6 +40,12 @@ def group(lst, n):
         res.append(sublst)
     return res
 
+def randomList(generator, max_size=16):
+    return [generator(i) for i in range(randint(max_size) + 4)]
+
+def randomIntList(max_size=16, max_number=99):
+    return randomList(lambda i: randint(max_number), max_size)
+
 def flatten(lst):
     res = []
     for x in lst:
@@ -238,6 +244,51 @@ class TestListGenerator(TestScript):
         us = range(args['low'], args['high']+1, 9)
         ts = range(args['high'], args['low']-1, -9)
         return ts, us, vs, ws, xs, ys, zs
+    
+    
+    
+class TestRepeat(TestScript):
+    def __init__(self):
+        super(TestRepeat, self).__init__({"times": randomIntList(5, 20)})
+    
+    def nretvals(self):
+        return 1
+    
+    def gbs_code(self):
+        return '''
+            count := 0
+            repeat (@times)
+             { count := count + 1 }
+            return(count)
+        '''
+        
+    def pyresult(self, args):
+        return args["times"]
+    
+    
+    
+class TestForeachSeq(TestScript):
+    def __init__(self):
+        numbers = randomList(lambda i: "[" + ",".join(map(str, randomIntList(10))) + "]", 5)
+        super(TestForeachSeq, self).__init__({"numbers": numbers})
+    
+    def nretvals(self):
+        return 1
+    
+    def gbs_code(self):
+        return '''
+            res := 0
+            foreach n in @numbers
+             { res := res*10 + n }
+            return(res)
+        '''
+        
+    def pyresult(self, args):
+        res = 0
+        ns = args["numbers"][1:-1].split(",")
+        for n in map(int, ns):
+            res = res*10 + n
+        return res 
     
     
 TESTS_GROUPS = group(flatten([cls().build_tests() for cls in TestScript.__subclasses__()]), 128)
