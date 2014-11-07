@@ -87,7 +87,8 @@ class GbsOptions(object):
         '--profile',
         '--silent',
         '--optimize',
-        '--interactive' 
+        '--interactive',
+        '--gobstones3'
     ]
     
     def __init__(self, argv):
@@ -227,7 +228,13 @@ class ConsoleInteractiveApi(lang.GobstonesApi):
             LOGGER.info(msg)
 
 def run_filename(filename, options):
-    gbs_opts = lang.GobstonesOptions(options['lint'], options['liveness'], options['typecheck'], options['jit'], options['optimize'])
+    
+    if not options["gobstones3"]:
+        lang_version = lang.GobstonesOptions.LangVersion.XGobstones
+    else:
+        lang_version = lang.GobstonesOptions.LangVersion.Gobstones
+        
+    gbs_opts = lang.GobstonesOptions(lang_version, options['lint'], options['liveness'], options['typecheck'], options['jit'], options['optimize'])
     gobstones = lang.Gobstones(gbs_opts, ConsoleInteractiveApi(options))
     
     if filename.lower().endswith('.gbo'):

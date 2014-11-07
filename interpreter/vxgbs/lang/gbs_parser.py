@@ -203,8 +203,9 @@ class GbsAnalyzer(lang.bnf_parser.Analyzer):
     def __init__(self, grammar, warn=std_warn):
         lang.bnf_parser.Analyzer.__init__(self, GbsLexer, GbsParser, bnf_contents=grammar, warn=warn)
 
-bnf = lang.grammar.i18n.translate(read_file(lang.GbsGrammarFile))
-Analyzer = GbsAnalyzer(bnf)
+def setup(grammar_file):
+    bnf = lang.grammar.i18n.translate(read_file(grammar_file))
+    lang.gbs_parser.Analyzer = GbsAnalyzer(bnf)
 
 def check_grammar_conflicts():
     """Checks if the BNF grammar has any conflict (an LL(1) prediction

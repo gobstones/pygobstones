@@ -19,8 +19,10 @@
 import os
 
 dirname = os.path.dirname(__file__)
-GbsGrammarFile = os.path.join(dirname, 'gbs_grammar.bnf')
+GbsGrammarDir = os.path.join(dirname, "grammar")
+GbsGrammarFile = None
 GbsMacrosDir = os.path.join(dirname, 'macros')
+
 
 import common.i18n as i18n
 
@@ -44,13 +46,17 @@ class GobstonesApi(lang.gbs_io.InteractiveApi):
         pass
 
 class GobstonesOptions(object):
+    class LangVersion:
+        Gobstones = "Gobstones3.0"
+        XGobstones = "XGobstones"
     LINT_MODES = ['lax', 'strict']
-    def __init__(self, lint_mode="lax", check_liveness=False, check_types=False, jit=False, optimize=False):
+    def __init__(self, lang_version=LangVersion.Gobstones, lint_mode="lax", check_liveness=False, check_types=False, jit=False, optimize=False):
         self.lint_mode = lint_mode
         self.check_liveness = check_liveness
         self.check_types = check_types
         self.jit = jit
         self.optimize = optimize
+        self.lang_version = lang_version
     
 class GobstonesRun(object):
     def __init__(self):
@@ -76,17 +82,26 @@ class Gobstones(object):
     def __init__(self, options=GobstonesOptions(), api=GobstonesApi()):
         self.api = api
         self.options = options
+
+        if self.options.lang_version == GobstonesOptions.LangVersion.Gobstones:
+            lang.GbsGrammarFile = os.path.join(GbsGrammarDir, 'gbs_grammar.bnf')
+        else:
+            lang.GbsGrammarFile = os.path.join(GbsGrammarDir, 'xgbs_grammar.bnf')
+            
         # Compiler pipeline methods
         self.explode_macros = lang.gbs_mexpl.mexpl
+        lang.gbs_parser.setup(GbsGrammarFile)
         self.parse = lang.gbs_parser.parse_string_try_prelude
         self.lint = lang.gbs_lint.lint
         self.check_live_variables = lang.gbs_liveness.check_live_variables
         self.typecheck = lang.gbs_infer.typecheck
         self.compile_program = lang.gbs_compiler.compile_program
+
         if self.options.jit:
             self.make_runnable = lang.jit.gbs_jit.JitCompiledRunnable            
         else:
             self.make_runnable = lang.gbs_vm.VmCompiledRunnable
+            
     
     @classmethod
     def random_board(cls, size=None):
