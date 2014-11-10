@@ -388,9 +388,17 @@
 <construct> ::= <typeName> ;;
 <fieldName> ::= <varName>   @ SYMBOL $1 ;;
 
-<cstrcArgs?>  ::= <zEMPTY>          @ []
-                | <fieldgenTuple> 
+<cstrcArgs?>  ::= <zEMPTY>                @ []
+				| ( <fieldGensOrSuchAs> ) @ $2
               ;; 
+
+<fieldGensOrSuchAs> ::= <gexp> <suchAsOrField> <,fieldgen+> @ CONSTRUCTFIELDS $1 $2 $3 ;;
+
+<suchAsOrField> ::= <- <gexp> 		   		       @ $1 $2
+				  | $$(CASE-SEPARATOR) <fieldgen> @ $2 
+				;;
+
+<arecordSuchAs> ::= ( <gexp> $$(CASE-SEPARATOR) <fieldgen+> ) @ $1 $2;;
             
 <fieldgenTuple> ::= ( <fieldgen*> )     @ $2 ;;
 

@@ -793,8 +793,8 @@ class GbsSemanticChecker(object):
         self.check_expression(tree.children[3])
     
     def check_constructor(self, tree):
-        self.check_expression(tree.children[2])
-        self.check_expression(tree.children[3])
+        for child_tree in tree.children[2].children:
+            self.check_expression(child_tree)
         
         def is_field_gen(node):
             if not len(node.children) > 0:

@@ -344,10 +344,41 @@ class ASTBuilder(object):
                 'entrypoint': self._expand_action_entrypoint_def,
                 'procCall/assignVarName': self._expand_action_proccall_assignvarname,
                 'literal/construct': self._expand_action_literal_or_construct,
+                'CONSTRUCTFIELDS': self._expand_action_constructfields,
             }
             expand = dispatch.get(action[0], self._expand_action_default)
             return expand(subtrees, action)
 
+    def _expand_action_constructfields(self, subtrees, action):
+        """Expands the constructor arguments"""
+        pos_b = self._pos_begin(subtrees)
+        pos_e = self._pos_end(subtrees)
+        
+        # Fields assocs and a given record expression
+        if subtrees[2].children[0] == 'funcCall':
+            return ASTNode(['recordSuchAs',
+                            subtrees[1],
+                            subtrees[2]],
+                           pos_b, pos_e)
+        # Normal field assocs
+        else:
+            symbol_tok = subtrees[1].children[1]
+            symbol_tok.type = 'symbol'
+            firstf = ASTNode(['funcCall',
+                              subtrees[2].children[0],
+                              ASTNode([ASTNode(['literal',
+                                                symbol_tok], 
+                                                pos_b, pos_e), 
+                                       subtrees[2].children[1]], 
+                                      pos_b, 
+                                      pos_e)],
+                             pos_b,
+                             pos_e,)
+            return ASTNode([firstf] + subtrees[3].children,
+                           pos_b,
+                           pos_e)
+    
+    
     def _expand_action_concatenate(self, subtrees, action):
         """Expands a ++ action: concatenate synthetized results."""
         value = []
@@ -431,7 +462,14 @@ class ASTBuilder(object):
         pos_b = self._pos_begin(expr_construct)
         pos_e = self._pos_end(expr_construct)
         constructor_type = ASTNode(['type', expr_construct[1]], pos_b, pos_e)
-        fields = _make_list_expression(expr_construct[2])
+        
+        from_value = None
+        if expr_construct[2].children[0] == 'recordSuchAs':
+            fields = _make_list_expression(ASTNode([expr_construct[2].children[2]], pos_b, pos_e))
+            from_value = expr_construct[2].children[1] 
+        else:
+            fields = _make_list_expression(expr_construct[2])
+            
         if constructor_type.children[1].value == 'Array':
             return ASTNode(['constructor',
                             lang.bnf_parser.Token('lowerid', '_mkArray', pos_b, pos_e),
@@ -439,11 +477,25 @@ class ASTBuilder(object):
                             fields                                                        
                             ], pos_b, pos_e)
         else:
-            return ASTNode(['constructor',
+            if not expr_construct[2].children[0] == 'recordSuchAs':
+                return ASTNode(['constructor',
                             lang.bnf_parser.Token('lowerid', '_mkRecord', pos_b, pos_e),
-                            constructor_type,
-                            fields
+                            ASTNode([constructor_type,
+                                     fields],
+                                    pos_b, 
+                                    pos_e),
                             ], pos_b, pos_e)
+            else:
+                return ASTNode(['constructor',
+                            lang.bnf_parser.Token('lowerid', '_mkRecordFrom', pos_b, pos_e),
+                            ASTNode([constructor_type,
+                                     fields,
+                                     from_value],
+                                    pos_b, 
+                                    pos_e),
+                            ], pos_b, pos_e)
+                
+            
     
     def _expand_action_proccall_assignvarname(self, subtrees, _):
         """Expands a procCall/assignVarName, transforming "procCall/assignVarName"

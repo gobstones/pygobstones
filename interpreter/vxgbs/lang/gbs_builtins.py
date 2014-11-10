@@ -1463,16 +1463,21 @@ LIST_BUILTINS = [
 def mk_field(global_state, symbol, value):
     return GbsFieldObject((symbol, value), 'Field')
 
-def mk_record(global_state, type, fields):
+def mk_record(global_state, type, fields, bindings={}):
     try:
-        bindings = {}        
+        _bindings = {}
+        for k in bindings.keys():
+            _bindings[k] = bindings[k].clone()        
         for field in fields:
-            bindings[field.value[0]] = wrap_value(field.value[1])
-        return GbsRecordObject(bindings, type, bindings)
+            _bindings[field.value[0]] = wrap_value(field.value[1])
+        return GbsRecordObject(_bindings, type, _bindings)
     except Exception as exception:
         "Just in case..."
         msg = global_state.backtrace(i18n.i18n('Error while building record of type %s' % (type,)))
         raise GbsRuntimeException(msg, global_state.area())
+    
+def mk_record_from(global_state, type, fields, from_record):
+    return mk_record(global_state, type, fields, from_record.bindings)
 
 def projection(global_state, record, field_name):
     if isinstance(record, GbsObject):
@@ -1516,6 +1521,12 @@ TYPE_MKRECORD = GbsForallType(
                                               GbsListType(GbsFieldType())]),
                                 GbsTupleType([TYPEVAR_X])))
 
+TYPE_MKRECORD_FROM = GbsForallType([TYPEVAR_X],
+                        GbsFunctionType(GbsTupleType([TYPEVAR_X,
+                                                      GbsListType(GbsFieldType()),
+                                                      GbsRecordTypeVar()]),
+                                        GbsTupleType([TYPEVAR_X])))
+
 RECORD_BUILTINS = [
     BuiltinFunction(
         '_runtime_extract_type',
@@ -1538,6 +1549,11 @@ RECORD_BUILTINS = [
         i18n.i18n('_mkRecord'),
         TYPE_MKRECORD,
         mk_record
+    ),
+    BuiltinFunction(
+        i18n.i18n('_mkRecordFrom'),
+        TYPE_MKRECORD_FROM,
+        mk_record_from
     ),
 ]
 BUILTINS += RECORD_BUILTINS

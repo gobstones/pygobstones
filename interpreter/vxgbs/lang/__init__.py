@@ -39,6 +39,13 @@ import lang.gbs_compiler
 import lang.gbs_board
 import lang.gbs_optimizer
 
+def setGrammar(lang_version):
+    if lang_version == GobstonesOptions.LangVersion.Gobstones:
+        lang.GbsGrammarFile = os.path.join(GbsGrammarDir, 'gbs_grammar.bnf')
+    else:
+        lang.GbsGrammarFile = os.path.join(GbsGrammarDir, 'xgbs_grammar.bnf')
+    lang.gbs_parser.setup(lang.GbsGrammarFile)
+
 """ Gobstones API classes """
 
 class GobstonesApi(lang.gbs_io.InteractiveApi):
@@ -83,14 +90,10 @@ class Gobstones(object):
         self.api = api
         self.options = options
 
-        if self.options.lang_version == GobstonesOptions.LangVersion.Gobstones:
-            lang.GbsGrammarFile = os.path.join(GbsGrammarDir, 'gbs_grammar.bnf')
-        else:
-            lang.GbsGrammarFile = os.path.join(GbsGrammarDir, 'xgbs_grammar.bnf')
+        lang.setGrammar(self.options.lang_version)        
             
         # Compiler pipeline methods
         self.explode_macros = lang.gbs_mexpl.mexpl
-        lang.gbs_parser.setup(GbsGrammarFile)
         self.parse = lang.gbs_parser.parse_string_try_prelude
         self.lint = lang.gbs_lint.lint
         self.check_live_variables = lang.gbs_liveness.check_live_variables

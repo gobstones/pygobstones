@@ -31,6 +31,7 @@ from common.utils import (
 
 BNF_COMMENT_SEQ = "##"
 BNF_ESCAPE_SEQ = "$$"
+BNF_ALT_SEQ = "|"
 
 class ParserException(common.utils.StaticException):
     "Base exception for syntax errors."
@@ -465,14 +466,14 @@ class Analyzer(object):
             ]
             rules = [
                 _bnf_unescape(common.utils.trim(part))
-                for part in rules.split('|')
+                for part in rules.split(BNF_ALT_SEQ)
             ]
             if head == 'RESERVED':
                 reserved.extend(rules)
             elif is_nonterminal(head):
                 syntax[head] = [Production(prod) for prod in rules]
             else:
-                tokens.append((head, re.compile('|'.join(rules))))
+                tokens.append((head, re.compile(BNF_ALT_SEQ.join(rules))))
 
         self.lexer = self.lexer_class(tokens, reserved, self.warn)
         self.parser = self.parser_class(syntax, self.warn)

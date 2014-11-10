@@ -94,6 +94,7 @@ class InterpreterWorker(object):
     def run(self):
         api = GUIGobstonesApi(self.communicator)
         options = lang.GobstonesOptions()
+        lang.setGrammar(options.lang_version)
         gobstones = lang.Gobstones(options, api)
         
         message = self.communicator.receive()

@@ -646,7 +646,7 @@ which operates on any iterable value.
           'pow': self.compile_binary_op,
           'listop': self.compile_binary_op,
           'projection': self.compile_binary_op,
-          'constructor': self.compile_binary_op,
+          'constructor': self.compile_func_call,
           'varName': self.compile_var_name,
           'funcCall': self.compile_func_call,
           'match': self.compile_match,

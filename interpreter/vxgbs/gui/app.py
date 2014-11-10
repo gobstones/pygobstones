@@ -177,6 +177,7 @@ class GUI(tkinter.Tk):
 
     def __init__(self, *args, **kwargs):
         tkinter.Tk.__init__(self, *args, **kwargs)
+        lang.setGrammar(lang.GobstonesOptions.LangVersion.XGobstones)
 
         self._font = gui.config.DefaultFont
         self.tools = tools
