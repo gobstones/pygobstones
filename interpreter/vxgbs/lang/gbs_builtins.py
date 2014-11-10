@@ -1491,7 +1491,7 @@ def projection(global_state, record, field_name):
                                      % (field_name, ', '.join(record.keys()),))
         raise GbsRuntimeException(msg, global_state.area())
 
-def _runtime_extract_type(self, value):
+def _extract_case(self, value):
     if isinstance(value, GbsObject):
         return value.type
     else:
@@ -1529,11 +1529,11 @@ TYPE_MKRECORD_FROM = GbsForallType([TYPEVAR_X],
 
 RECORD_BUILTINS = [
     BuiltinFunction(
-        '_runtime_extract_type',
+        '_extract_case',
         GbsForallType([TYPEVAR_X, TYPEVAR_Y],
                       GbsFunctionType(GbsTupleType([TYPEVAR_X]),
                                       GbsTupleType([TYPEVAR_Y]))),
-        _runtime_extract_type
+        _extract_case
     ),
     BuiltinFunction(
         i18n.i18n('_get_field'),

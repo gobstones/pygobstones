@@ -324,7 +324,7 @@ namespace of routines.
         
         self.compile_expression(value, code)
         # This is a runtime function to extract type name
-        code.push(('call', '_runtime_extract_type', 1), near=tree)
+        code.push(('call', '_extract_case', 1), near=tree)
         # value0 := value
         code.push(('popTo', value0), near=tree)
         
@@ -367,7 +367,7 @@ namespace of routines.
         
         self.compile_expression(value, code)
         # This is a runtime function to extract type name
-        code.push(('call', '_runtime_extract_type', 1), near=tree)
+        code.push(('call', '_extract_case', 1), near=tree)
         # value0 := value
         code.push(('popTo', value0), near=tree)
         
