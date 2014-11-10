@@ -443,14 +443,6 @@ def typecheck_vals(global_state, val1, val2):
         raise GbsRuntimeTypeException(msg, global_state.area())
     return val1
 
-def typecheck_val(global_state, val1, type):
-    "Compare value type with provided type and raise exception if there is a mismatch."
-    "[TODO] Check.."
-    if poly_typeof(val1) != type and not (isinstance(val1, GbsRecordObject) and type.split('(')[0] == 'Record'):
-        msg = global_state.backtrace(i18n.i18n('%s type was expected') % (type,))
-        raise GbsRuntimeTypeException(msg, global_state.area())
-    return val1
-
 def poly_typeof(value):
     "Return the name of the type of the value."
     if isinstance(value, bool):
@@ -941,26 +933,6 @@ BUILTINS = [
       internal_read
     ),
             
-    BuiltinFunction(
-        i18n.i18n('_typecheck_vals'),
-        GbsForallType(
-            [TYPEVAR_X, TYPEVAR_Y],
-            GbsFunctionType(
-                GbsTupleType([TYPEVAR_X, TYPEVAR_Y]),
-                GbsTupleType([TYPEVAR_X]))),
-        typecheck_vals
-    ),
-        
-    BuiltinFunction(
-        i18n.i18n('_typecheck_val'),
-        GbsForallType(
-            [TYPEVAR_X],
-            GbsFunctionType(
-                GbsTupleType([TYPEVAR_X, GbsStringType()]),
-                GbsTupleType([TYPEVAR_X]))),
-        typecheck_val
-    ),                
-
     BuiltinFunction(
         i18n.i18n('minBool'),
         GbsFunctionType(

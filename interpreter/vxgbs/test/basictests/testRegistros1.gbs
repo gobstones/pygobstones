@@ -47,6 +47,7 @@ function testBasicRecords2() {
 	p1 := Persona(p1 | nombre <- 8)
 	p2 := Persona(p2 | nombre <- 8, edad <- 22)
 	p1 := Persona(p1 | edad <- 22)
+	
 	return(igualPersona(p1, p2))
 }
 

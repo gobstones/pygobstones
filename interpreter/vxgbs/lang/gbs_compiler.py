@@ -223,8 +223,6 @@ namespace of routines.
             
         for i, arg in zip(range(len(args)), args):
             self.compile_expression(arg, code)
-            if type_annotation:
-                self.compile_typecheck_value(type_annotation[i], arg, code)
         code.push(('call', procname, len(args)), near=tree)
         
         if self.explicit_board:
@@ -234,21 +232,7 @@ namespace of routines.
     def compile_var_decl(self, tree, code):
         "Compile a variable type declaration: var <var> := <type>"
         pass
-    
-    def compile_typecheck_value_against_variable(self, var, tree, code):
-        "Compile a typecheck between value and variable"
-        lend = GbsLabel()    
-        code.push(('jumpIfNotDefined', var, lend), near=tree)                
-        code.push(('pushFrom', var), near=tree)
-        code.push(('call', '_typecheck_vals', 2), near=tree)
-        code.push(('label', lend), near=tree)
-    
-    def compile_typecheck_value(self, type, tree, code):
-        "Compile a typecheck between a value and an expected type"
-        if not isinstance(type, lang.gbs_type.GbsTypeVar):
-            code.push(('pushConst', repr(type)), near=tree)
-            code.push(('call', '_typecheck_val', 2), near=tree)        
-        
+                
     def compile_projectable_var_check(self, tree, code, var):
         "Compile a projectable variable check. Varname is pushed to stack."
         code.push(('pushConst', var), near=tree)
@@ -278,8 +262,7 @@ namespace of routines.
             #compile expression
             self.compile_expression(tree.children[3], code)
             #assign varname
-            full_varname = '.'.join([tok.value for tok in tree.children[1].children[1:]])
-            self.compile_typecheck_value_against_variable(full_varname, tree, code)        
+            full_varname = '.'.join([tok.value for tok in tree.children[1].children[1:]])        
             code.push(('popTo', full_varname), near=tree)
     
     def compile_assign_var_tuple1(self, tree, code):
@@ -671,18 +654,12 @@ which operates on any iterable value.
         "Compile a binary operator expression."
         type_annotation = self.get_type_annotation(tree)
         self.compile_expression(tree.children[2], code)
-        if type_annotation:
-            self.compile_typecheck_value(type_annotation[0], tree.children[2], code)
         self.compile_expression(tree.children[3], code)
-        if type_annotation:
-            self.compile_typecheck_value(type_annotation[1], tree.children[3], code)
         code.push(('call', tree.children[1].value, 2), near=tree)
 
     def compile_not(self, tree, code):
         "Compile a boolean not expression."
         self.compile_expression(tree.children[1], code)
-        if self.get_type_annotation(tree):
-            self.compile_typecheck_value(self.get_type_annotation(tree)[0], tree.children[1], code)
         code.push(('call', 'not', 1), near=tree)
 
     def compile_or(self, tree, code):
@@ -692,8 +669,6 @@ which operates on any iterable value.
         type_annotation = self.get_type_annotation(tree)
         
         self.compile_expression(tree.children[2], code)
-        if type_annotation:
-            self.compile_typecheck_value(type_annotation[0], tree.children[2], code)
             
         code.push(('jumpIfFalse', lcontinue), near=tree)
         code.push(('pushConst', lang.gbs_builtins.parse_constant('True')),
@@ -701,8 +676,6 @@ which operates on any iterable value.
         code.push(('jump', lend), near=tree)
         code.push(('label', lcontinue), near=tree)
         self.compile_expression(tree.children[3], code)
-        if type_annotation:
-            self.compile_typecheck_value(type_annotation[1], tree.children[3], code)
         code.push(('label', lend), near=tree)
 
     def compile_and(self, tree, code):
@@ -711,12 +684,8 @@ which operates on any iterable value.
         lend = GbsLabel()
         type_annotation = self.get_type_annotation(tree)
         self.compile_expression(tree.children[2], code)
-        if type_annotation:
-            self.compile_typecheck_value(type_annotation[0], tree.children[2], code)
         code.push(('jumpIfFalse', lcontinue), near=tree)
         self.compile_expression(tree.children[3], code)
-        if type_annotation:
-            self.compile_typecheck_value(type_annotation[1], tree.children[3], code)
         code.push(('jump', lend), near=tree)
         code.push(('label', lcontinue), near=tree)
         code.push(('pushConst', lang.gbs_builtins.parse_constant('False')),
@@ -772,8 +741,6 @@ which operates on any iterable value.
         
         for i, arg in zip(range(len(args)),args):
             self.compile_expression(arg, code)
-            if type_annotation:
-                self.compile_typecheck_value(type_annotation[i], arg, code)
                 
         if annotate:
             funcname = lang.gbs_builtins.polyname(

@@ -198,6 +198,9 @@ class ActivationRecord(object):
     def get_binding(self, name):
         return self.bindings[name]
     
+    def is_binded(self, name):
+        return name in self.bindings.keys()
+    
 
 class GlobalState(object):
   def __init__(self, interpreter, board):
@@ -352,8 +355,11 @@ class GbsVmInterpreter(object):
 
     elif opcode == 'popTo':
         assert len(self.stack) > 0
-        val = self.pop_stack()      
-        self.ar.set_binding(op[1], clone_value(val))
+        val = self.pop_stack()     
+        varname = op[1] 
+        if self.ar.is_binded(varname):
+            lang.gbs_builtins.typecheck_vals(self.global_state, self.ar.get_binding(varname), val)
+        self.ar.set_binding(varname, clone_value(val))
         self.ar.ip += 1
 
     elif opcode == 'call':
@@ -433,14 +439,6 @@ class GbsVmInterpreter(object):
       else:
         self.ar.ip += 1
 
-    elif opcode == 'jumpIfNotDefined':
-        dest = id(op[2])
-        assert dest in self.ar.routine.label_table
-        if not op[1] in self.ar.bindings.keys():
-          self.ar.ip = self.ar.routine.label_table[dest]
-        else:
-          self.ar.ip += 1
-        
     elif opcode == 'enter':
       self.global_state.push()
       self.ar.ip += 1
