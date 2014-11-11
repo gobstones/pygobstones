@@ -71,12 +71,15 @@ class GobstonesTest(object):
     pass
 
 
-class GobstonesFileTest(object):
+class GobstonesFileTest(GobstonesTest):
     
     def __init__(self, filename):
         lines = read_file_lines(filename)
         self.filename = filename
         self.annotations, self.code = self.extract_annotations(lines)    
+    
+    def name(self):
+        return self.filename
     
     def extract_annotations(self, lines):
         annotations = {}
@@ -146,7 +149,10 @@ class TestCase(object):
         self.result = {"PASSED":0, "FAILED":0, "ERROR":0}
         for test in tests:
             self.setup()
-            self.result[test.run()] += 1
+            res = test.run()
+            if res == "FAILED":
+                print "Failed test '%s'" % (test.name(),)
+            self.result[res] += 1
             self.teardown()
         
         self.passed = self.result["PASSED"]

@@ -1,4 +1,4 @@
-#!
+#!assert
 #!board=boards/empty.gbb
 
 #
@@ -68,7 +68,7 @@ function testSameFieldRecs() {
 	passed := True
 	foreach n in [1,7..101] {		
 		foreach d in [minDir()..maxDir()] {						
-			passed.Assert(mkTupleT(n, d) == mkTuple(n, d))										
+			passed.Deny(mkTupleT(n, d) == mkTuple(n, d))										
 		}		 
 	}
 	return(passed)

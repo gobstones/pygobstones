@@ -1,3 +1,4 @@
+#!assert
 function modifyMe() {
 	VaciarTablero()
   return(0)
@@ -5,6 +6,10 @@ function modifyMe() {
 
 program {
 	e := 0
+	VaciarTablero()
+	foreach c in [minColor()..maxColor()] {
+		PonerN(c, 16)
+	}
 	passed := contarTotalBolitas() == 64
 	foreach c in [minColor()..maxColor()] {
 		passed := passed && contarBolitas(c) == 16

@@ -201,6 +201,10 @@ class ActivationRecord(object):
     def is_binded(self, name):
         return name in self.bindings.keys()
     
+    def free_bindings(self):
+        self.bindings = {}
+        self.immutable_names = []
+    
 
 class GlobalState(object):
   def __init__(self, interpreter, board):

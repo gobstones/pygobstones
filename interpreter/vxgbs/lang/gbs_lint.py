@@ -271,7 +271,7 @@ class GbsSemanticChecker(object):
     def setup(self, tree):
         if self.explicit_board is None:
             entrypoint_tree = find_def(tree.children[2], is_entrypoint_def)
-            self.explicit_board = not entrypoint_tree.annotations["varProc"] is None
+            self.explicit_board = len(entrypoint_tree.children[2].children) != 0
         
         lang.gbs_builtins.explicit_builtins = self.explicit_board
         for b in lang.gbs_builtins.get_builtins():

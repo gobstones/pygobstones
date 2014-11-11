@@ -64,7 +64,7 @@ Every other module should be given the module name as a prefix.
 """
         if explicit_board is None:
             entrypoint_tree = def_helper.find_def(tree.children[2], def_helper.is_entrypoint_def)
-            self.explicit_board = not entrypoint_tree.annotations["varProc"] is None
+            self.explicit_board = len(entrypoint_tree.children[2].children) != 0
         else:
             self.explicit_board = explicit_board
         self.module_handler = tree.module_handler

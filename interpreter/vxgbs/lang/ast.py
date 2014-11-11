@@ -550,7 +550,7 @@ class ASTBuilder(object):
             body = subtrees[4]
         params = ASTNode([],self._pos_begin(subtrees), self._pos_end(subtrees))
         eptype = None
-        if not epvar is None:
+        if not epvar is None and len(epvar.children) != 0:
             params.children.insert(0, epvar.children[1])
         result = ASTNode(
             ['entrypoint', epname, params, body, eptype],
@@ -563,8 +563,12 @@ class ASTBuilder(object):
         """Expands a varName/funcCall, transforming "varName/funcCall"
         action into either a "varName" or a "funcCall" node."""
         if subtrees[2] is None:
+            if hasattr(subtrees[1], "children"):
+                children = subtrees[1].children
+            else:
+                children = []
             return ASTNode(
-                ['varName'] + subtrees[1].children,
+                ['varName'] + children,
                 self._pos_begin(subtrees),
                 self._pos_end(subtrees))
         else:

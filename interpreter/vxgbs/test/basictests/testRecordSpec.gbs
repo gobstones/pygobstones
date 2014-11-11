@@ -1,4 +1,4 @@
-#dada
+#!assert
 type Persona is record {
 	field dni
 	field casado
@@ -42,5 +42,5 @@ t.program {
     r := Rec4(rec_3 <- Rec3(rec_2 <- Rec2(rec_1 <- Rec1(id <- 1))))
     r.rec_3.rec_2.rec_1.id := 2
     
-	return(prop, r)
+	return(True)
 }

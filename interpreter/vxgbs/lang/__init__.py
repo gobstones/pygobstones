@@ -20,7 +20,7 @@ import os
 
 dirname = os.path.dirname(__file__)
 GbsGrammarDir = os.path.join(dirname, "grammar")
-GbsGrammarFile = None
+GbsGrammarFile = os.path.join(GbsGrammarDir, 'xgbs_grammar.bnf')
 GbsMacrosDir = os.path.join(dirname, 'macros')
 
 
@@ -57,7 +57,7 @@ class GobstonesOptions(object):
         Gobstones = "Gobstones3.0"
         XGobstones = "XGobstones"
     LINT_MODES = ['lax', 'strict']
-    def __init__(self, lang_version=LangVersion.Gobstones, lint_mode="lax", check_liveness=False, check_types=False, jit=False, optimize=False):
+    def __init__(self, lang_version=LangVersion.XGobstones, lint_mode="lax", check_liveness=False, check_types=False, jit=False, optimize=False):
         self.lint_mode = lint_mode
         self.check_liveness = check_liveness
         self.check_types = check_types

@@ -97,10 +97,13 @@ class Operation(object):
       code = code.replace('@' + k, str(v))
     self.code = code
     
-class TestScript(object):
+class TestScript(GobstonesTest):
     
     def __init__(self, possible_args):
         self.cases = combine_args(possible_args)
+    
+    def name(self):
+        return self.__class__.__name__
     
     def build_tests(self):
         return [self.build_test(c) for c in self.cases]

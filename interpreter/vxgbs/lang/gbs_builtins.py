@@ -774,6 +774,10 @@ def internal_show(global_state, board):
     global_state.interpreter.interactive_api.show(board.value.clone())
     return board
 
+def internal_freevars(global_state, board):
+    global_state.interpreter.ar.free_bindings()
+    return board
+
 #### String
 
 def str_concat(global_state, str1, str2):
@@ -786,11 +790,17 @@ def str_concat(global_state, str1, str2):
 BUILTINS_EXPLICIT_BOARD = [
     #### Procedures
     BuiltinProcedure(
+      i18n.i18n('_FreeVars'),
+      GbsProcedureType(GbsTupleType([GbsBoardType()])),
+      internal_freevars
+    ),
+                           
+    BuiltinProcedure(
       i18n.i18n('_Show'),
       GbsProcedureType(GbsTupleType([GbsBoardType()])),
       internal_show
     ),
-                           
+                                                      
     BuiltinProcedure(
         i18n.i18n('PutStone'),
         GbsProcedureType(GbsTupleType([GbsBoardType(), GbsColorType()])),
@@ -860,6 +870,12 @@ def implicit_board_proc(f):
 
 BUILTINS_IMPLICIT_BOARD = [
     #### Procedures
+    BuiltinProcedure(
+      i18n.i18n('_FreeVars'),
+      GbsProcedureType(GbsTupleType([])),
+      implicit_board_proc(internal_freevars)
+    ),
+                           
     BuiltinProcedure(
       i18n.i18n('_Show'),
       GbsProcedureType(GbsTupleType([])),

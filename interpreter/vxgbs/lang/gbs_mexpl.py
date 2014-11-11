@@ -23,6 +23,7 @@ import lang
 #### Macro exploding of Gobstones programs.
 
 class GbsMacroExploder(object):
+        
     def _load_implementation(self, implementation_filename, reserved_token_names=None):
         """ Parses a file with the required implementation and replaces the
         reserved token names with user-innaccesible names """
@@ -33,7 +34,7 @@ class GbsMacroExploder(object):
     
     def explode(self, program_tree):
         entrypoint_tree = defhelper.find_def(program_tree.children[2], defhelper.is_entrypoint_def)
-        self.explicit_board = not entrypoint_tree.annotations["varProc"] is None
+        self.explicit_board = len(entrypoint_tree.children[2].children) != 0
         """ Explodes program macros """
         self._explode_interactive(program_tree)
     
@@ -45,7 +46,7 @@ class GbsMacroExploder(object):
                 macro_filename = "interactive_program.gbs"
             else:
                 macro_filename = "interactive_program_implicit.gbs"
-            implementation_program = self._load_implementation(macro_filename, ["lastKey", "read", "Show"])
+            implementation_program = self._load_implementation(macro_filename, ["lastKey", "read", "Show", "FreeVars"])
             interactive_impl = defhelper.find_def(implementation_program.children[2], defhelper.is_entrypoint_def)
             interactive_impl_case = defhelper.recursive_find_node(interactive_impl, functools.partial(defhelper.is_node, 'case'))
             interactive_impl_case.children = [interactive_impl_case.children[0], interactive_impl_case.children[1]]
