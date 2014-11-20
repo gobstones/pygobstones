@@ -668,7 +668,7 @@ class GbsTypeInference(object):
             fields[fname.children[1].value] = self.infer_expression(fvalue)
         
         type_name = tree.children[2].children[1]
-        if type_name.value == "Array":
+        if type_name.value == "Arreglo":
             real_type = lang.gbs_type.GbsArrayType()
         else:
             real_type = lang.gbs_type.GbsRecordType(type_name.value, fields)

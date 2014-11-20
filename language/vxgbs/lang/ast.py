@@ -469,11 +469,11 @@ class ASTBuilder(object):
         else:
             fields = _make_list_expression(expr_construct[2])
             
-        if constructor_type.children[1].value == 'Array':
-            return ASTNode(['constructor',
+        if constructor_type.children[1].value == 'Arreglo':
+            return ASTNode(['funcCall',
                             lang.bnf_parser.Token('lowerid', '_mkArray', pos_b, pos_e),
-                            constructor_type,
-                            fields                                                        
+                            ASTNode([constructor_type,
+                                     fields], pos_b, pos_e),                                                        
                             ], pos_b, pos_e)
         else:
             if not (len(expr_construct[2].children) > 0 and expr_construct[2].children[0] == 'recordSuchAs'):

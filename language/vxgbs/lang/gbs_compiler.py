@@ -55,7 +55,7 @@ class GbsCompiler(object):
         self.temp_counter = None
         self.module_handler = None
         self._current_def_name = None
-        self.constructor_of_type = {}
+        self.constructor_of_type = {"Arreglo":"Arreglo"}
 
     def compile_program(self, tree, module_prefix='', explicit_board=None):
         """Given an AST for a full program, compile it to virtual machine

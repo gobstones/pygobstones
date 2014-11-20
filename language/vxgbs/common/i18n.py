@@ -332,6 +332,8 @@ ES = {
         'El cursor de la lista no denota ningún valor.',
     '%s constructor expects %s field(s).':
         'El constructor del tipo %s espera recibir %s campo(s)',
+    'Passing by reference is disabled when using implicit board.':
+        'El pasaje por referencia está deshabilitado cuando se utiliza el modo de tablero implícito.',
 
   # dynamic type checking
   'Condition should be a boolean':
@@ -442,6 +444,7 @@ ES = {
   'Bool': 'Bool',
   'Int': 'Int',
   'List': 'List',
+  'Array': 'Arreglo',
 
 # boards
   'Cannot show board, max number allowed is %s':

@@ -251,6 +251,11 @@ class GbsListObject(GbsObject):
 class GbsFieldObject(GbsObject):
     pass
 
+class GbsArrayObject(GbsObject):
+    def clone(self):
+        obj = super(GbsArrayObject, self).clone()
+        return GbsArrayObject(obj.value, obj.type, obj.bindings)
+
 class GbsRecordObject(GbsObject):
     
     def __init__(self, value, type, bindings = {}):
@@ -282,7 +287,9 @@ def wrap_value(value):
         return GbsObject(value, poly_typeof(value))
     
 def unwrap_value(obj):
-    if isinstance(obj, GbsFieldObject) or isinstance(obj, GbsRecordObject): #[TODO] Smelly fix
+    if (isinstance(obj, GbsFieldObject ) or 
+        isinstance(obj, GbsRecordObject) or 
+        isinstance(obj, GbsArrayObject )): #[TODO] Smelly fix
         return obj
     elif isinstance(obj, GbsObject):
         return obj.value
@@ -793,8 +800,137 @@ def str_concat(global_state, str1, str2):
         msg = global_state.backtrace(i18n.i18n('%s was expected') % (i18n.i18n('string type value'),))
         raise GbsRuntimeException(msg, global_state.area())
 
+############### 
+## References
+###############
+
+TYPE_GETREF = GbsForallType(
+                    [TYPEVAR_X, TYPEVAR_Y, TYPEVAR_Z],
+                    GbsFunctionType(
+                        GbsTupleType([TYPEVAR_X, TYPEVAR_Y]),
+                        GbsTupleType([TYPEVAR_Z])))
+ 
+TYPE_GETREFVALUE = GbsForallType([TYPEVAR_X, TYPEVAR_Y],
+                                 GbsFunctionType(
+                                     GbsTupleType([TYPEVAR_X]),
+                                     GbsTupleType([TYPEVAR_Y])))
+ 
+TYPE_SETREFVALUE = GbsForallType(
+                    [TYPEVAR_X, TYPEVAR_Y],
+                    GbsFunctionType(
+                        GbsTupleType([TYPEVAR_X, TYPEVAR_Y]),
+                        GbsTupleType([])))
+
+TYPE_CHECKPROJECTABLEVAR = GbsProcedureType(GbsTupleType([GbsSymbolType()]))
+
+def check_projectable_var(global_state, varname):
+    activation_rec = global_state.interpreter.ar
+    routine = activation_rec.routine
+    if activation_rec.is_immutable(varname):
+        if varname in routine.params:
+            is_a = i18n.i18n('"%s" is a parameter')
+        else:
+            is_a = i18n.i18n('"%s" is an index')
+        msg = global_state.backtrace(". ".join([i18n.i18n('Cannot apply "." operator to "%s"'), 
+                                      is_a]) % 
+                                     (varname, varname))
+        raise GbsRuntimeException(msg, global_state.area())
+
+def get_ref_value(global_state, ref):
+    if isinstance(ref, GbsObject) and not isinstance(ref.value, dict):
+        return ref.value
+    elif isinstance(ref, GbsObjectRef):
+        obj = ref.get()
+        if isinstance(obj, GbsObject):
+            return obj.value
+        else:
+            return obj
+    else:
+        return ref
+
+def dict_setter(dictionary, index):
+    def set_dict(value):
+        dictionary[index] = value
+    return set_dict
+
+def list_setter(lst, index):
+    def set_list(value):
+        lst[index] = value
+    return set_list
+
+def get_ref(global_state, from_, index):    
+    if isinstance(from_, list):
+        if isinstance(index, str):
+            msg = global_state.backtrace(i18n.i18n('Cannot apply "." operator to "%s"') % (poly_typeof(from_),))
+        else:
+            msg = global_state.backtrace(i18n.i18n('"%s" is not indexable.') % (poly_typeof(from_),))
+        raise GbsRuntimeException(msg, global_state.area())
+        
+    if isinstance(from_, GbsArrayObject):
+        if index in range(0, len(from_.value)):
+            content = from_.value
+            return GbsObjectRef(lambda: content[index], 
+                                list_setter(content, index))
+        elif index in from_.bindings.keys():
+            content = from_.bindings
+            return GbsObjectRef(lambda: content[index], 
+                                dict_setter(content, index))
+        else:
+            if isinstance(index, str):
+                msg = global_state.backtrace(i18n.i18n('"%s" is not a valid field.') % (index,))
+            else:
+                msg = global_state.backtrace(i18n.i18n('"%s" is not indexable.') % (poly_typeof(from_),))
+            raise GbsRuntimeException(msg, global_state.area())
+        
+    else:
+        if index in from_.value.keys():
+            dic = from_.value
+        elif index in from_.bindings.keys():
+            dic = from_.bindings
+        else:
+            msg = global_state.backtrace(i18n.i18n('"%s" is not a valid field.') % (index,))
+            raise GbsRuntimeException(msg, global_state.area())
+    
+        return GbsObjectRef(lambda: dic[index], 
+                            dict_setter(dic, index))
+        
+def assign_ref(global_state, ref, value):
+    if isinstance(value, GbsObject):
+        rvalue = value.clone()        
+    else:
+        rvalue = wrap_value(value)
+        
+    # [TODO] getter and setter for array position
+    if isinstance(ref, GbsObject):
+        ref.value = rvalue.value
+        ref.type = rvalue.type
+        ref.bindings = rvalue.bindings
+    else:
+        ref.set(rvalue)
+
 BUILTINS_EXPLICIT_BOARD = [
     #### Procedures
+    BuiltinFunction(
+      i18n.i18n('_getRef'),
+      TYPE_GETREF,
+      get_ref
+    ),  
+    BuiltinFunction(
+      i18n.i18n('_getRefValue'),
+      TYPE_GETREFVALUE,
+      get_ref_value
+    ),  
+    BuiltinFunction(
+      i18n.i18n('_SetRefValue'),
+      TYPE_SETREFVALUE,
+      assign_ref
+    ),
+    BuiltinProcedure(
+        i18n.i18n('_checkProjectableVar'),
+        TYPE_CHECKPROJECTABLEVAR,
+        check_projectable_var
+    ),
+                           
     BuiltinProcedure(
       i18n.i18n('_FreeVars'),
       GbsProcedureType(GbsTupleType([GbsBoardType()])),
@@ -874,8 +1010,32 @@ def implicit_board_proc(f):
         f(gs, GbsObject(gs.board, 'Board'), *values)
     return ff
 
+def disabled_references(global_state, *args):
+    msg = i18n.i18n('Passing by reference is disabled when using implicit board.')
+    raise GbsRuntimeException(msg, global_state.area())
+
 BUILTINS_IMPLICIT_BOARD = [
     #### Procedures
+    BuiltinFunction(
+      i18n.i18n('_getRef'),
+      TYPE_GETREF,
+      disabled_references
+    ),  
+    BuiltinFunction(
+      i18n.i18n('_getRefValue'),
+      TYPE_GETREFVALUE,
+      disabled_references
+    ),  
+    BuiltinFunction(
+      i18n.i18n('_SetRefValue'),
+      TYPE_SETREFVALUE,
+      disabled_references
+    ),
+    BuiltinProcedure(
+        i18n.i18n('_checkProjectableVar'),
+        TYPE_CHECKPROJECTABLEVAR,
+        disabled_references
+    ),
     BuiltinProcedure(
       i18n.i18n('_FreeVars'),
       GbsProcedureType(GbsTupleType([])),
@@ -1553,119 +1713,9 @@ RECORD_BUILTINS = [
 ]
 BUILTINS += RECORD_BUILTINS
 
-############### 
-## References
-###############
 
-TYPE_GETREF = GbsForallType(
-                    [TYPEVAR_X, TYPEVAR_Y, TYPEVAR_Z],
-                    GbsFunctionType(
-                        GbsTupleType([TYPEVAR_X, TYPEVAR_Y]),
-                        GbsTupleType([TYPEVAR_Z])))
- 
-TYPE_GETREFVALUE = GbsForallType([TYPEVAR_X, TYPEVAR_Y],
-                                 GbsFunctionType(
-                                     GbsTupleType([TYPEVAR_X]),
-                                     GbsTupleType([TYPEVAR_Y])))
- 
-TYPE_SETREFVALUE = GbsForallType(
-                    [TYPEVAR_X, TYPEVAR_Y],
-                    GbsFunctionType(
-                        GbsTupleType([TYPEVAR_X, TYPEVAR_Y]),
-                        GbsTupleType([])))
 
-TYPE_CHECKPROJECTABLEVAR = GbsProcedureType(GbsTupleType([GbsSymbolType()]))
 
-def check_projectable_var(global_state, varname):
-    activation_rec = global_state.interpreter.ar
-    routine = activation_rec.routine
-    if activation_rec.is_immutable(varname):
-        if varname in routine.params:
-            is_a = i18n.i18n('"%s" is a parameter')
-        else:
-            is_a = i18n.i18n('"%s" is an index')
-        msg = global_state.backtrace(". ".join([i18n.i18n('Cannot apply "." operator to "%s"'), 
-                                      is_a]) % 
-                                     (varname, varname))
-        raise GbsRuntimeException(msg, global_state.area())
-
-def get_ref_value(global_state, ref):
-    if isinstance(ref, GbsObject) and not isinstance(ref.value, dict):
-        return ref.value
-    elif isinstance(ref, GbsObjectRef):
-        obj = ref.get()
-        if isinstance(obj, GbsObject):
-            return obj.value
-        else:
-            return obj
-    else:
-        return ref
-
-def dict_setter(dictionary, index):
-    def set_dict(value):
-        dictionary[index] = value
-    return set_dict
-
-def get_ref(global_state, from_, index):    
-    if isinstance(from_, list):
-        if isinstance(index, str):
-            msg = global_state.backtrace(i18n.i18n('Cannot apply "." operator to "%s"') % (poly_typeof(from_),))
-        else:
-            msg = global_state.backtrace(i18n.i18n('"%s" is not indexable.') % (poly_typeof(from_),))
-        raise GbsRuntimeException(msg, global_state.area())
-        
-    if index in from_.value.keys():
-        dic = from_.value
-    elif index in from_.bindings.keys():
-        dic = from_.bindings
-    else:
-        if isinstance(index, str):
-            msg = global_state.backtrace(i18n.i18n('"%s" is not a valid field.') % (index,))
-        else:   
-            msg = global_state.backtrace(i18n.i18n('"%s" is not indexable.') % (poly_typeof(from_),))
-        raise GbsRuntimeException(msg, global_state.area())
-    
-    return GbsObjectRef(lambda: dic[index], 
-                        dict_setter(dic, index))
-        
-def assign_ref(global_state, ref, value):
-    if isinstance(value, GbsObject):
-        rvalue = value.clone()        
-    else:
-        rvalue = wrap_value(value)
-        
-    # [TODO] getter and setter for array position
-    if isinstance(ref, GbsObject):
-        ref.value = rvalue.value
-        ref.type = rvalue.type
-        ref.bindings = rvalue.bindings
-    else:
-        ref.set(rvalue)
-
-REFERENCES_BUILTINS = [
-    BuiltinFunction(
-      i18n.i18n('_getRef'),
-      TYPE_GETREF,
-      get_ref
-    ),  
-    BuiltinFunction(
-      i18n.i18n('_getRefValue'),
-      TYPE_GETREFVALUE,
-      get_ref_value
-    ),  
-    BuiltinFunction(
-      i18n.i18n('_SetRefValue'),
-      TYPE_SETREFVALUE,
-      assign_ref
-    ),
-    BuiltinProcedure(
-        i18n.i18n('_checkProjectableVar'),
-        TYPE_CHECKPROJECTABLEVAR,
-        check_projectable_var
-    )
-]
-
-BUILTINS += REFERENCES_BUILTINS
 
 ############### 
 ## Arrays
@@ -1678,8 +1728,9 @@ TYPE_MKARRAY = GbsForallType(
                         GbsTupleType([GbsArrayType(TYPEVAR_X)])))
 
 def mk_array(global_state, type, fields):
-    field = fields.value[0]
-    if len(fields.value) > 1:
+    fields = unwrap_value(fields)
+    field = fields[0]
+    if len(fields) > 1:
         msg = global_state.backtrace(i18n.i18n('%s constructor expects %s field(s).') % (i18n.i18n('Array'), 1))
         raise GbsRuntimeTypeException(msg, global_state.area())
     elif field.value[0] != 'size':
@@ -1694,7 +1745,7 @@ def mk_array(global_state, type, fields):
         raise GbsRuntimeTypeException(msg, global_state.area())
     else:
         size = field.value[1]
-        return GbsObject([GbsObject(None, GbsTypeVar()) for i in range(size)], 'Array', {'size':size})
+        return GbsArrayObject([GbsObject(None, GbsTypeVar()) for i in range(size)], 'Array', {'size':size})
 
 ARRAY_BUILTINS = [
     BuiltinFunction(
