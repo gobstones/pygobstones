@@ -56,7 +56,7 @@ def main():
 if __name__ == '__main__':
 
     # NOTE: do not remove the __name__ == '__main__' check.
-    # It is necessary in Windows for the interpreter not to
+    # It is necessary in Windows for the language not to
     # spawn infinitely many processes.
 
     main()

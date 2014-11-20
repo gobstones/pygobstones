@@ -11,7 +11,7 @@ from .preferencesWindow import PreferencesWindow
 from .editOption import EditOption
 from .boardOption import *
 from .helpOption import HelpOption
-from interpreter.programRun import *
+from language.programRun import *
 from views.boardPrint.board import *
 from views.boardPrint.boardViewer import *
 from resultsMainWindow import *

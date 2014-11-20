@@ -6,7 +6,7 @@ import importlib
 import sys
 import os
 import commons.concurrent as concurrent
-from interpreter.programWorker import ProgramWorker
+from language.programWorker import ProgramWorker
 
 debug = False
 
@@ -104,41 +104,41 @@ class ProgramRun(object):
         self.handler = handler
         self.comm = None
         self.gobstones_version = gobstones_version
-        self.gbs_interpreter = self.get_gobstones_interpreter(gobstones_version)
+        self.gbs_language = self.get_gobstones_language(gobstones_version)
     
-    def get_gobstones_interpreter(self, version):
+    def get_gobstones_language(self, version):
         version_package = "v"+ version.replace(".", "_")
-        self.remove_old_interpreter_paths()
-        self.clean_old_interpreter_modules()
+        self.remove_old_language_paths()
+        self.clean_old_language_modules()
         sys.path.append(os.path.join(os.path.dirname(__file__), version_package))
-        return importlib.import_module("."+version_package, "interpreter")
+        return importlib.import_module("."+version_package, "language")
     
-    def clean_old_interpreter_modules(self):
-        interpreter_absolutes = ['common', 'lang']
-        interpreter_relatives = [abs + "." for abs in interpreter_absolutes]
-        def is_interpreter_module(module_path):
-            for rel in interpreter_relatives:
+    def clean_old_language_modules(self):
+        language_absolutes = ['common', 'lang']
+        language_relatives = [abs + "." for abs in language_absolutes]
+        def is_language_module(module_path):
+            for rel in language_relatives:
                 if module_path.startswith(rel):
                     return True
-            for abs in interpreter_absolutes:
+            for abs in language_absolutes:
                 if module_path == abs:
                     return True
             return False
 
         for m in sys.modules.keys():
-            if is_interpreter_module(m):
+            if is_language_module(m):
                 del(sys.modules[m])
     
-    def remove_old_interpreter_paths(self):
+    def remove_old_language_paths(self):
         for path in sys.path:
             if path.count(os.path.dirname(__file__)) > 0:
                 sys.path.remove(path)
     
     def get_worker_class(self):
         if self.gobstones_version == "xgbs":
-            return self.gbs_interpreter.XGobstonesWorker
+            return self.gbs_language.XGobstonesWorker
         else:
-            return self.gbs_interpreter.GobstonesWorker
+            return self.gbs_language.GobstonesWorker
     
     def create_worker_process(self):
         if self.process is None:
