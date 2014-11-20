@@ -58,7 +58,7 @@ class GbsMacroExploder(object):
         """ Replaces interactive macro with it's implementation in the program tree """
         interactive = defhelper.find_def(program_tree.children[2], defhelper.is_interactive_def)
         if interactive != None:
-            implementation_program = self._load_implementation("interactive_program.gbs", ["lastKey", "read", "Show"])
+            implementation_program = self._load_implementation("interactive_program.gbs", ["FreeVars", "lastKey", "read", "Show"])
             interactive_impl = defhelper.find_def(implementation_program.children[2], defhelper.is_entrypoint_def)
             interactive_impl_case = defhelper.recursive_find_node(interactive_impl, functools.partial(defhelper.is_node, 'case'))
             interactive_impl_case.children = [interactive_impl_case.children[0], interactive_impl_case.children[1]]

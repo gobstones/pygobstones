@@ -5,6 +5,7 @@ program {
       --Replaced with interactive program branches
       1 -> {Skip}      
       _ -> {Skip}
+    FreeVars()
     Show()
     lastKey := read()
   }

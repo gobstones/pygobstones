@@ -63,6 +63,9 @@ class GobstonesWorker(ProgramWorker):
             self.communicator.send('OK', (tools.board_format.to_string(gbs_run.final_board), gbs_run.result))
     
     def failure(self, exception):
-        self.communicator.send('FAIL', (exception.__class__, (exception.msg, exception.area)))
+        if hasattr(exception, 'msg'):
+            self.communicator.send('FAIL', (exception.__class__, (exception.msg, exception.area)))
+        else:
+            raise exception
         
         

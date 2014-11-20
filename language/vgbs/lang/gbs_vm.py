@@ -151,6 +151,10 @@ class ActivationRecord(object):
   def unset_immutable(self, name):
     self.immutable_names.remove(name)
 
+  def free_bindings(self):
+    self.bindings = {}
+    self.immutable_names = []
+
 
 class GlobalState(object):
   def __init__(self, interpreter, board):
