@@ -256,8 +256,8 @@ namespace of routines.
             
             #compile expression
             self.compile_expression(tree.children[3], code)
-            #assign ref
-            code.push(('call', '_assignRef', 2), near=tree)
+            #Set ref
+            code.push(('call', '_SetRefValue', 2), near=tree)
         else:
             #compile expression
             self.compile_expression(tree.children[3], code)

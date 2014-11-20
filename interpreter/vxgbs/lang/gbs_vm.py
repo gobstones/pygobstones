@@ -36,8 +36,8 @@ from common.utils import *
 ## Opcodes:
 ## ---
 ## pushConst   const_name                  |           -- const
-## pushVar     var_name                    |           -- var
-## assign      var_name                    | value     --
+## pushFrom     var_name                    |           -- var
+## popTo      var_name                    | value     --
 ## call        rtn_name, nargs             | a1 ... an -- r1 ... rm
 ## THROW_ERROR        str                         |           --
 ## label       label                       |           --
@@ -385,7 +385,7 @@ class GbsVmInterpreter(object):
             
         res = builtin.primitive()(self.global_state, *args)
         # [TODO] Remove : if builtin.type() == 'function':        
-        if not res is None: # [TODO] Remove hack for _assignRef
+        if not res is None: # [TODO] Remove hack for _SetRefValue
             self.push_stack(res) # push result
         self.ar.ip += 1
       elif funcName in self.program.routines:

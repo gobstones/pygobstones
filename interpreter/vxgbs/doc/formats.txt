@@ -23,10 +23,10 @@
 	GBO/1.0
 	procedure $IrAlExtremo dir
 		label L_140266309194320
-		pushVar dir
+		pushFrom dir
 		call puedeMover 1
 		jumpIfFalse L_140266309196496
-		pushVar dir
+		pushFrom dir
 		call Mover 1
 		jump L_140266309194320
 		label L_140266309196496

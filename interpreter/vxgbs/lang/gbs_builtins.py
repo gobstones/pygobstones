@@ -1561,7 +1561,7 @@ TYPE_GETREFVALUE = GbsForallType([TYPEVAR_X, TYPEVAR_Y],
                                      GbsTupleType([TYPEVAR_X]),
                                      GbsTupleType([TYPEVAR_Y])))
  
-TYPE_ASSIGNREF = GbsForallType(
+TYPE_SETREFVALUE = GbsForallType(
                     [TYPEVAR_X, TYPEVAR_Y],
                     GbsFunctionType(
                         GbsTupleType([TYPEVAR_X, TYPEVAR_Y]),
@@ -1647,8 +1647,8 @@ REFERENCES_BUILTINS = [
       get_ref_value
     ),  
     BuiltinFunction(
-      i18n.i18n('_assignRef'),
-      TYPE_ASSIGNREF,
+      i18n.i18n('_SetRefValue'),
+      TYPE_SETREFVALUE,
       assign_ref
     ),
     BuiltinProcedure(

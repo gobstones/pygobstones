@@ -806,8 +806,8 @@ Los opcodes de la \GVM son los siguientes:
 \textbf{Nombre} & \textbf{Par\'ametros} & \textbf{Efecto en la pila}\\
 \hline
 pushConst   & const                       &           -- const\\
-pushVar     & var_name                    &           -- var\\
-assign      & var_name                    & value     --\\
+pushFrom     & var_name                    &           -- var\\
+popTo      & var_name                    & value     --\\
 call        & rtn_name, nargs             & a1 ... an -- r1 ... rm\\
 THROW_ERROR        & str                         &           --\\
 label       & label_name                  &           --\\
@@ -825,13 +825,13 @@ delVar      & var_name                    & -- \\
 \item \py{pushConst const} --
 mete en la pila la constante \py{const}.
 
-\item \py{pushVar var_name} --
+\item \py{pushFrom var_name} --
 mete en la pila el valor de la variable local
 llamada \py{var_name}. Debe estar definida en
 el diccionario de bindings locales del registro
 de activaci\'on \py{ar}.
 
-\item \py{assign var_name} --
+\item \py{popTo var_name} --
 saca de la pila un valor y se lo asigna a la
 variable local llamada \py{var_name}, en el
 diccionario de bindings locales del registro
