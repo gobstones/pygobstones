@@ -373,7 +373,6 @@ class GbsTypeInference(object):
             'Skip': self.infer_skip,
             'THROW_ERROR': self.infer_boom,
             'procCall': self.infer_proc_call,
-            'varDecl': self.infer_var_decl,
             'assignVarName': self.infer_assign_var_name,
             'assignVarTuple1': self.infer_assign_var_tuple1,
             'if': self.infer_if,
@@ -414,22 +413,6 @@ class GbsTypeInference(object):
                   )
             self.error(GbsTypeInferenceException(msg, area))
         tree.type_annotation = proc_type.parameters()
-
-    def infer_var_decl(self, tree):
-        "Infer types for a variable type: var <name> := <expr>"
-        var = tree.children[1]
-        var_type = self.infer_type(tree.children[2])
-        try:
-            self._add_var(var, var_type)
-        except lang.gbs_type.UnificationFailedException as e:
-            area = common.position.ProgramAreaNear(tree)
-            msg = i18n.i18n(
-                      '"%s" has type: %s\n' +
-                      'Right hand side has type: %s'
-                  ) % (
-                      var.value, e.type1.show(), e.type2.show()
-                  )
-            self.error(GbsTypeInferenceException(msg, area))
 
     def infer_assign_var_name(self, tree):
         "Infer types for a variable assignment: var := <expr>"

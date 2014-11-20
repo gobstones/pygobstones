@@ -182,7 +182,6 @@ namespace of routines.
             'procCall': self.compile_proc_call,
             'assignVarName': self.compile_assign_var_name,
             'assignVarTuple1': self.compile_assign_var_tuple1,
-            'varDecl': self.compile_var_decl,
             'if': self.compile_if,
             'case': self.compile_case,
             'while': self.compile_while,
@@ -229,10 +228,6 @@ namespace of routines.
             code.push(('popTo', inout_var.children[1].value), near=tree)
 
 
-    def compile_var_decl(self, tree, code):
-        "Compile a variable type declaration: var <var> := <type>"
-        pass
-                
     def compile_projectable_var_check(self, tree, code, var):
         "Compile a projectable variable check. Varname is pushed to stack."
         code.push(('pushConst', var), near=tree)

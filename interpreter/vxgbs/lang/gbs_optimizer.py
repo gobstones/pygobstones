@@ -143,11 +143,6 @@ class GbsOptimizer(object):
     def optimize_assignVarTuple1(self, tree):
         pass
     
-    
-    def optimize_varDecl(self, tree):
-        pass
-    
-    
     def optimize_if(self, tree):
         pass
     
@@ -194,7 +189,6 @@ class GbsOptimizer(object):
             'procCall': self.optimize_procCall,
             'assignVarName': self.optimize_assignVarName,
             'assignVarTuple1': self.optimize_assignVarTuple1,
-            'varDecl': self.optimize_varDecl,
             'if': self.optimize_if,
             'case': self.optimize_case,
             'while': self.optimize_while,

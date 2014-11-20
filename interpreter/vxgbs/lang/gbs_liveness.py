@@ -99,7 +99,6 @@ modifies the current state of the analysis."""
       'THROW_ERROR': self.annotate_THROW_ERROR,
       'procCall': self.annotate_procCall,
       'assignVarName': self.annotate_assignVarName,
-      'varDecl': self.annotate_varDecl,
       'assignVarTuple1': self.annotate_assignVarTuple1,
       'if': self.annotate_if,
       'case': self.annotate_case,
@@ -128,11 +127,6 @@ modifies the current state of the analysis."""
     # in = gen U out
     gen = self.gen_tuple(tree.children[2])
     self._live_in(tree, tokset_union(gen, tree.live_out))
-
-  def annotate_varDecl(self, tree):
-    # in = (out \ kill)
-    kill = tokset_new([tree.children[1].value])
-    self._live_in(tree, tokset_difference(tree.live_out, kill))
 
   def annotate_assignVarName(self, tree):
     # in = gen U (out \ kill)

@@ -614,7 +614,6 @@ class GbsSemanticChecker(object):
             'procCall': self.check_procCall,
             'assignVarName': self.check_assignVarName,
             'assignVarTuple1': self.check_assignVarTuple1,
-            'varDecl': self.check_varDecl,
             'if': self.check_if,
             'case': self.check_case,
             'while': self.check_while,
@@ -662,12 +661,6 @@ class GbsSemanticChecker(object):
             type = tree.children[1]        
             self.symbol_table.check_defined_as(type, type.value, 'atomic', 'type')
         
-    def check_varDecl(self, tree):
-        varName = tree.children[1].value
-        type = tree.children[2]
-        self.check_type(type)
-        self._add_var(varName, tree)
-
     def check_assignVarTuple1(self, tree):
         varTuple = tree.children[1].children
         nombres = {}

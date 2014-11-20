@@ -110,7 +110,7 @@
 
 <params> ::= <varTuple> ;;
 
-<procFuncBody> ::= { <vardecls> <cmds> <return?> } @ ++ $2 $3 $4 ;;
+<procFuncBody> ::= { <cmds> <return?> } @ ++ $2 $3 ;;
 
 <interactiveBody> ::= { <branches> } @ $2 ;;
 
@@ -348,11 +348,6 @@
                 @ typedef $2 $4 
           ;; 
 
-
-<vardecl> ::= var <varName> : <type>        @ varDecl $2 $4 ;;
-<vardecls>  ::= <EMPTY>                     @ []
-              | <vardecl> <;?> <vardecls>   @ ++ [$1] $3
-            ;; 
 
 <typeName> ::= upperid ;;
 <type>  ::= <typeName>      @ type $1

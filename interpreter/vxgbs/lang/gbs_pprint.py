@@ -180,7 +180,6 @@ class GbsPrettyPrinter(object):
       'procCall': self.pprint_procCall,
       'assignVarName': self.pprint_assignVarName,
       'assignVarTuple1': self.pprint_assignVarTuple1,
-      'varDecl': self.pprint_varDecl,
       'if': self.pprint_if,
       'case': self.pprint_case,
       'while': self.pprint_while,
@@ -204,10 +203,6 @@ class GbsPrettyPrinter(object):
     s += self.join_fit_map(llen(s), ', ', vals, self.pprint_expression)
     s += ')'
     return s
-
-  def pprint_varDecl(self, tree):
-      s = "var %s : %s" % (tree.children[1].value, self.pprint_type(tree.children[2], 0)) 
-      return self.indent() + s
   
   def pprint_assignVarName(self, tree):
     s = self.indent() + tree.children[1].value + ' := '
