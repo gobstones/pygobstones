@@ -68,7 +68,9 @@ class Annotation(object):
 
 
 class GobstonesTest(object):
-    pass
+    
+    def name(self):
+        return self.__class__.__name__
 
 
 class GobstonesFileTest(GobstonesTest):

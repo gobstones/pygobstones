@@ -274,6 +274,10 @@ ES = {
   'Division by zero': 'División por cero',
   'Negative exponent': 'Potencia con exponente negativo',
   'Empty list': 'Lista vacía',
+  'Unknown bytecode instruction: %s.':
+    'Instrucción bytecode desconocida: %s.',
+  'Range with increment is only available for integers.':
+    'La utilización de rangos con incremento sólo está disponible para números.',
 
   # dynamic type checking
   'Condition should be a boolean':

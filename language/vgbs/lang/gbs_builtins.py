@@ -55,6 +55,8 @@ class GbsRuntimeException(DynamicException):
         return i18n.i18n('Runtime error')
 
 TYPEVAR_X = GbsTypeVar()
+TYPEVAR_Y = GbsTypeVar()
+TYPEVAR_Z = GbsTypeVar()
 
 # a -> a
 TYPE_AA = GbsForallType(
@@ -483,9 +485,17 @@ def internal_read(global_state):
 def internal_show(global_state):
     global_state.interpreter.interactive_api.show(global_state.board.clone())
 
+def internal_freevars(global_state):
+    global_state.interpreter.ar.free_bindings()
 
 # 'Main',
 BUILTINS = [
+
+    BuiltinProcedure(
+      i18n.i18n('_FreeVars'),
+      GbsProcedureType(GbsTupleType([])),
+      internal_freevars
+    ),
 
     #### Internal operations
     
@@ -815,6 +825,24 @@ TYPE_NIL = GbsForallType(
                     GbsTupleType([]),
                     GbsTupleType([GbsListType(TYPEVAR_X)])))
 
+TYPE_LIST_GEN = GbsForallType(
+                [TYPEVAR_X],
+                GbsFunctionType(
+                    GbsTupleType([TYPEVAR_X]),
+                    GbsTupleType([GbsListType(TYPEVAR_X)])))
+
+TYPE_CONCAT = GbsForallType(
+                [TYPEVAR_X, TYPEVAR_Y, TYPEVAR_Z],
+                GbsFunctionType(
+                    GbsTupleType([GbsListType(TYPEVAR_X), GbsListType(TYPEVAR_Y)]),
+                    GbsTupleType([GbsListType(TYPEVAR_Z)])))
+
+TYPE_RANGE = GbsForallType(
+                [TYPEVAR_X],
+                GbsFunctionType(
+                    GbsTupleType([TYPEVAR_X, TYPEVAR_X, TYPEVAR_X]),
+                    GbsTupleType([GbsListType(TYPEVAR_X)])))
+
 TYPE_CONS = GbsForallType(
                 [TYPEVAR_X],
                 GbsFunctionType(
@@ -871,44 +899,128 @@ def list_init(global_state, lst):
     "Return the initial segment of the list."
     return list_operation(global_state, lst, lambda lst: lst[:-1])
 
+def list_concat(global_state, lst1, lst2):
+    return list_binary_operation(global_state, lst1, lst2, lambda lst1, lst2: lst1 + lst2)
+
+def list_range(global_state, first, last, second):
+    return poly_range(first, last, second)
+
+def list_inner_type_eq(lst1, lst2):
+    return len(lst1) == 0 or len(lst2) == 0 or poly_typeof(lst1[0]) == poly_typeof(lst2[0])
+
+def list_binary_operation(global_state, lst1, lst2, f):
+    """Wrapper for binary list operations to ensure list types"""
+    if poly_typeof(lst1) == poly_typeof(lst2) and poly_typeof(lst1) == 'List' and list_inner_type_eq(lst1, lst2):
+        return f(lst1, lst2)
+    else:
+        if poly_typeof(lst1) != 'List':
+            msg = global_state.backtrace(i18n.i18n('%s was expected') % (i18n.i18n('list type value'),))
+            raise GbsRuntimeException(msg, global_state.area())
+        else:
+            msg = global_state.backtrace(i18n.i18n('Concatenation between lists with different inner type.'))
+            raise GbsRuntimeException(msg, global_state.area())
+
+def poly_range(first, last, second):
+    "Generate a list between two given basic values. Types must match."
+    if poly_typeof(first) == poly_typeof(last):
+        if isinstance(first, list):
+            assert False
+        if poly_typeof(first) == poly_typeof(second):
+            if poly_ord(first) == poly_ord(second):
+                return []
+            else:
+                increment = poly_ord(second) - poly_ord(first)
+                if poly_typeof(first) != 'Int' and increment != 1 and first != last:
+                    return []
+            assert increment != 0
+        elif second == 'NoSecondElementForRange':
+            increment = 1
+        else:
+            assert False
+        
+        def next_elem(elem):
+            if increment >= 0:
+                for i in range(increment):
+                    elem = poly_next(elem)
+            else:
+                for i in range(increment*-1):
+                    elem = poly_prev(elem)
+            return elem
+        
+        def elem_reached(elem1, elem2):
+            if increment >= 0:
+                return poly_ord(elem1) >= poly_ord(elem2)
+            else:
+                return poly_ord(elem1) <= poly_ord(elem2)
+        
+        elements = []
+        elem = first
+        while not elem_reached(elem, last):
+            elements.append(elem)
+            if poly_typeof(elem) != 'Int' and poly_ord(elem) == poly_ord(last):
+                return elements
+            elem = next_elem(elem)
+            
+        if poly_ord(elem) == poly_ord(last):
+            elements.append(elem)
+
+        return elements
+    else:
+        assert False
+
 LIST_BUILTINS = [
     BuiltinFunction(
-        i18n.i18n('nil'),
+        i18n.i18n('[]'),
         TYPE_NIL,
         lambda global_state: []
     ),
+     BuiltinFunction(
+        i18n.i18n('[x]'),
+        TYPE_LIST_GEN,
+        lambda global_state, x: [x]
+    ),
     BuiltinFunction(
-        i18n.i18n('cons'),
+        i18n.i18n('++'),
+        TYPE_CONCAT,
+        list_concat
+    ),
+    BuiltinFunction(
+        i18n.i18n('_range'),
+        TYPE_RANGE,
+        list_range
+    ),
+    BuiltinFunction(
+        i18n.i18n('_cons'),
         TYPE_CONS,
         lambda global_state, x, xs: [x] + xs
     ),
     BuiltinFunction(
-        i18n.i18n('snoc'),
+        i18n.i18n('_snoc'),
         TYPE_SNOC,
         lambda global_state, xs, x: xs + [x]
     ),
     BuiltinFunction(
-        i18n.i18n('isEmpty'),
+        i18n.i18n('_isEmpty'),
         TYPE_IS_NIL,
         lambda global_state, x: len(x) == 0
     ),
     BuiltinFunction(
-        i18n.i18n('head'),
+        i18n.i18n('_head'),
         TYPE_HEAD_LAST,
         list_head
     ),
     BuiltinFunction(
-        i18n.i18n('last'),
+        i18n.i18n('_last'),
         TYPE_HEAD_LAST,
         list_last
     ),
     BuiltinFunction(
-        i18n.i18n('tail'),
+        i18n.i18n('_tail'),
         TYPE_TAIL_INIT,
         list_tail
     ),
     BuiltinFunction(
-        i18n.i18n('init'),
+        i18n.i18n('_init'),
         TYPE_TAIL_INIT,
         list_init
     ),
@@ -929,10 +1041,7 @@ def _is_int_constant(string):
             return False
     return True
         
-#### Uncomment to enable the list extensions.
-#BUILTINS += LIST_BUILTINS
-
-####
+BUILTINS += LIST_BUILTINS
 
 COLORS_BY_INITIAL = {
     i18n.i18n('Color0')[0].lower(): COLOR0,

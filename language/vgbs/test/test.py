@@ -78,6 +78,9 @@ class GobstonesFileTest(object):
         self.filename = filename
         self.annotations, self.code = self.extract_annotations(lines)    
     
+    def name(self):
+        return self.filename
+    
     def extract_annotations(self, lines):
         annotations = {}
         code = []
@@ -151,7 +154,11 @@ class TestCase(object):
         tests = self.get_gobstones_tests()
         for test in tests:
             self.setup()
-            self.result = sum_tuples(self.result, test.run()) 
+            self.result = sum_tuples(self.result, test.run())
+            if self.result[1] > 0:
+                print "Failed test '%s'" % (test.name(),)
+            if self.result[2] > 0:
+                print "Error while running test '%s'" % (test.name(),) 
             self.teardown()
         
         self.passed = self.result[0]

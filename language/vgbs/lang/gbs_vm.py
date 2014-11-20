@@ -132,12 +132,25 @@ class GbsCompiledCode(object):
     ##hd += str(self.label_table) + '\n'
     return hd + '\n'.join([showop(x) for x in self.ops]) + '\nend'
 
+
 class ActivationRecord(object):
+
   def __init__(self, program, routine):
     self.program = program
     self.routine = routine
     self.ip = 0
     self.bindings = {}
+    self.immutable_names = []
+
+  def is_immutable(self, name):
+    return name in self.immutable_names
+    
+  def set_immutable(self, name):        
+    self.immutable_names.append(name)
+        
+  def unset_immutable(self, name):
+    self.immutable_names.remove(name)
+
 
 class GlobalState(object):
   def __init__(self, interpreter, board):
@@ -353,6 +366,16 @@ class GbsVmInterpreter(object):
       self.ar.ip += 1
       self.program = self.ar.program
 
+    elif opcode == 'setImmutable':
+      assert op[1] in self.ar.bindings
+      self.ar.set_immutable(op[1])
+      self.ar.ip += 1     
+      
+    elif opcode == 'unsetImmutable':
+      assert op[1] in self.ar.bindings and self.ar.is_immutable(op[1])
+      self.ar.unset_immutable(op[1])
+      self.ar.ip += 1      
+
     elif opcode == 'returnVars':
       nvals = op[1]
       if len(self.callstack) == 0:
@@ -372,6 +395,10 @@ class GbsVmInterpreter(object):
         self.ar = self.callstack.pop()
         self.ar.ip += 1
         self.program = self.ar.program
+
+    else:
+        raise GbsVmException(i18n.i18n('Unknown bytecode instruction: %s.') % (
+                    opcode,), self.current_area())
 
     ## DEBUG
     #print(op)

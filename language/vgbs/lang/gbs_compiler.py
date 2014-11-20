@@ -305,140 +305,91 @@ namespace of routines.
 
     def compile_foreach(self, tree, code):
         "Compile a foreach statement."
+        #
+        #   foreach <Index> in <List> <Block>
+        #
+        # Compiles to code corresponding to
+        # the following fragment:
+        #
+        #   xs0 := <List>
+        #   while (true) {
+        #     if (isEmpty(xs0)) break;
+        #     <Index> := head(xs0)
+        #     setImmutable(<Index>)
+        #     <Block>
+        #     unsetImmutable(<Index>)
+        #     xs0 := tail(xs)
+        #   }
+        #
+        def jumpIfIsEmpty(var, label):
+            code.push(('pushFrom', var), near=tree)
+            code.push(('call', i18n.i18n('_isEmpty'), 1), near=tree)
+            code.push(('call', 'not', 1), near=tree)
+            code.push(('jumpIfFalse', label), near=tree)
+        def head(listVar, var):
+            code.push(('pushFrom', listVar), near=tree)
+            code.push(('call', i18n.i18n('_head'), 1), near=tree)
+            code.push(('popTo', var), near=tree)
+        def tail(listVar, var):
+            code.push(('pushFrom', listVar), near=tree)
+            code.push(('call', i18n.i18n('_tail'), 1), near=tree)
+            code.push(('popTo', var), near=tree)
+        
+        
         foreach_type = tree.children[2].children[0]
-        if foreach_type == 'enum':
-            self.compile_foreach_with_enumeration(tree, code)
-        elif foreach_type == 'range':
-            self.compile_foreach_with_range(tree, code)
-        else:
-            assert False
-    
-    def compile_foreach_with_enumeration(self, tree, code):            
-        #
-        #    foreach i in [v1,v2,v3,..., vn] {BODY}
-        #
-        # Compiles to code corresponding to
-        # the following fragment:
-        #
-        #    i:= val_i
-        #    {BODY}
-        #
-        # for each element in sequence.
-        #
-        i = tree.children[1].value
-        enum_values = tree.children[2].children[1:]
+        index = tree.children[1].value
         body = tree.children[3]
-        for val in enum_values:
-            # i := val_i
-            self.compile_expression(val, code)
-            code.push(('popTo', i), near=tree)
-            # body
-            self.compile_block(body, code)
-        code.push(('delVar', i), near=tree)
-    
-    def compile_foreach_with_range(self, tree, code):
-        #
-        #   foreach i in [First,Second..Last] {BODY}
-        #
-        # Compiles to code corresponding to
-        # the following fragment:
-        #    
-        #    iter := 0
-        #    i := First
-        #    second0 := Second || First + 1
-        #    last0 := Last
-        #    delta := second0 - First        
-        #    while (true) {
-        #       if (_exceeded_range(i, last0, delta, iter)) break;
-        #       {BODY}        
-        #       i := next(i, delta)
-        #       iter := iter + 1
-        #    }
-        #    label lend;
-        
-        def call_next_with_delta():
-            """Add a VM instruction for calling the builtin 'next_with_delta' function,
-            which operates on any iterable value.
-            """
-            code.push(('call', i18n.i18n('_next_with_delta'), 2), near=tree)
-
-        def call_next():
-            """Add a VM instruction for calling the builtin 'next' function,
-            which operates on any iterable value.
-            """
-            name = i18n.i18n('next')
-            if hasattr(tree, 'index_type_annotation'):
-                name = lang.gbs_builtins.polyname(
-                    name,
-                    [repr(tree.index_type_annotation)])
-            code.push(('call', name, 1), near=tree)
-
-        # last0 is preserved in the stack
-        i = tree.children[1].value
-        first_value = tree.children[2].children[1]
-        second_value = tree.children[2].children[3]
-        last_value = tree.children[2].children[2]        
-        body = tree.children[3]
-
-        delta = self.temp_varname()
-        last0 = self.temp_varname()
-        second0 = self.temp_varname()
-        iter = self.temp_varname()
-        
+        xs0 = self.temp_varname()
         lbegin = GbsLabel()
         lend = GbsLabel()
-        
-        # iter := 0        
-        code.push(('pushConst', 0), near=tree)
-        code.push(('popTo', iter), near=tree)
-        # i := First
-        self.compile_expression(first_value, code)
-        code.push(('popTo', i), near=tree)
-        # second0 := Second || First + 1
-        if second_value is None:
-            code.push(('pushFrom', i), near=tree)            
-            call_next()
+        lend2 = GbsLabel()
+        # xs0 := <List>
+        if foreach_type == 'enum':
+            self.compile_foreach_sequence(tree, code)
+        elif foreach_type == 'range':
+            self.compile_foreach_range(tree, code)
         else:
-            self.compile_expression(second_value, code)
-        code.push(('popTo', second0), near=tree)
-        # last0 := Last
-        self.compile_expression(last_value, code)
-        code.push(('popTo', last0), near=tree)
-        # delta := second0 - First        
-        code.push(('pushFrom', second0), near=tree)
-        code.push(('call', i18n.i18n('_ord'), 1), near=tree)
-        code.push(('pushFrom', i), near=tree)
-        code.push(('call', i18n.i18n('_ord'), 1), near=tree)
-        code.push(('call', '-', 2), near=tree)
-        code.push(('popTo', delta), near=tree)        
-        # while true
+            assert False            
+        code.push(('popTo', xs0), near=tree)        
+        # while (true) {
         code.push(('label', lbegin), near=tree)
-        # if (_exceeded_range(i, last0, delta, iter)) break;
-        code.push(('pushFrom', i), near=tree)
-        code.push(('pushFrom', last0), near=tree)
-        code.push(('pushFrom', delta), near=tree)
-        code.push(('pushFrom', iter), near=tree)
-        code.push(('call', i18n.i18n('_exceeded_range'), 4), near=tree)
-        code.push(('call', i18n.i18n('not'), 1), near=tree)
-        code.push(('jumpIfFalse', lend), near=tree)
-        # body
+        #   if (isEmpty(xs0)) break;
+        jumpIfIsEmpty(xs0, lend)
+        #   <Index> := head(xs0)
+        head(xs0, index)
+        #   setImmutable(<Index>)
+        code.push(('setImmutable', index), near=tree)
+        #   <Block>
         self.compile_block(body, code)
-        # i := _next_with_delta(i, delta)
-        code.push(('pushFrom', i), near=tree)
-        code.push(('pushFrom', delta), near=tree)
-        call_next_with_delta()
-        code.push(('popTo', i), near=tree)
-        # iter := iter + 1
-        code.push(('pushFrom', iter), near=tree)
-        code.push(('pushConst', 1), near=tree)
-        code.push(('call', '+', 2), near=tree)
-        code.push(('popTo', iter), near=tree)
-        # end while
+        #   setImmutable(<Index>)
+        code.push(('unsetImmutable', index), near=tree)
+        #   xs0 := tail(xs0)
+        tail(xs0, xs0)
+        # }
         code.push(('jump', lbegin), near=tree)
+        code.push(('label', lend2), near=tree)
+        code.push(('delVar', index), near=tree)
         code.push(('label', lend), near=tree)
-        code.push(('delVar', second0), near=tree)
-        code.push(('delVar', i), near=tree)
-        code.push(('delVar', delta), near=tree)
+
+    def compile_foreach_sequence(self, tree, code):
+        "Compile a foreach's sequence."          
+        sequence = tree.children[2].children[1:] 
+        code.push(('call', i18n.i18n('[]'), 0), near=tree)
+        for element in sequence:
+            self.compile_expression(element, code)
+            code.push(('call', i18n.i18n('_snoc'), 2), near=tree)
+    
+    def compile_foreach_range(self, tree, code):
+        "Compile a foreach's range."
+        _, range_first, range_last, range_second = tree.children[2].children
+        self.compile_expression(range_first, code)
+        self.compile_expression(range_last, code)
+        if not range_second is None: 
+            self.compile_expression(range_second, code)
+        else:
+            self.compile_expression(range_first, code)
+            code.push(('call', i18n.i18n('next'), 1), near=tree)
+        code.push(('call', i18n.i18n('_range'), 3), near=tree)
 
     def compile_block(self, tree, code):
         "Compile a block statement."

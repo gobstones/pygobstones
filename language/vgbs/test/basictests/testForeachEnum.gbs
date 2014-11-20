@@ -92,11 +92,12 @@ function testBoolRange() {
 	foreach b in [maxBool()..minBool()] { Poner(Rojo) }
 	foreach b in [False..False] { Poner(Azul) }
 	foreach b in [True..True] { Poner(Negro) }
-	vs := nroBolitas(Verde)
-	rs := nroBolitas(Rojo)
-	azs := nroBolitas(Azul)
-	ns := nroBolitas(Negro)
-	return(vs + rs + azs + ns == 4)
+	verdes := nroBolitas(Verde)
+	azules := nroBolitas(Azul)
+	negras := nroBolitas(Negro) 
+	good := verdes + azules + negras
+	bad := nroBolitas(Rojo)
+	return(good == 4 && bad == 0)
 }
 
 function testNumRange() {

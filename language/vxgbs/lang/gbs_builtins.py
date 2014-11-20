@@ -1205,16 +1205,16 @@ TYPE_CONCAT = GbsForallType(
                     GbsTupleType([GbsListType(TYPEVAR_X), GbsListType(TYPEVAR_Y)]),
                     GbsTupleType([GbsListType(TYPEVAR_Z)])))
 
-TYPE_CONS = GbsForallType(
-                [TYPEVAR_X],
-                GbsFunctionType(
-                    GbsTupleType([TYPEVAR_X, GbsListType(TYPEVAR_X)]),
-                    GbsTupleType([GbsListType(TYPEVAR_X)])))
-
 TYPE_RANGE = GbsForallType(
                 [TYPEVAR_X],
                 GbsFunctionType(
                     GbsTupleType([TYPEVAR_X, TYPEVAR_X, TYPEVAR_X]),
+                    GbsTupleType([GbsListType(TYPEVAR_X)])))
+
+TYPE_CONS = GbsForallType(
+                [TYPEVAR_X],
+                GbsFunctionType(
+                    GbsTupleType([TYPEVAR_X, GbsListType(TYPEVAR_X)]),
                     GbsTupleType([GbsListType(TYPEVAR_X)])))
 
 TYPE_SNOC = GbsForallType(
