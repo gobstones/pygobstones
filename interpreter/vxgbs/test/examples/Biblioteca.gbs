@@ -1,0 +1,125 @@
+function nats(start, end) {
+	res := []
+	if (start > end) {
+		res := [start,start-1..end]
+	} else {
+		res := [start..end]
+	}
+	return(res)
+}
+
+function nroTotalBolitas(t) {
+	total := 0
+	foreach c in [minColor()..maxColor()] {
+		total := total + nroBolitas(t, c)
+	}
+	return(total)
+}
+
+procedure t.IrAlOrigen() {
+	t.IrAlBorde(Sur)
+	t.IrAlBorde(Oeste)
+}
+
+function medirTablero(t, unaDireccion) {
+	t.IrAlBorde(opuesto(unaDireccion))
+	count := 1
+	while (puedeMover(t, unaDireccion)) {			
+		t.Mover(unaDireccion)
+		count := count + 1
+	}
+	return(count)
+}
+
+function ancho() {
+	return(Este)
+}
+
+function alto() {
+	return(Norte)
+}
+
+function puedeMoverTablero(t) {
+	return(puedeMover(t, Norte) || puedeMover(t, Este))
+}
+
+procedure t.MoverTablero() {
+	if (puedeMover(t, Norte)) {
+		t.Mover(Norte)
+	} else {
+		t.IrAlBorde(Sur)
+		t.Mover(Este)
+	}
+}
+
+procedure t.ReemplazarColor(unColor, otroColor) {
+	t.PonerN(otroColor, nroBolitas(t, unColor))
+	t.SacarTodas(unColor)
+}
+
+procedure t.SacarTodas(unColor) {
+	t.SacarN(unColor, nroBolitas(t, unColor))
+}
+
+procedure t.ReemplazarColorEnTablero(unColor, otroColor) {
+	t.IrAlOrigen()
+	while (puedeMoverTablero(t)) {
+		t.ReemplazarColor(unColor, otroColor)
+		t.MoverTablero()
+	}
+	t.ReemplazarColor(unColor, otroColor)
+}
+
+procedure t.PonerN(unColor, cantidad) {
+	repeat (cantidad) {
+		t.Poner(unColor)
+	}
+}
+
+procedure t.SacarN(unColor, cantidad) {
+	repeat (cantidad) {
+		t.Sacar(unColor)
+	}
+}
+
+procedure t.LlenarFilaConBolitas(unColor, cantidad) {
+	t.IrAlBorde(Oeste)
+	while (puedeMover(t, Este)) {
+		t.PonerN(unColor, cantidad)
+		t.Mover(Este)
+	}
+	t.PonerN(unColor, cantidad)
+}
+
+function snoc(xs, x) { return(xs ++ [x])}
+function cons(x, xs) { return([x] ++ xs)}
+
+procedure t.LlenarConBolitas(unColor, cantidad) {
+	t.IrAlOrigen()
+	while (puedeMoverTablero(t)) {
+		t.PonerN(unColor, cantidad)
+		t.MoverTablero()
+	}
+	t.PonerN(unColor, cantidad)
+}
+
+function contarBolitas(t, unColor) {
+	count := 0
+	t.IrAlOrigen()
+	while (puedeMoverTablero(t)) {
+		count := count + nroBolitas(t, unColor)
+		t.MoverTablero()
+	}
+	return(count + nroBolitas(t, unColor))
+}
+
+function aplicarNumOps(n, m) {
+	return ((n + m) + (n*m) + (n div m) + (n mod m))
+}
+
+function aplicarLogOps(p, q) {
+	res := (p && q)
+	res := (p || q)
+	res := not p 
+	return(not q || res)
+}

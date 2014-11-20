@@ -196,7 +196,7 @@ namespace of routines.
         dispatch[command](tree, code)
 
     def compile_type(self, tree, code):
-        """Compile a type expression. Just fill a hole in mkRecord() function.
+        """Compile a type expression. Just fill a hole in construct() function.
         In a future, it could be usefull for runtime type checks. [CHECK]"""
         tok = tree.children[1]
         code.push(('pushConst', tok.value), near=tree)

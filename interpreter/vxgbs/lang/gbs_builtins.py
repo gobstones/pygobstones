@@ -1503,13 +1503,13 @@ TYPE_MKFIELD = GbsForallType(
                     GbsTupleType([GbsSymbolType(), TYPEVAR_X]),
                     GbsTupleType([GbsFieldType()])))
 
-TYPE_MKRECORD = GbsForallType(
+TYPE_CONSTRUCT = GbsForallType(
                 [TYPEVAR_X],
                 GbsFunctionType(GbsTupleType([TYPEVAR_X,
                                               GbsListType(GbsFieldType())]),
                                 GbsTupleType([TYPEVAR_X])))
 
-TYPE_MKRECORD_FROM = GbsForallType([TYPEVAR_X],
+TYPE_CONSTRUCT_FROM = GbsForallType([TYPEVAR_X],
                         GbsFunctionType(GbsTupleType([TYPEVAR_X,
                                                       GbsListType(GbsFieldType()),
                                                       GbsRecordTypeVar()]),
@@ -1529,18 +1529,18 @@ RECORD_BUILTINS = [
         projection
     ),
     BuiltinFunction(
-        i18n.i18n('<-'),
+        i18n.i18n('_mk_field'),
         TYPE_MKFIELD,
         mk_field
     ),
     BuiltinFunction(
-        i18n.i18n('_mkRecord'),
-        TYPE_MKRECORD,
+        i18n.i18n('_construct'),
+        TYPE_CONSTRUCT,
         mk_record
     ),
     BuiltinFunction(
-        i18n.i18n('_mkRecordFrom'),
-        TYPE_MKRECORD_FROM,
+        i18n.i18n('_construct_from'),
+        TYPE_CONSTRUCT_FROM,
         mk_record_from
     ),
 ]

@@ -364,7 +364,7 @@ class GbsPrettyPrinter(object):
   def pprint_funcCall(self, tree, start_col):
     fun_name = tree.children[1].value
     dispatch = {
-        '<-': self.pprint_infix_funcCall,
+        '_mk_field': self.pprint_infix_funcCall,
         '[x]': lambda t, sc: self.pprint_funcCall_arg_in_name(t, sc, ['x']),
         '[]': self.pprint_funcCall_arg_in_name
     }

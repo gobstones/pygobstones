@@ -409,7 +409,7 @@
 <,fieldgen+> ::= <EMPTY>                @ []
               | , <fieldgen+>           @ $2
             ;;
-<fieldgen> ::= <fieldName> <- <gexp>    @ FUNCCALL $2 $1 $3;;
+<fieldgen> ::= <fieldName> <- <gexp>    @ MKFIELD $1 $3;;
 
 ################
 ## Extension: optional type declarations

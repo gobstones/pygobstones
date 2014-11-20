@@ -335,7 +335,7 @@ class ASTBuilder(object):
                 'INFIXL': _infixl,
                 'INFIXR': _infixr,
                 'NEGATE': self._expand_action_negate,
-                'FUNCCALL': self._expand_action_funcCall,
+                'MKFIELD': self._expand_action_mkfield,
                 'SYMBOL': self._expand_action_symbol,
                 'RISSYMBOL': self._expand_action_right_is_symbol,
                 'LIST': self._expand_action_list,
@@ -365,7 +365,7 @@ class ASTBuilder(object):
             symbol_tok = subtrees[1].children[1]
             symbol_tok.type = 'symbol'
             firstf = ASTNode(['funcCall',
-                              subtrees[2].children[0],
+                              lang.bnf_parser.Token('lowerid', '_mk_field', pos_b, pos_e),
                               ASTNode([ASTNode(['literal',
                                                 symbol_tok], 
                                                 pos_b, pos_e), 
@@ -426,14 +426,13 @@ class ASTBuilder(object):
         expanded = _infixl(subtrees, ['INFIXL'] + action[1:])
         return expanded
 
-    def _expand_action_funcCall(self, subtrees, action):
+    def _expand_action_mkfield(self, subtrees, action):
         """ Expand a funcCall action to build a funcCall ASTNode """
         pos_b = self._pos_begin(subtrees)
         pos_e = self._pos_end(subtrees)
-        fun_name = self._expand_action_part(subtrees, action[1])
-        params = [self._expand_action_part(subtrees, action[i]) for i in range(len(action))[2:]]
+        params = [self._expand_action_part(subtrees, action[i]) for i in range(len(action))[1:]]
         return ASTNode(['funcCall',
-                   fun_name,
+                   lang.bnf_parser.Token('lowerid', '_mk_field', pos_b, pos_e),
                    ASTNode(params, pos_b, pos_e)
                   ], pos_b, pos_e)
 
@@ -479,7 +478,7 @@ class ASTBuilder(object):
         else:
             if not expr_construct[2].children[0] == 'recordSuchAs':
                 return ASTNode(['constructor',
-                            lang.bnf_parser.Token('lowerid', '_mkRecord', pos_b, pos_e),
+                            lang.bnf_parser.Token('lowerid', '_construct', pos_b, pos_e),
                             ASTNode([constructor_type,
                                      fields],
                                     pos_b, 
@@ -487,7 +486,7 @@ class ASTBuilder(object):
                             ], pos_b, pos_e)
             else:
                 return ASTNode(['constructor',
-                            lang.bnf_parser.Token('lowerid', '_mkRecordFrom', pos_b, pos_e),
+                            lang.bnf_parser.Token('lowerid', '_construct_from', pos_b, pos_e),
                             ASTNode([constructor_type,
                                      fields,
                                      from_value],

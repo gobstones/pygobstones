@@ -802,7 +802,7 @@ class GbsSemanticChecker(object):
             if not (isinstance(node.children[0], str) and node.children[0] == 'funcCall'):
                 return False
             return (isinstance(node.children[1], lang.bnf_parser.Token)
-                    and node.children[1].value == '<-') 
+                    and node.children[1].value == '_mk_field') 
             
         def fstop_search(node):
             if len(node.children) > 0 and node.children[0] == 'constructor':
