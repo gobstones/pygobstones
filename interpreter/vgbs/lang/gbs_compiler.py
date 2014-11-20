@@ -262,7 +262,7 @@ namespace of routines.
     def compile_repeat(self, tree, code):
         "Compile a repeat statement."
         #
-        #   repeat {TIMES} {BODY}
+        #   repeat ({TIMES}) {BODY}
         #
         # Compiles to code corresponding to
         # the following fragment:

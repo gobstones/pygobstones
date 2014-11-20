@@ -29,7 +29,7 @@ function testEjercicio1(tablero) {
 }
 
 procedure t.MoverNRotativo(n, d) {
-	repeat n {
+	repeat (n) {
 		if (not puedeMover(t, d)) {
 			t.IrAlBorde(opuesto(d))
 		} else {

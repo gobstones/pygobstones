@@ -133,7 +133,7 @@
 <compcmd> ::= if ( <gexp> ) <then?> <blockcmd> <else?>  @ if $3 $6 $7
             | switch ( <gexp> ) to <branches>     @ case $3 $6
             | while ( <gexp> ) <blockcmd>       @ while $3 $5
-            | repeat <gexp> <blockcmd>          @ repeat $2 $3
+            | repeat ( <gexp> ) <blockcmd>          @ repeat $3 $5
             | foreach <varName> in <rangeOrEnum> <blockcmd>
                 @ foreach $2 $4 $5
             | <blockcmd>

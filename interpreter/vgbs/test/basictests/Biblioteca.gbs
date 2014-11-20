@@ -153,13 +153,13 @@ procedure ReemplazarColorEnTablero(unColor, otroColor) {
 }
 
 procedure PonerN(unColor, cantidad) {
-	repeat cantidad {
+	repeat (cantidad) {
 		Poner(unColor)
 	}
 }
 
 procedure SacarN(unColor, cantidad) {
-	repeat cantidad {
+	repeat (cantidad) {
 		Sacar(unColor)
 	}
 }

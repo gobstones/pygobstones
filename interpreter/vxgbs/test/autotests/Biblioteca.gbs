@@ -71,13 +71,13 @@ procedure t.ReemplazarColorEnTablero(unColor, otroColor) {
 }
 
 procedure t.PonerN(unColor, cantidad) {
-	repeat cantidad {
+	repeat (cantidad) {
 		t.Poner(unColor)
 	}
 }
 
 procedure t.SacarN(unColor, cantidad) {
-	repeat cantidad {
+	repeat (cantidad) {
 		t.Sacar(unColor)
 	}
 }
