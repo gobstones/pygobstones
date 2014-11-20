@@ -1400,7 +1400,7 @@ LIST_BUILTINS = [
         list_op_adapter(list_concat)
     ),
     BuiltinFunction(
-        i18n.i18n('range'),
+        i18n.i18n('_range'),
         TYPE_RANGE,
         list_op_adapter(list_range)
     ),

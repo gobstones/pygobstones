@@ -80,7 +80,7 @@ def _make_range_generator(expr_range):
         assert False
         
     return ASTNode(['funcCall',
-                   lang.bnf_parser.Token('lowerid', 'range', pos_b, pos_e),
+                   lang.bnf_parser.Token('lowerid', '_range', pos_b, pos_e),
                    ASTNode([first, last, second], pos_b, pos_e)
                   ], pos_b, pos_e)
 
