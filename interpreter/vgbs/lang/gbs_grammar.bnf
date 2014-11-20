@@ -134,7 +134,7 @@
             | switch ( <gexp> ) to <branches>     @ case $3 $6
             | while ( <gexp> ) <blockcmd>       @ while $3 $5
             | repeat ( <gexp> ) <blockcmd>          @ repeat $3 $5
-            | foreach <varName> in <rangeOrEnum> <blockcmd>
+            | foreach <varName> in <rangeOrSeq> <blockcmd>
                 @ foreach $2 $4 $5
             | <blockcmd>
            ;;
@@ -147,12 +147,12 @@
           | else <blockcmd>   @ $2
          ;;
 
-<rangeOrEnum> ::= [ <gexp> <,gexp1> <rangeOrEnum1> ] @ rangeOrEnum $2 $5 $3
+<rangeOrSeq> ::= [ <gexp> <,gexp?> <rangeOrSeq1> ] @ rangeOrEnum $2 $5 $3
               ;;
-<rangeOrEnum1> ::= , <gexps+>    @ ++ [enum] $2
+<rangeOrSeq1> ::= , <gexps+>    @ ++ [enum] $2
                  | .. <gexp>     @ range $2
                ;;
-<,gexp1> ::= <EMPTY> @ None
+<,gexp?> ::= <EMPTY> @ None
            | , <gexp> @ $2
          ;;
 
