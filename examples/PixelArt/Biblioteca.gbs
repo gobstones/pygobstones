@@ -1,11 +1,11 @@
 procedure PonerN(c, n) {
-	repeat n {
+	repeat (n) {
 		Poner(c)
 	}
 }
 
 procedure SacarN(c, n) {
-	repeat n {
+	repeat (n) {
 		Sacar(c)
 	}
 }
