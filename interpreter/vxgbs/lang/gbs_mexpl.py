@@ -47,6 +47,10 @@ class GbsMacroExploder(object):
             else:
                 macro_filename = "interactive_program_implicit.gbs"
             implementation_program = self._load_implementation(macro_filename, ["lastKey", "read", "Show", "FreeVars"])
+            if self.explicit_board:
+                refParam = interactive.children[2].children[0].value
+                defhelper.recursive_replace_token(implementation_program, "t", refParam)
+            
             interactive_impl = defhelper.find_def(implementation_program.children[2], defhelper.is_entrypoint_def)
             interactive_impl_case = defhelper.recursive_find_node(interactive_impl, functools.partial(defhelper.is_node, 'case'))
             interactive_impl_case.children = [interactive_impl_case.children[0], interactive_impl_case.children[1]]
