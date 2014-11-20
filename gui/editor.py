@@ -27,7 +27,8 @@ class Editor(QtGui.QWidget):
                             'Load from ...': 'self.nothing()'}
         self.dictionary_persist = {'Persist board': 'self.nothing()',
                                     'Set as initial board': 'self.setInitialBoardToMainWindow()',
-                                    'Save board to disk': 'self.saveBoardFromDisk()'}
+                                    'Save board to disk': 'self.saveBoardFromDisk()',
+                                    'Save board to image': 'self.saveBoardToImage()'}
         self.dictionary_options = {'Options': 'self.nothing()',
                                    'Options Board': 'self.openBoardOptionWindow()',
                                    'User Options': 'self.openUserOptionsWindow()'}
@@ -49,6 +50,7 @@ class Editor(QtGui.QWidget):
         self.ui.combo_box_persist.addItem(i18n('Persist board'))
         self.ui.combo_box_persist.addItem(i18n('Set as initial board'))
         self.ui.combo_box_persist.addItem(i18n('Save board to disk'))
+        self.ui.combo_box_persist.addItem(i18n('Save board to image'))
 
     def combo_box_persist_chosen(self, string):
         exec(self.dictionary_persist[getEnglishTraduction(string)])
@@ -108,6 +110,15 @@ class Editor(QtGui.QWidget):
             myFile = open(filename, 'w')
             myFile.write(self.board)
             myFile.close()
+        self.reset_combo_persist()
+        
+    def saveBoardToImage(self):
+        filename = QtGui.QFileDialog.getSaveFileName(self,
+                                                     i18n('Save as ...'), 
+                                                     root_path(), 
+                                                     '*.png')
+        if not filename == QtCore.QString(''):
+            self.ui.boardEditor.save_to_image(filename)
         self.reset_combo_persist()
 
     def reset_combo_load(self):

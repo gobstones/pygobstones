@@ -48,7 +48,7 @@ def setGrammar(lang_version):
 
 """ Gobstones API classes """
 
-class GobstonesApi(lang.gbs_io.InteractiveApi):
+class ExecutionAPI(lang.gbs_io.InteractiveApi):
     def log(self, msg):
         pass
 
@@ -86,7 +86,7 @@ class GobstonesRun(object):
         
 class Gobstones(object):
     
-    def __init__(self, options=GobstonesOptions(), api=GobstonesApi()):
+    def __init__(self, options=GobstonesOptions(), api=ExecutionAPI()):
         self.api = api
         self.options = options
 

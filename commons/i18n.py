@@ -302,6 +302,8 @@ ES = {
     "Load from disk": 'Cargar desde disco',
 
     "Save board to disk": 'Guardar en disco',
+    
+    "Save board to image": 'Guardar como imagen',
 
     "Open board options": 'Abrir opciones de tablero',
 

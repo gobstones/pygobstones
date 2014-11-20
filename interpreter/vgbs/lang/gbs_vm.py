@@ -172,7 +172,7 @@ class GbsVmInterpreter(object):
     if interactive_api:
         self.interactive_api = interactive_api
     else:
-        self.interactive_api = NullInteractiveApi()
+        self.interactive_api = NullInteractiveAPI()
       
     if self.toplevel_filename is None:
       self.toplevel_filename = program.tree.source_filename
@@ -394,7 +394,7 @@ class VmCompiledRunnable(lang.gbs_runnable.GbsRunnable):
     def run(self, board, interactive_api = None):
         return interp(self._prog, board, interactive_api)
 
-class NullInteractiveApi(lang.gbs_io.InteractiveApi):
+class NullInteractiveAPI(lang.gbs_io.InteractiveApi):
     def __init__(self):
         self.key_sequence = self.build_key_sequence()    
     def read(self):

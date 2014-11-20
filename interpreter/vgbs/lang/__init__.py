@@ -38,11 +38,11 @@ import lang.gbs_board
 
 """ Gobstones API classes """
 
-class GobstonesApi(lang.gbs_io.InteractiveApi):
+class ExecutionAPI(lang.gbs_io.InteractiveApi):
     def log(self, msg):
         pass
     
-class DefaultGobstonesApi(lang.gbs_vm.NullInteractiveApi, GobstonesApi):
+class DefaultExecutionAPI(lang.gbs_vm.NullInteractiveAPI, ExecutionAPI):
     pass
 
 class GobstonesOptions(object):
@@ -73,7 +73,7 @@ class GobstonesRun(object):
                             self.result or other.result)
         
 class Gobstones(object):
-    def __init__(self, options=GobstonesOptions(), api=DefaultGobstonesApi()):
+    def __init__(self, options=GobstonesOptions(), api=DefaultExecutionAPI()):
         self.api = api
         self.options = options
         # Compiler pipeline methods

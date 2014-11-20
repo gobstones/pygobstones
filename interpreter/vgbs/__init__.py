@@ -7,7 +7,7 @@ import lang
 import logging
 
 
-class GUIGobstonesApi(lang.GobstonesApi):
+class GUIExecutionAPI(lang.ExecutionAPI):
 
     def __init__(self, communicator):
         self.comm = communicator
@@ -28,7 +28,7 @@ class GUIGobstonesApi(lang.GobstonesApi):
 class GobstonesWorker(ProgramWorker):
     
     def prepare(self):
-        self.api = GUIGobstonesApi(self.communicator)
+        self.api = GUIExecutionAPI(self.communicator)
 
     def start(self, filename, program_text, initial_board_string, run_mode):
         board = tools.board_format.from_string(initial_board_string)

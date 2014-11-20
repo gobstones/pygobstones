@@ -135,7 +135,6 @@ class FileOption(object):
         self.mapper.mapped['QString'].connect(self.handleButton)
 
     def addClothing(self, clothing_filename, clothing_text):
-        self.filesNames.append(clothing_filename)
         action = QtGui.QAction(clothing_text, self.mainW)
         self.actions[clothing_filename] = action        
         self.mapper.setMapping(action, clothing_filename)

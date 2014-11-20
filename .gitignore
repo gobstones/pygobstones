@@ -53,6 +53,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# Temporal
+*.*~
+
 # Eclipse project files
 .project
 .pydevproject

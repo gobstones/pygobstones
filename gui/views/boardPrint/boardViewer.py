@@ -66,7 +66,6 @@ class BoardViewer(QtGui.QWidget):
 
     def paintEvent(self, event):
         if self.contentChanged():
-            print ("Content changed")
             self.surface = QtGui.QPixmap(self.parent.width(), self.parent.height()) 
             self.updateState()
             
@@ -335,15 +334,15 @@ class GobstonesStandard(GobstonesBoardPainter):
         y0 = y0 + (self.newSide * 0.1)
         self.newSide = self.newSide * 0.8
         
-        blackStone = QtCore.QRectF(x0, y0, self.newSide, self.newSide)
-        blueStone = QtCore.QRectF(x0 + self.offset, y0, self.newSide, self.newSide)
-        redStone = QtCore.QRectF(x0 + self.offset, y0 + self.offset, self.newSide, self.newSide)
-        greenStone = QtCore.QRectF(x0, y0 + self.offset, self.newSide, self.newSide)
+        blueStone = QtCore.QRectF(x0, y0, self.newSide, self.newSide)
+        blackStone = QtCore.QRectF(x0 + self.offset, y0, self.newSide, self.newSide)
+        greenStone = QtCore.QRectF(x0 + self.offset, y0 + self.offset, self.newSide, self.newSide)
+        redStone = QtCore.QRectF(x0, y0 + self.offset, self.newSide, self.newSide)
         
-        self.drawSingleStone(painter, blackStone, "black", cell)
         self.drawSingleStone(painter, blueStone, "blue", cell)
-        self.drawSingleStone(painter, redStone, "red", cell)
+        self.drawSingleStone(painter, blackStone, "black", cell)
         self.drawSingleStone(painter, greenStone, "green", cell)
+        self.drawSingleStone(painter, redStone, "red", cell)
 
         pen = QtGui.QPen(QtGui.QColor(200, 50, 50))
         pen.setWidth(1)

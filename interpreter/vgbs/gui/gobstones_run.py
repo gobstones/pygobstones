@@ -79,7 +79,7 @@ class GobstonesRun(object):
             common.threads.terminate_process(self.process)
         self.handler.failure(SourceException(i18n.i18n('Execution interrupted by the user'), area))
 
-class GUIGobstonesApi(lang.GobstonesApi):
+class GUIExecutionAPI(lang.ExecutionAPI):
     def __init__(self, communicator):
         self.comm = communicator
     def read(self):
@@ -96,7 +96,7 @@ class InterpreterWorker(object):
     def __init__(self, communicator):
         self.communicator = communicator
     def run(self):
-        api = GUIGobstonesApi(self.communicator)
+        api = GUIExecutionAPI(self.communicator)
         options = lang.GobstonesOptions("lax", False, True)
         gobstones = lang.Gobstones(options, api)
         

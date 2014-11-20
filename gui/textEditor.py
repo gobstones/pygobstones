@@ -533,7 +533,7 @@ class XGobstonesHighlighter(GobstonesHighlighter):
         brush = QtGui.QBrush( QtGui.QColor("#a61c00"), QtCore.Qt.SolidPattern )
         nativeExpression_format = QtGui.QTextCharFormat()
         nativeExpression_format.setForeground( brush )
-        nativeExpressions = QtCore.QStringList( [ "head", "tail", "init", "last", "concat", "isNil"] )
+        nativeExpressions = QtCore.QStringList( [ "head", "tail", "init", "last", "concat", "isEmpty"] )
         
         self.highlightingRules.extend(gen_highlighting_rules(map_regexp(nativeExpressions) + ["\+\+", "\[", "\]"], nativeExpression_format, HighlightingRegExpRule))
     

@@ -494,7 +494,7 @@ def interp(compiled_program, board, interactive_api=None):
     vm = GbsVmInterpreter()
   
     if interactive_api is None:
-        interactive_api = NullInteractiveApi()
+        interactive_api = NullInteractiveAPI()
     
     vm.init_program(compiled_program, board, lang.gbs_io.CrossPlatformApiAdapter(interactive_api))
     
@@ -509,7 +509,7 @@ class VmCompiledRunnable(lang.gbs_runnable.GbsRunnable):
     def run(self, board, interactive_api = None):
         return interp(self._prog, board, interactive_api)
 
-class NullInteractiveApi(lang.gbs_io.InteractiveApi):
+class NullInteractiveAPI(lang.gbs_io.InteractiveApi):
     def __init__(self):
         self.key_sequence = self.build_key_sequence()    
     def read(self):

@@ -203,7 +203,7 @@ def persist_run(gbs_run, options):
        board.dump(f, fmt=fmt, style=options['style'])
        f.close()
 
-class ConsoleInteractiveApi(lang.GobstonesApi):
+class ConsoleInteractiveAPI(lang.ExecutionAPI):
     def __init__(self, options):
         self.options = options
     def read(self):
@@ -219,7 +219,7 @@ class ConsoleInteractiveApi(lang.GobstonesApi):
 def run_filename(filename, options):
     if options['interactive']:
         gobstones = lang.Gobstones(lang.GobstonesOptions(options['lint'], options['liveness'], options['typecheck'], options['jit']),
-                                   ConsoleInteractiveApi(options))
+                                   ConsoleInteractiveAPI(options))
     else:
         gobstones = lang.Gobstones(lang.GobstonesOptions(options['lint'], options['liveness'], options['typecheck'], options['jit']))
     if filename.lower().endswith('.gbo'):

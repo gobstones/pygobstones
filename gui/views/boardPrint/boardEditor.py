@@ -8,6 +8,7 @@ from PyQt4.QtGui import *
 from board import *
 from parseBoard import *
 import resources
+import gui
 
 class BoardEditor(QGraphicsView):
     def __init__(self, parent):
@@ -35,6 +36,24 @@ class BoardEditor(QGraphicsView):
         elif e.key() == Qt.Key_Down:
             self.board.moveHeadToDown()
         self.populate()
+        
+    def save_to_image(self, filename):
+        pixmap = QPixmap.grabWidget(self)
+        r = pixmap.rect()
+        
+        reduction_percent = 0
+        if not gui.mainWindow.MainWindow.getPreference('cellNumbers'):
+            reduction_percent = 0.15
+        
+        height = r.height() - reduction_percent * r.height()
+        width = r.width() - reduction_percent * r.width()
+        x = r.x() + (reduction_percent * r.width())/2
+        y = r.y() + (reduction_percent * r.height())/2
+        if width > height:
+            newr = QRect(x + (width - height)/2, y, height, height)
+        else:
+            newr = QRect(x, y + (height - width)/2, width, width)
+        pixmap.copy(newr).save(filename)
         
     def drawBoard(self, scene):
         x = self.board.size[0]
@@ -67,34 +86,34 @@ class BoardEditor(QGraphicsView):
                     self.drawCell(scene, newSide * xs + newSide, yLarge, newSide, self.board, (xs, ys))
                 yLarge -= newSide 
         
-
-        #draw cell numbers on top
-        for xs in range(x):
-            i = Number(xs, newSide, newSide)
-            i.moveBy(newSide * xs + newSide, 0)
-            self.scene.addItem(i) 
-        
-        #draw cell numbers on bottom
-        for xs in range(x):
-            i = Number(xs, newSide, newSide)
-            i.moveBy(newSide * xs + newSide, newSide * y + newSide)
-            self.scene.addItem(i) 
-
-        #draw cell numbers on left
-        zero = newSide * y + newSide
-        for ys in range(y):
-            i = Number(ys, newSide, newSide)
-            zero -= newSide
-            i.moveBy(0, zero)
-            self.scene.addItem(i) 
+        if gui.mainWindow.MainWindow.getPreference('cellNumbers'):
+            #draw cell numbers on top
+            for xs in range(x):
+                i = Number(xs, newSide, newSide)
+                i.moveBy(newSide * xs + newSide, 0)
+                self.scene.addItem(i) 
             
-        #draw cell numbers on right    
-        zero = newSide * y + newSide
-        for ys in range(y):
-            i = Number(ys, newSide, newSide)
-            zero -= newSide
-            i.moveBy(newSide * x + newSide, zero)
-            self.scene.addItem(i)
+            #draw cell numbers on bottom
+            for xs in range(x):
+                i = Number(xs, newSide, newSide)
+                i.moveBy(newSide * xs + newSide, newSide * y + newSide)
+                self.scene.addItem(i) 
+    
+            #draw cell numbers on left
+            zero = newSide * y + newSide
+            for ys in range(y):
+                i = Number(ys, newSide, newSide)
+                zero -= newSide
+                i.moveBy(0, zero)
+                self.scene.addItem(i) 
+                
+            #draw cell numbers on right    
+            zero = newSide * y + newSide
+            for ys in range(y):
+                i = Number(ys, newSide, newSide)
+                zero -= newSide
+                i.moveBy(newSide * x + newSide, zero)
+                self.scene.addItem(i)
             
         #draw current cell    
         self.drawCell(self.p[0], self.p[1], self.p[2], self.p[3], self.p[4], self.p[5], True)
@@ -106,13 +125,13 @@ class BoardEditor(QGraphicsView):
         
         self.container = Cell('container', side, side, imgName, isHead)
         self.container.moveBy(moveX, moveY)
-        self.item = StoneEditor('item', diameter, diameter, 'black', board, coord, self.container)
+        self.item = StoneEditor('item', diameter, diameter, 'blue', board, coord, self.container)
         self.item.moveBy(0, 0)
-        self.item2 = StoneEditor('item', diameter, diameter, 'blue', board, coord, self.container)
+        self.item2 = StoneEditor('item', diameter, diameter, 'black', board, coord, self.container)
         self.item2.moveBy(diameter, 0)
-        self.item3 = StoneEditor('item', diameter, diameter, 'red', board, coord, self.container)
+        self.item3 = StoneEditor('item', diameter, diameter, 'green', board, coord, self.container)
         self.item3.moveBy(diameter, diameter)
-        self.item4 = StoneEditor('item', diameter, diameter, 'green', board, coord, self.container)
+        self.item4 = StoneEditor('item', diameter, diameter, 'red', board, coord, self.container)
         self.item4.moveBy(0, diameter)
         self.scene.addItem(self.container)
         
