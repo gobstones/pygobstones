@@ -1,5 +1,6 @@
 import itertools
 import functools
+import random
 from test import TestCase, GobstonesTest, run_gobstones
 import math
 
@@ -52,6 +53,13 @@ def flatten(lst):
             res.append(x)
     return res
 
+randint = lambda x: random.randint(0,x-1)
+
+def randomList(generator, max_size=16):
+    return [generator(i) for i in range(randint(max_size) + 4)]
+
+def randomIntList(max_size=16, max_number=99):
+    return randomList(lambda i: randint(max_number), max_size)
 
 def nats(start, end):
     if (start < end):
@@ -114,6 +122,47 @@ class TestScript(object):
         pass
     
 # Tests
+
+class TestForeachSeq(TestScript):
+    def __init__(self):
+        numbers = randomList(lambda i: "[" + ",".join(map(str, randomIntList(10))) + "]", 5)
+        super(TestForeachSeq, self).__init__({"numbers": numbers})
+    
+    def nretvals(self):
+        return 1
+    
+    def gbs_code(self):
+        return '''
+            res := 0
+            foreach n in @numbers
+             { res := res*10 + n }
+            return(res)
+        '''
+        
+    def pyresult(self, args):
+        res = 0
+        ns = args["numbers"][1:-1].split(",")
+        for n in map(int, ns):
+            res = res*10 + n
+        return res 
+
+class TestRepeat(TestScript):
+    def __init__(self):
+        super(TestRepeat, self).__init__({"times": randomIntList(5, 20)})
+    
+    def nretvals(self):
+        return 1
+    
+    def gbs_code(self):
+        return '''
+            count := 0
+            repeat (@times)
+             { count := count + 1 }
+            return(count)
+        '''
+        
+    def pyresult(self, args):
+        return args["times"]
 
 class TestForeachWithRangeIterations(TestScript):
     

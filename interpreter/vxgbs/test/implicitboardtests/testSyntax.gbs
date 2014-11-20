@@ -1,0 +1,22 @@
+#!assert
+# Comentario de línea
+""" Comentario
+	multi-línea """
+	
+program
+ {
+   x := True
+   if (x)
+    then { Skip }
+    else { Skip }
+    
+   switch (x) to
+   	_ -> { Skip }
+   
+   foreach i in [1,2,3,4,5] { Skip }
+   foreach i in [1..5] { Skip }
+   foreach i in [1,3..5] { Skip }
+   repeat (3) { Skip }
+   
+   return(True)
+ }

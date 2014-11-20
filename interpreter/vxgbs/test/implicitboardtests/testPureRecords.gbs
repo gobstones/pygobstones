@@ -1,0 +1,17 @@
+#!assert
+
+type Pair is record {
+	field x
+	field y
+}
+
+function invertPair(p) {
+	return(Pair(x <- y(p), y <- x(p)))
+}
+
+program {
+	p := Pair(x <- 2, y <- 0)
+	q := Pair(p | y <- 2)
+	s := Pair(q | x <- 0)
+	return(p == invertPair(s))
+}
