@@ -562,7 +562,7 @@ class GbsSemanticChecker(object):
     def check_variant_body(self, body):
         for case in body.children:
             if not case.children[2] is None:
-                self.check_record_body(case.children[2])
+                self.check_record_body(case.children[1], case.children[2])
 
     def check_record_body(self, type_name, body):
         for field in body.children:            
@@ -695,7 +695,7 @@ class GbsSemanticChecker(object):
                 for literal in branch.children[1].children:
                     if literal.value in seen:
                         area = common.position.ProgramAreaNear(literal)
-                        raise GbsLintException(i18n.i18n('Literals in a case should be disjoint'), area)
+                        raise GbsLintException(i18n.i18n('Literals in a switch should be disjoint'), area)
                     seen[literal.value] = 1
                     self.check_constant_or_typename(literal)
                 self.check_block(branch.children[2])
@@ -707,12 +707,12 @@ class GbsSemanticChecker(object):
         seen = {} 
         for branch in tree.children[2].children:
             if branch.children[0] == 'branch':
-                for literal in branch.children[1].children:
-                    if literal.value in seen:
-                        area = common.position.ProgramAreaNear(literal)
-                        raise GbsLintException(i18n.i18n('Literals in a case should be disjoint'), area)
-                    seen[literal.value] = 1
-                    self.check_constant_or_typename(literal)
+                branch_case = branch.children[1]
+                if branch_case.value in seen:
+                    area = common.position.ProgramAreaNear(branch_case)
+                    raise GbsLintException(i18n.i18n('Constructors in a match should be disjoint'), area)
+                seen[branch_case.value] = 1
+                self.check_constant_or_typename(branch_case)
                 self.check_expression(branch.children[2])
             else: # defaultBranch
                 self.check_expression(branch.children[1])

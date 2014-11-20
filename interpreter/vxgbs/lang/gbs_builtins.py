@@ -252,20 +252,26 @@ class GbsFieldObject(GbsObject):
     pass
 
 class GbsRecordObject(GbsObject):
-    def __repr__(self):
-        type_parts = self.type.split('::')
-        if len(type_parts) > 1:
-            type = type_parts[-1]
+    
+    def __init__(self, value, type, bindings = {}):
+        if '::' in type:
+            realtype, constructor = type.split("::")
         else:
-            type = type_parts[0]
+            realtype    = type
+            constructor = type 
+        super(GbsRecordObject, self).__init__(value, realtype, bindings)
+        self.constructor = constructor
         
+    def __repr__(self):
         if len(self.value) != 0:
-            return type + '(' + ', '.join([k + ' <- ' + repr(v) for k, v in self.value.items()]) + ')'
+            return self.constructor + '(' + ', '.join([k + ' <- ' + repr(v) for k, v in self.value.items()]) + ')'
         else:
-            return type
+            return self.constructor
     def clone(self):
         obj = super(GbsRecordObject, self).clone()
-        return GbsRecordObject(obj.value, obj.type, obj.bindings)
+        rec = GbsRecordObject(obj.value, obj.type, obj.bindings)
+        rec.constructor = self.constructor
+        return rec
 
 def wrap_value(value):
     if isinstance(value, GbsObject):
@@ -1479,11 +1485,12 @@ def projection(global_state, record, field_name):
                                      % (field_name, ', '.join(record.keys()),))
         raise GbsRuntimeException(msg, global_state.area())
 
-def _extract_case(self, value):
-    if isinstance(value, GbsObject):
-        return value.type
-    else:
-        return value
+def _extract_case(global_state, value):
+    try:
+        return value.constructor
+    except Exception as exception:
+        msg = global_state.backtrace(i18n.i18n('\'match\' expression can only be used with a Variant-type value.'))
+        raise GbsRuntimeException(msg, global_state.area())
 
 
 TYPE_GET_FIELD = GbsForallType(

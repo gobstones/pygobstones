@@ -463,7 +463,7 @@ class ASTBuilder(object):
         constructor_type = ASTNode(['type', expr_construct[1]], pos_b, pos_e)
         
         from_value = None
-        if expr_construct[2].children[0] == 'recordSuchAs':
+        if len(expr_construct[2].children) > 0 and expr_construct[2].children[0] == 'recordSuchAs':
             fields = _make_list_expression(ASTNode([expr_construct[2].children[2]], pos_b, pos_e))
             from_value = expr_construct[2].children[1] 
         else:
@@ -476,7 +476,7 @@ class ASTBuilder(object):
                             fields                                                        
                             ], pos_b, pos_e)
         else:
-            if not expr_construct[2].children[0] == 'recordSuchAs':
+            if not (len(expr_construct[2].children) > 0 and expr_construct[2].children[0] == 'recordSuchAs'):
                 return ASTNode(['constructor',
                             lang.bnf_parser.Token('lowerid', '_construct', pos_b, pos_e),
                             ASTNode([constructor_type,

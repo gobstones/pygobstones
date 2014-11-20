@@ -1,0 +1,55 @@
+#!assert
+
+type Gusto is variant {
+	case Frutilla
+	case Sambayon
+	case Chocolate
+}
+
+type Helado is variant {
+	case Vasito {
+		field bocha
+	}
+	
+	case Cucurucho {
+		field bochaArriba
+		field bochaAbajo
+	}
+	
+	case Pote {
+		field gustos
+	}
+}
+
+function precioGusto(g) {
+	return (
+		match (g) to
+			Frutilla  -> (3)
+			Sambayon  -> (6)
+			Chocolate -> (5)
+	)
+}
+
+function sumGustos(gs) {
+	sum := 0
+	foreach g in gs {
+		sum := sum + precioGusto(g)
+	}
+	return(sum)
+}
+
+function precioHelado(h) {
+	return (
+		match (h) to
+			Vasito -> (precioGusto(bocha(h)))
+			Cucurucho -> (precioGusto(bochaArriba(h)) + precioGusto(bochaAbajo(h)))
+			Pote -> (sumGustos(gustos(h)))
+	)
+}
+
+program {
+	h1 := Vasito(bocha <- Frutilla)
+	h2 := Cucurucho(bochaArriba <- Chocolate, bochaAbajo <- Sambayon)
+	h3 := Pote(gustos <- [Frutilla, Chocolate, Sambayon])
+	return(precioHelado(h1) + precioHelado(h2) == precioHelado(h3))
+}

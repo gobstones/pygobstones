@@ -215,7 +215,7 @@
                | <defExpBranch>                 @ [$1]
              ;;
              
-<expBranch>     ::= <lits> -> <gexp>    @ branch $1 $3 ;;
+<expBranch>     ::= <caseLiteral> -> <gexp>    @ branch $1 $3 ;;
 <defExpBranch>  ::= _ -> <gexp>         @ defaultBranch $3 ;;
  
 ## lists

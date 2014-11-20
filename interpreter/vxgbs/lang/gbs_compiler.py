@@ -55,6 +55,7 @@ class GbsCompiler(object):
         self.temp_counter = None
         self.module_handler = None
         self._current_def_name = None
+        self.constructor_of_type = {}
 
     def compile_program(self, tree, module_prefix='', explicit_board=None):
         """Given an AST for a full program, compile it to virtual machine
@@ -90,6 +91,7 @@ Every other module should be given the module name as a prefix.
                 code = compiler.compile_program(
                            mdl_tree, module_prefix=mdl_name, explicit_board=self.explicit_board
                        )
+                self.constructor_of_type.update(compiler.constructor_of_type)
             except common.utils.SourceException as exception:
                 self.module_handler.reraise(
                     GbsCompileException,
@@ -127,8 +129,20 @@ namespace of routines.
         "Compile a list of definitions."
         self.temp_counter = 0
         for def_ in tree.children:
-            if not def_helper.is_type_def(def_):
+            if def_helper.is_type_def(def_):
+                self.gather_type_data(def_)
+            else:
                 self.compile_routine_def(def_)
+                    
+    def gather_type_data(self, def_):
+        _, type_name, type_or_def = def_.children
+        if type_or_def.children[0] == 'record':
+            self.constructor_of_type[type_name.value] = type_name.value
+        else:
+            body = type_or_def.children[1]
+            for case in body.children:
+                _, cname, _ = case.children
+                self.constructor_of_type[cname.value] = type_name.value
                     
     def temp_varname(self):
         "Make a temporary variable name."
@@ -198,7 +212,8 @@ namespace of routines.
         """Compile a type expression. Just fill a hole in construct() function.
         In a future, it could be usefull for runtime type checks. [CHECK]"""
         tok = tree.children[1]
-        code.push(('pushConst', tok.value), near=tree)
+        type = self.constructor_of_type[tok.value] + "::" + tok.value
+        code.push(('pushConst', type), near=tree)
 
     def compile_skip(self, tree, code):
         "Compile a Skip command."
@@ -301,8 +316,6 @@ namespace of routines.
         value0 = self.temp_varname()
         
         self.compile_expression(value, code)
-        # This is a runtime function to extract type name
-        code.push(('call', '_extract_case', 1), near=tree)
         # value0 := value
         code.push(('popTo', value0), near=tree)
         
@@ -327,19 +340,21 @@ namespace of routines.
     
     def compile_match(self, tree, code):
         "Compile a match statement."
-        #   match (Value) of
-        #     Lits1 -> {expr1}
-        #     LitsN -> {exprN}
-        #     _     -> {exprElse}
+        #   match (<Expr-V>) of
+        #     <Case-1> -> <Expr-1>
+        #     <Case-2> -> <Expr-2>
+        #     ...
+        #     <Case-N> -> <Expr-N>
+        #     _        -> <Expr-Else>
         #
         # Compiles to code corresponding to:
         #
-        #   value0 := Value
-        #   if   (value0 in Lits1) {expr1}
-        #   elif (value0 in Lits2) {expr2}
+        #   case := _extract_case(<Expr-V>)
+        #   if   (case == <Case-1>) <Expr-1>
+        #   elif (case == <Case-2>) <Expr-2>
         #   ...
-        #   elif (value0 in LitsN) {exprN}
-        #   else               {exprElse}
+        #   elif (case == <Case-N>) <Expr-N>
+        #   else <Expr-Else>
         value = tree.children[1]
         value0 = self.temp_varname()
         
@@ -353,14 +368,16 @@ namespace of routines.
         next_label = None
         default_branch = False
         for branch in tree.children[2].children:
-            if next_label is not None:
+            if not next_label is None:
                 code.push(('label', next_label), near=tree)
             if branch.children[0] == 'branch':
-                lits = [parse_literal(lit) for lit in branch.children[1].children]
+                case_i = parse_literal(branch.children[1])
                 next_label = GbsLabel()
                 # if value0 in LitsI
                 code.push(('pushFrom', value0), near=tree)
-                code.push(('jumpIfNotIn', lits, next_label), near=tree)
+                code.push(('pushConst', case_i), near=tree)
+                code.push(('call', '==', 2), near=tree)
+                code.push(('jumpIfFalse', next_label), near=tree)
                 # BodyI
                 self.compile_expression(branch.children[2], code)
                 code.push(('jump', lend), near=tree)
@@ -369,7 +386,6 @@ namespace of routines.
                 default_branch = True
                 self.compile_expression(branch.children[1], code)
         if not default_branch:
-            # [TODO] Check
             code.push(('label', next_label), near=tree)
             code.push(('THROW_ERROR', '"' + i18n.i18n('Expression has no matching branch.') + '"'), near=tree)
         code.push(('label', lend), near=tree)
@@ -388,73 +404,62 @@ namespace of routines.
     def compile_repeat(self, tree, code):
         "Compile a repeat statement."
         #
-        #   repeat {TIMES} {BODY}
+        #   repeat (<Expr>) <Block>
         #
         # Compiles to code corresponding to
         # the following fragment:
         #
-        #   aux_index := {TIMES}
-        #   if (aux_index > 0) {
-        #     while (true) {
-        #        {BODY}
-        #        aux_index := aux_index - 1
-        #        if (aux_index == 0) break;        
-        #     }
+        #   counter := <Expr>
+        #   while (true) {
+        #     if (not (counter > 0)) { break }
+        #     <Block>
+        #     counter := counter - 1
         #   }
         #
         
         times = tree.children[1]
         body = tree.children[2]
-        aux_index = self.temp_varname()
+        counter = self.temp_varname()
         lbegin = GbsLabel()
         lend = GbsLabel()
-        # aux_index := {TIMES}
+        # counter := <Expr>
         self.compile_expression(times, code)
-        code.push(('popTo', aux_index), near=tree)
-        # if aux_index > 0
-        code.push(('pushFrom', aux_index), near=tree)
-        code.push(('pushConst', 0), near=tree)        
+        code.push(('popTo', counter), near=tree)
+        # while (true) {
+        code.push(('label', lbegin), near=tree)
+        #   if (not (counter > 0) { break }
+        code.push(('pushFrom', counter), near=tree)
+        code.push(('pushConst', 0), near=tree)
         code.push(('call', '>', 2), near=tree)
         code.push(('jumpIfFalse', lend), near=tree)
-        # while true
-        code.push(('label', lbegin), near=tree)
-        # body
+        #   <Block>
         self.compile_block(body, code)
-        # aux_index := aux_index - 1
-        code.push(('pushFrom', aux_index), near=tree)
+        #   counter := counter - 1
+        code.push(('pushFrom', counter), near=tree)
         code.push(('pushConst', 1), near=tree)
         code.push(('call', '-', 2), near=tree)
-        code.push(('popTo', aux_index), near=tree)            
-        # if (aux_index == 0) break;    
-        code.push(('pushFrom', aux_index), near=tree)
-        code.push(('pushConst', 0), near=tree)        
-        code.push(('call', '>', 2), near=tree)
-        code.push(('jumpIfFalse', lend), near=tree)
+        code.push(('popTo', counter), near=tree)            
         # end while
         code.push(('jump', lbegin), near=tree)
         code.push(('label', lend), near=tree)
-        code.push(('delVar', aux_index), near=tree)
+        code.push(('delVar', counter), near=tree)
 
     def compile_foreach(self, tree, code):
         "Compile a foreach statement."
         #
-        #   foreach x in xs {BODY}
+        #   foreach <Index> in <List> <Block>
         #
         # Compiles to code corresponding to
         # the following fragment:
         #
-        #   xs0 := xs
-        #   if (isEmpty(xs0)) break;
-        #   x := head(xs0)
-        #   setImmutable(x)
-        #   xs0 := tail(xs0)
+        #   xs0 := <List>
         #   while (true) {
-        #      {BODY}
-        #      if (isEmpty(xs0)) break;
-        #      unsetImmutable(x)
-        #      x := head(xs0)
-        #      setImmutable(x)
-        #      xs0 := tail(xs)
+        #     if (isEmpty(xs0)) break;
+        #     <Index> := head(xs0)
+        #     setImmutable(<Index>)
+        #     <Block>
+        #     unsetImmutable(<Index>)
+        #     xs0 := tail(xs)
         #   }
         #
         def jumpIfIsEmpty(var, label):
@@ -471,39 +476,34 @@ namespace of routines.
             code.push(('call', i18n.i18n('tail'), 1), near=tree)
             code.push(('popTo', var), near=tree)
             
-        x = tree.children[1].value
-        xs = tree.children[2]
+        index = tree.children[1].value
+        list_ = tree.children[2]
         body = tree.children[3]
         xs0 = self.temp_varname()
         lbegin = GbsLabel()
         lend = GbsLabel()
         lend2 = GbsLabel()
-        # xs0 := xs
-        self.compile_expression(xs, code)
-        code.push(('popTo', xs0), near=tree)
-        # if (isEmpty(xs0)) break;
-        jumpIfIsEmpty(xs0, lend)
-        # x := head(xs0)
-        head(xs0, x)
-        code.push(('setImmutable', x), near=tree)
-        # xs0 := tail(xs0)
-        tail(xs0, xs0)
-        # while true
+        # xs0 := <List>
+        self.compile_expression(list_, code)
+        code.push(('popTo', xs0), near=tree)        
+        # while (true) {
         code.push(('label', lbegin), near=tree)
-        # body
+        #   if (isEmpty(xs0)) break;
+        jumpIfIsEmpty(xs0, lend)
+        #   <Index> := head(xs0)
+        head(xs0, index)
+        #   setImmutable(<Index>)
+        code.push(('setImmutable', index), near=tree)
+        #   <Block>
         self.compile_block(body, code)
-        # if (isEmpty(xs0)) break
-        jumpIfIsEmpty(xs0, lend2)
-        # x := head(xs0)
-        code.push(('unsetImmutable', x), near=tree)
-        head(xs0, x)
-        code.push(('setImmutable', x), near=tree)
-        # xs0 := tail(xs0)
+        #   setImmutable(<Index>)
+        code.push(('unsetImmutable', index), near=tree)
+        #   xs0 := tail(xs0)
         tail(xs0, xs0)
-        # end while
+        # }
         code.push(('jump', lbegin), near=tree)
         code.push(('label', lend2), near=tree)
-        code.push(('delVar', x), near=tree)
+        code.push(('delVar', index), near=tree)
         code.push(('label', lend), near=tree)
         
     def compile_repeat_with(self, tree, code):

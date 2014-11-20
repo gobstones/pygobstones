@@ -194,8 +194,12 @@ ES = {
   #
   'Repeated variable in assignment: "%s"':
     'La variable "%s" está repetida en la asignación',
-  'Literals in a case should be disjoint':
+  'Literals in a switch should be disjoint':
     'No puede haber literales repetidos en un case',
+  'Constructors in a match should be disjoint':
+    'No puede haber constructores repetidos en un match',
+  '\'match\' expression can only be used with a Variant-type value.':
+    'La expresión \'match\' solo puede ser utilizada con valores de tipo variante.',
   #
   'Index of a foreach/repeatWith/repeat cannot be a variable: "%s"':
     'El índice de un foreach/repeatWith/repeat no puede ser una variable: "%s"',

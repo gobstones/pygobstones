@@ -262,52 +262,45 @@ namespace of routines.
     def compile_repeat(self, tree, code):
         "Compile a repeat statement."
         #
-        #   repeat ({TIMES}) {BODY}
+        #   repeat (<Expr>) <Block>
         #
         # Compiles to code corresponding to
         # the following fragment:
         #
-        #   aux_index := {TIMES}
-        #   if (aux_index > 0) {
-        #     while (true) {
-        #        {BODY}
-        #        aux_index := aux_index - 1
-        #        if (aux_index == 0) break;        
-        #     }
+        #   counter := <Expr>
+        #   while (true) {
+        #     if (not (counter > 0)) { break }
+        #     <Block>
+        #     counter := counter - 1
         #   }
         #
         
         times = tree.children[1]
         body = tree.children[2]
-        aux_index = self.temp_varname()
+        counter = self.temp_varname()
         lbegin = GbsLabel()
         lend = GbsLabel()
-        # aux_index := {TIMES}
+        # counter := <Expr>
         self.compile_expression(times, code)
-        code.push(('popTo', aux_index), near=tree)
-        # if aux_index > 0
-        code.push(('pushFrom', aux_index), near=tree)
-        code.push(('pushConst', 0), near=tree)        
+        code.push(('popTo', counter), near=tree)
+        # while (true) {
+        code.push(('label', lbegin), near=tree)
+        #   if (not (counter > 0) { break }
+        code.push(('pushFrom', counter), near=tree)
+        code.push(('pushConst', 0), near=tree)
         code.push(('call', '>', 2), near=tree)
         code.push(('jumpIfFalse', lend), near=tree)
-        # while true
-        code.push(('label', lbegin), near=tree)
-        # body
+        #   <Block>
         self.compile_block(body, code)
-        # aux_index := aux_index - 1
-        code.push(('pushFrom', aux_index), near=tree)
+        #   counter := counter - 1
+        code.push(('pushFrom', counter), near=tree)
         code.push(('pushConst', 1), near=tree)
         code.push(('call', '-', 2), near=tree)
-        code.push(('popTo', aux_index), near=tree)            
-        # if (aux_index == 0) break;    
-        code.push(('pushFrom', aux_index), near=tree)
-        code.push(('pushConst', 0), near=tree)        
-        code.push(('call', '>', 2), near=tree)
-        code.push(('jumpIfFalse', lend), near=tree)
+        code.push(('popTo', counter), near=tree)            
         # end while
         code.push(('jump', lbegin), near=tree)
         code.push(('label', lend), near=tree)
-        code.push(('delVar', aux_index), near=tree)
+        code.push(('delVar', counter), near=tree)
 
 
     def compile_foreach(self, tree, code):
