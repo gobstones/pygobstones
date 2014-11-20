@@ -103,6 +103,7 @@ class ProgramRun(object):
         self.worker = None
         self.handler = handler
         self.comm = None
+        self.gobstones_version = gobstones_version
         self.gbs_interpreter = self.get_gobstones_interpreter(gobstones_version)
     
     def get_gobstones_interpreter(self, version):
@@ -133,10 +134,16 @@ class ProgramRun(object):
             if path.count(os.path.dirname(__file__)) > 0:
                 sys.path.remove(path)
     
+    def get_worker_class(self):
+        if self.gobstones_version == "xgbs":
+            return self.gbs_interpreter.XGobstonesWorker
+        else:
+            return self.gbs_interpreter.GobstonesWorker
+    
     def create_worker_process(self):
         if self.process is None:
             self.comm = messaging.MessageCommunicator()
-            self.worker = self.gbs_interpreter.GobstonesWorker(self.comm.opposite())
+            self.worker = self.get_worker_class()(self.comm.opposite())
             
             if debug:
                 self.process = concurrent.Thread(target=self.worker.run)

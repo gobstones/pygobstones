@@ -24,7 +24,7 @@ class GUIExecutionAPI(lang.ExecutionAPI):
         self.comm.send('LOG', msg)    
 
 
-class GobstonesWorker(ProgramWorker):
+class XGobstonesWorker(ProgramWorker):
 
     def prepare(self):
         self.api = GUIExecutionAPI(self.communicator)                
@@ -32,14 +32,14 @@ class GobstonesWorker(ProgramWorker):
     def start(self, filename, program_text, initial_board_string, run_mode):
         board = tools.board_format.from_string(initial_board_string)
         
-        if run_mode == GobstonesWorker.RunMode.ONLY_CHECK:
+        if run_mode == XGobstonesWorker.RunMode.ONLY_CHECK:
             options = lang.GobstonesOptions()
         else:
             options = lang.GobstonesOptions()
         self.gobstones = lang.Gobstones(options, self.api)
         
         try:
-            if run_mode == GobstonesWorker.RunMode.FULL:
+            if run_mode == XGobstonesWorker.RunMode.FULL:
                 self.success(self.gobstones.run(filename, program_text, board))
             else:
                 # Parse gobstones script
