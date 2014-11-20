@@ -27,7 +27,7 @@ function sumarNForeach(n) {
 function sumarNWhile(n) {
 	suma := 0
 	rec := naturales(n)
-	while (not isNil(rec)) {
+	while (not isEmpty(rec)) {
 		suma := suma + head(rec)
 		rec := tail(rec)
 	}
@@ -45,7 +45,7 @@ function testSumarForeachWhile() {
 function testOpsSobreLista() {
 	suma := 0
 	rec := naturales(20)
-	while (not isNil(rec)) {
+	while (not isEmpty(rec)) {
 		suma := suma + aplicarNumOps(head(rec), 4)
 		rec := tail(rec)
 	}

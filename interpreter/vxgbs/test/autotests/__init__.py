@@ -80,7 +80,7 @@ binop = lambda op, x, y: BINOPS[op](x,y)
 
 # Gbs syntax
 
-isNil = lambda xs: len(xs) == 0
+isEmpty = lambda xs: len(xs) == 0
 head = lambda xs: xs[0]
 tail = lambda xs: xs[1:]
 
@@ -135,7 +135,7 @@ class TestOpMapping(TestScript):
             xs := nats(1, @length)
             ys := nats(@length, 1)
             zs := []
-            while(not isNil(xs)) {
+            while(not isEmpty(xs)) {
                 zs := zs ++ [head(xs) @operation head(ys)]
                 xs := tail(xs)
                 ys := tail(ys)
@@ -147,7 +147,7 @@ class TestOpMapping(TestScript):
         xs = nats(1, args["length"])
         ys = nats(args["length"], 1)
         zs = []
-        while (not isNil(xs)):
+        while (not isEmpty(xs)):
             zs = zs + [binop(args["operation"], head(xs), head(ys))]
             xs = tail(xs)
             ys = tail(ys)
@@ -164,7 +164,7 @@ class TestOpInject(TestScript):
             xs := nats(1, @length)
             ys := nats(@length, 1)
             res := 0
-            while(not isNil(xs)) {
+            while(not isEmpty(xs)) {
                 res := res + (head(xs) @operation head(ys))
                 xs := tail(xs)
                 ys := tail(ys)
@@ -176,7 +176,7 @@ class TestOpInject(TestScript):
         xs = nats(1, args["length"])
         ys = nats(args["length"], 1)
         res = 0
-        while (not isNil(xs)):
+        while (not isEmpty(xs)):
             res += binop(args["operation"], head(xs), head(ys))
             xs = tail(xs)
             ys = tail(ys)

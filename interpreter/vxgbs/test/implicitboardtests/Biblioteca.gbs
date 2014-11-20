@@ -19,13 +19,13 @@ function eqLists(xs, ys) {
 	ys_rec := ys
 	xs_rec := xs
 	equal := True
-	while (not isNil(xs_rec) && not isNil(ys_rec)) {
+	while (not isEmpty(xs_rec) && not isEmpty(ys_rec)) {
 		 equal := equal && (head(xs_rec) == head(ys_rec))
 		xs_rec := tail(xs_rec)
 		ys_rec := tail(ys_rec)
 	}
-	 equal := equal && (isNil(xs_rec))
-	 equal := equal && (isNil(ys_rec))
+	 equal := equal && (isEmpty(xs_rec))
+	 equal := equal && (isEmpty(ys_rec))
 	return(equal)
 }
 

@@ -888,7 +888,7 @@ LIST_BUILTINS = [
         lambda global_state, xs, x: xs + [x]
     ),
     BuiltinFunction(
-        i18n.i18n('isNil'),
+        i18n.i18n('isEmpty'),
         TYPE_IS_NIL,
         lambda global_state, x: len(x) == 0
     ),

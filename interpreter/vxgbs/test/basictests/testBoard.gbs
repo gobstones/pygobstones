@@ -67,10 +67,16 @@ function test2(tablero) {
 	return(passed)
 }
 
+function testDimensiones(t) {
+	dim := dimensionTablero(t)
+	return(filas(dim) == columnas(dim) && filas(dim) == 4) 
+}
+
 # Main
 t.program {
 	passed := test0(t)
 	passed.Assert(test1(t))
 	passed.Assert(test2(t))
+	passed.Assert(testDimensiones(t))
 	return(passed)
 }

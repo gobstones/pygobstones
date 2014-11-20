@@ -73,7 +73,7 @@ binop = lambda op, x, y: BINOPS[op](x,y)
 
 # Gbs syntax
 
-isNil = lambda xs: len(xs) == 0
+isEmpty = lambda xs: len(xs) == 0
 head = lambda xs: xs[0]
 tail = lambda xs: xs[1:]
 

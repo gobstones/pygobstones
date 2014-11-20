@@ -1217,7 +1217,7 @@ TYPE_SNOC = GbsForallType(
                     GbsTupleType([GbsListType(TYPEVAR_X), TYPEVAR_X]),
                     GbsTupleType([GbsListType(TYPEVAR_X)])))
 
-TYPE_IS_NIL = GbsForallType(
+TYPE_IS_EMPTY = GbsForallType(
                 [TYPEVAR_X],
                 GbsFunctionType(
                     GbsTupleType([GbsListType(TYPEVAR_X)]),
@@ -1270,7 +1270,7 @@ def list_operation(global_state, lst, f):
     else:
         return f(global_state, lst)
 
-def list_isnil(global_state, lst):
+def list_isempty(global_state, lst):
     "Return the whether list is nil or not."
     return list_operation(global_state, lst, lambda global_state, x: len(x) == 0)
 
@@ -1418,9 +1418,9 @@ LIST_BUILTINS = [
 #        lambda global_state, xs, x: xs + [x]
 #    ),
     BuiltinFunction(
-        i18n.i18n('isNil'),
-        TYPE_IS_NIL,
-        list_isnil
+        i18n.i18n('isEmpty'),
+        TYPE_IS_EMPTY,
+        list_isempty
     ),
     BuiltinFunction(
         i18n.i18n('head'),

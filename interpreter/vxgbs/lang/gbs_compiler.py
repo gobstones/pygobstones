@@ -449,22 +449,22 @@ namespace of routines.
         # the following fragment:
         #
         #   xs0 := xs
-        #   if (isNil(xs0)) break;
+        #   if (isEmpty(xs0)) break;
         #   x := head(xs0)
         #   setImmutable(x)
         #   xs0 := tail(xs0)
         #   while (true) {
         #      {BODY}
-        #      if (isNil(xs0)) break;
+        #      if (isEmpty(xs0)) break;
         #      unsetImmutable(x)
         #      x := head(xs0)
         #      setImmutable(x)
         #      xs0 := tail(xs)
         #   }
         #
-        def jumpIfIsNil(var, label):
+        def jumpIfIsEmpty(var, label):
             code.push(('pushFrom', var), near=tree)
-            code.push(('call', i18n.i18n('isNil'), 1), near=tree)
+            code.push(('call', i18n.i18n('isEmpty'), 1), near=tree)
             code.push(('call', 'not', 1), near=tree)
             code.push(('jumpIfFalse', label), near=tree)
         def head(listVar, var):
@@ -486,8 +486,8 @@ namespace of routines.
         # xs0 := xs
         self.compile_expression(xs, code)
         code.push(('popTo', xs0), near=tree)
-        # if (isNil(xs0)) break;
-        jumpIfIsNil(xs0, lend)
+        # if (isEmpty(xs0)) break;
+        jumpIfIsEmpty(xs0, lend)
         # x := head(xs0)
         head(xs0, x)
         code.push(('setImmutable', x), near=tree)
@@ -497,8 +497,8 @@ namespace of routines.
         code.push(('label', lbegin), near=tree)
         # body
         self.compile_block(body, code)
-        # if (isNil(xs0)) break
-        jumpIfIsNil(xs0, lend2)
+        # if (isEmpty(xs0)) break
+        jumpIfIsEmpty(xs0, lend2)
         # x := head(xs0)
         code.push(('unsetImmutable', x), near=tree)
         head(xs0, x)
