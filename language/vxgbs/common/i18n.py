@@ -109,6 +109,10 @@ ES = {
   # Records
     'Repeated assignment for field "%s".':
         'Asignación repetida para el campo "%s".',
+    'the given value has type %s':
+        'el valor dado es de tipo %s',
+    'Error while building type %s':
+        'Error al construir el tipo %s',
   # Variants
     'Variant body should only contain case declarations.':
         'El cuerpo de un tipo variante solo debe contener declaraciones \'case\'.',

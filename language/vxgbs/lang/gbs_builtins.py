@@ -141,6 +141,9 @@ class GbsObject(object):
         self.value = value
         self.bindings = bindings
         self.type = type
+        
+    def full_type(self):
+        return self.type
     
     def __repr__(self):
         return repr(self.value)
@@ -277,6 +280,13 @@ class GbsRecordObject(GbsObject):
         rec = GbsRecordObject(obj.value, obj.type, obj.bindings)
         rec.constructor = self.constructor
         return rec
+    
+    def full_type(self):
+        if self.constructor == self.type:
+            return self.type
+        else:
+            return self.type + "::" + self.constructor
+
 
 def wrap_value(value):
     if isinstance(value, GbsObject):
@@ -1627,11 +1637,17 @@ def mk_record(global_state, type, fields, bindings={}):
         return GbsRecordObject(_bindings, type, _bindings)
     except Exception as exception:
         "Just in case..."
-        msg = global_state.backtrace(i18n.i18n('Error while building record of type %s' % (type,)))
+        msg = global_state.backtrace(i18n.i18n('Error while building type %s') % (type,))
         raise GbsRuntimeException(msg, global_state.area())
     
 def mk_record_from(global_state, type, fields, from_record):
-    return mk_record(global_state, type, fields, from_record.bindings)
+    if from_record.type != type.split("::")[0] or from_record.constructor != type.split("::")[1]:
+        if type.split("::")[0] == type.split("::")[1]:
+            type = type.split("::")[0]
+        msg = global_state.backtrace(i18n.i18n("Error while building type %s") % (type,) + ": " + i18n.i18n("the given value has type %s") % (from_record.full_type(),))
+        raise GbsRuntimeException(msg, global_state.area())
+    else:  
+        return mk_record(global_state, type, fields, from_record.bindings)
 
 def projection(global_state, record, field_name):
     if isinstance(record, GbsObject):
