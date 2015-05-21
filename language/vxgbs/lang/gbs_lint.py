@@ -337,15 +337,15 @@ class GbsSemanticChecker(object):
             newcons = []
             imported = []
             for construct in constructs:
-                if construct.name in imports:
+                if construct.name() in imports:
                     newcons.append(construct)
-                    imported.append(construct.name)
+                    imported.append(construct.name())
                     if isinstance(construct, lang.gbs_constructs.UserType):
-                        newcons.extend(mdl_lint.field_getters_for_type(construct.name))                    
+                        newcons.extend(mdl_lint.field_getters_for_type(construct.name()))
             constructs = newcons
             invalid_imports = set(imports).difference(set(imported))
             if len(invalid_imports) > 0:
-                import_index = imports.index(invalid_imports[0])                
+                import_index = imports.index(invalid_imports[0])
                 mdl_lint.symbol_table._error_not_defined(import_tokens[import_index], 
                                                          imports[import_index], 
                                                          'type or callable')
