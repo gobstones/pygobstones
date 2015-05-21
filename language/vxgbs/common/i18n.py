@@ -113,6 +113,8 @@ ES = {
         'el valor dado es de tipo %s',
     'Error while building type %s':
         'Error al construir el tipo %s',
+    'Tried to apply projection to a value of type %s. Only record values could be projected.':
+        'Se intentó observar un campo de un valor de tipo %s. Solo a los valores de tipo registros pueden aplicarse las funciones observadoras.',
   # Variants
     'Variant body should only contain case declarations.':
         'El cuerpo de un tipo variante solo debe contener declaraciones \'case\'.',

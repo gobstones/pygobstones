@@ -1653,6 +1653,11 @@ def projection(global_state, record, field_name):
     if isinstance(record, GbsObject):
         record = record.value
     
+    if not isinstance(record, GbsObject):
+        msg = global_state.backtrace(i18n.i18n('Tried to apply projection to a value of type %s. Only record values could be projected.') 
+                                     % (i18n.i18n(poly_typeof(record)),))
+        raise GbsRuntimeException(msg, global_state.area())
+    
     try:
         return unwrap_value(record[field_name])
     except Exception as exception:
