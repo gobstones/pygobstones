@@ -358,7 +358,7 @@ class ASTBuilder(object):
         if subtrees[2].children[0] == 'funcCall':
             return ASTNode(['recordSuchAs',
                             subtrees[1],
-                            subtrees[2]],
+                            ASTNode([subtrees[2]] + subtrees[3].children, pos_b, pos_e)],
                            pos_b, pos_e)
         # Normal field assocs
         else:
@@ -464,7 +464,7 @@ class ASTBuilder(object):
         
         from_value = None
         if len(expr_construct[2].children) > 0 and expr_construct[2].children[0] == 'recordSuchAs':
-            fields = _make_list_expression(ASTNode([expr_construct[2].children[2]], pos_b, pos_e))
+            fields = _make_list_expression(expr_construct[2].children[2])
             from_value = expr_construct[2].children[1] 
         else:
             fields = _make_list_expression(expr_construct[2])

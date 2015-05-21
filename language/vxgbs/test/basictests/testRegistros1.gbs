@@ -51,8 +51,17 @@ function testBasicRecords2() {
 	return(igualPersona(p1, p2))
 }
 
+function testSuchAs() {
+	p1:=Persona(nombre<-"Vale", edad<-33, dni<-"35353535")
+	p3:= Persona(p1 | edad<-4, nombre <- "pepe")
+	return (edad(p3) == 4 && nombre(p3) == "pepe")
+}
+
 t.program {
 	passed := testBasicRecords()
+	passed.Assert(testNestingWithSameFields())
+	passed.Assert(testSuchAs())
+	passed.Assert(testBasicRecords2())
 	passed.Assert(testNestingWithSameFields())
 	return(passed)
 }
