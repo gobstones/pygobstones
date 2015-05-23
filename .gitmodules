@@ -1,0 +1,3 @@
+[submodule "language/implementation"]
+	path = language/implementation
+	url = https://github.com/gobstones/PyGobstones-Lang.git

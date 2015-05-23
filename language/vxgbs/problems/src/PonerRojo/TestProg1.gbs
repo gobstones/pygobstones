@@ -1,6 +1,0 @@
-from Solution import (PonerRojo)
-
-procedure Main()
-{
-	PonerRojo()
-}
