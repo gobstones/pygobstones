@@ -296,6 +296,7 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
         self.interactiveW = InteractiveWindow(self.mainW)
         self.interactiveRunning = False
         self.failure_dict = {
+            EjecutionFailureHandler.DEFAULT: self.interpreter_log_default_exception,
             EjecutionFailureHandler.PARSER_FAILURE: self.interpreter_log_failure,
             EjecutionFailureHandler.STATIC_FAILURE: self.interpreter_log_failure,
             EjecutionFailureHandler.DYNAMIC_FAILURE: self.interpreter_boom_failure,
@@ -377,6 +378,14 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
             if ord(s) is 10:
                 myPrettyBoard += '\n'
         return myPrettyBoard
+
+    def interpreter_log_default_exception(self, exception):
+        if not self.wasStoped:
+            self.mainW.ui.statusbar.showMessage(QtCore.QString
+                (i18n('Was occurred an error')))
+            self.showInLog(i18n('Was occurred an error'))            
+            self.log(exception.msg)
+            self.mainW.resetButtonsRunAndStop()
 
     def interpreter_log_failure(self, exception):
         if not self.wasStoped:

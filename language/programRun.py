@@ -31,7 +31,7 @@ class EjecutionFailureHandler(object):
     """
 
     """ Failure type constants """
-    DEFAULT             = 'Exception'
+    DEFAULT             = 'GobstonesException'
     PARSER_FAILURE      = 'GbsParserException|ParserException'
     SEMANTIC_FAILURE    = 'GbsLintException'
     LIVENESS_FAILURE    = 'GbsLivenessException|GbsUninitializedVarException|GbsUnusedVarException'
@@ -107,7 +107,7 @@ class ProgramRun(object):
         self.gbs_language = self.get_gobstones_language(gobstones_version)
     
     def get_gobstones_language(self, version):
-        version_package = "v"+ version.replace(".", "_")
+        version_package = "implementation" #"v"+ version.replace(".", "_")
         self.remove_old_language_paths()
         self.clean_old_language_modules()
         sys.path.append(os.path.join(os.path.dirname(__file__), version_package))
@@ -135,10 +135,7 @@ class ProgramRun(object):
                 sys.path.remove(path)
     
     def get_worker_class(self):
-        if self.gobstones_version == "xgbs":
-            return self.gbs_language.XGobstonesWorker
-        else:
-            return self.gbs_language.GobstonesWorker
+        return self.gbs_language.GobstonesWorker
     
     def create_worker_process(self):
         if self.process is None:
