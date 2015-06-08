@@ -17,6 +17,5 @@ class ProgramWorker(object):
         if message.header == 'EXIT':
             self.exit()
             return        
-        filename, program_text, initial_board_string, run_mode = message.body
-        self.start(filename, program_text, initial_board_string, run_mode)
-      
+        filename, program_text, initial_board_string, run_mode, gobstones_version = message.body
+        self.start(filename, program_text, initial_board_string, run_mode, gobstones_version)

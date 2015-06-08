@@ -281,9 +281,9 @@ class MainWindow(QtGui.QMainWindow):
 
     def getLang(self):
         if self.lang == GOBSTONES:
-            return 'gbs'
+            return 'gobstones'
         else:
-            return 'xgbs'
+            return 'xgobstones'
 
 # RUN BUTTON .....................
 
