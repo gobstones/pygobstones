@@ -3,7 +3,7 @@
 import unittest
 import sys
 sys.path.append('../gui/views/boardPrint/')
-from parseBoard import *
+from gui.views.boardPrint.parseBoard import *
 
 
 class TestParseBoard(unittest.TestCase):
