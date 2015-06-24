@@ -8,7 +8,8 @@ from parseXML import ParseXML
 import gui
 from gui.errorWindow import *
 from xml.etree.ElementTree import ParseError
-from commons.utils import root_path, clothing_for_file_exists, clothing_dir_for_file
+from commons.paths import root_path
+from commons.utils import clothing_for_file_exists, clothing_dir_for_file
 
 class BoardViewer(QtGui.QWidget):
 

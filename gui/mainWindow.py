@@ -16,7 +16,7 @@ from views.boardPrint.board import *
 from views.boardPrint.boardViewer import *
 from resultsMainWindow import *
 from commons.i18n import *
-from commons.utils import root_path
+from commons.paths import root_path
 from views.boardPrint.parseBoard import *
 import time
 import views.resources

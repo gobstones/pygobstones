@@ -1,12 +1,12 @@
  # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtWebKit import QWebView, QWebPage
+from commons.paths import root_path
 import commons.utils as utils  
 import sys, os
 sys.path.append('..')
 import views.resources
 from commons.i18n import *
-from commons.utils import root_path
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -55,7 +55,7 @@ class AboutWidget(QtGui.QDialog):
 
     def __init__(self):
         super(AboutWidget, self).__init__()
-        self.version = QtCore.QString(utils.read_file(os.path.join(utils.root_path(), 'version')))
+        self.version = QtCore.QString(utils.read_file(os.path.join(root_path(), 'version')))
         self.setModal(True)
         icon = QtGui.QIcon(':/logoGobstones.png')
         self.setWindowIcon(icon)
@@ -82,9 +82,9 @@ class AboutWidget(QtGui.QDialog):
         tabs.tabBar().setStyleSheet("background-color:'white'; color:'#4682b4'; border:2px solid #4682b4; font-size:15px")
         tabs.tabBar().setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
-        about = self.openAndReturnHelpFile(os.path.join(utils.root_path(), 'about_files','about.html'))
-        authors = self.openAndReturnHelpFile(os.path.join(utils.root_path(), 'about_files','authors.html'))
-        history = self.openAndReturnHelpFile(os.path.join(utils.root_path(), 'about_files','history.html'))
+        about = self.openAndReturnHelpFile(os.path.join(root_path(), 'about_files','about.html'))
+        authors = self.openAndReturnHelpFile(os.path.join(root_path(), 'about_files','authors.html'))
+        history = self.openAndReturnHelpFile(os.path.join(root_path(), 'about_files','history.html'))
 
         tabs.addTab(about, _fromUtf8(""))
         tabs.addTab(authors, _fromUtf8(""))
@@ -137,7 +137,7 @@ class CommandHelpWidget(QtGui.QDialog):
         tabs.tabBar().setStyleSheet("background-color:'white'; color:'#4682b4'; border:2px solid #4682b4; font-size:15px")
         tabs.tabBar().setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
-        command = self.openAndReturnHelpFile(os.path.join(utils.root_path(), 'about_files','command_editor.html'))
+        command = self.openAndReturnHelpFile(os.path.join(root_path(), 'about_files','command_editor.html'))
 
         tabs.addTab(command, _fromUtf8(""))
 

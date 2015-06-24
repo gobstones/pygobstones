@@ -8,7 +8,7 @@ from PyQt4.QtSvg import QSvgWidget
 import sys
 import os
 import platform
-from commons.utils import root_path
+from commons.paths import root_path
 
 def main():
     app = QtGui.QApplication(sys.argv)

@@ -11,11 +11,12 @@ from errorWindow import *
 from views.boardOption import *
 sys.path.append('..')
 from commons.i18n import *
-from commons.utils import root_path
+from commons.paths import root_path
 from views.boardPrint.parseBoard import *
 from editor import *
 from views.viewEditor import *
 from views.boardPrint.boardEditor import *
+from commons.qt_utils import openFileName
 
 
 class BoardOptionsWindow(QtGui.QDialog):
@@ -222,8 +223,7 @@ class BoardOption(object):
         self.boardEditor = None
 
     def loadBoard(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self.parent, i18n('Open File'),
-        root_path(), '*.gbb')
+        filename = openFileName(self.parent, '*.gbb')
         if not filename == PyQt4.QtCore.QString(''):
             fname = open(filename)
             data = fname.read()

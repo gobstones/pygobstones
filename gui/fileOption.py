@@ -8,11 +8,9 @@ import PyQt4
 import views.resources
 sys.path.append('..')
 from commons.i18n import *
-from commons.utils import root_path, user_path, clothing_for_file_exists, clothing_dir_for_file
-
-
-def gobstones_folder():
-    return os.path.join(user_path(), "gobstones")
+from commons.paths import root_path, user_path, gobstones_folder
+from commons.utils import clothing_for_file_exists, clothing_dir_for_file
+from commons.qt_utils import openFileName, saveFileName
 
 class FileOption(object):
 
@@ -90,8 +88,8 @@ class FileOption(object):
             if val == QMessageBox.Cancel:
                 return
 
-        filename = QtGui.QFileDialog.getOpenFileName(self.mainW, i18n('Open File'),
-        gobstones_folder(), '*.gbs')
+        filename = openFileName(self.mainW, '*.gbs')
+        
         if not filename == PyQt4.QtCore.QString(''):
             if not self.wantOpenLibrary(filename):
                 self.moduleFile = filename
@@ -239,8 +237,7 @@ class FileOption(object):
 
     def saveAsFileDialog(self):
         indexFile = self.mainW.ui.tabWidgetEditors.currentIndex()
-        filename = QtGui.QFileDialog.getSaveFileName(self.mainW,
-            i18n('Save as ...'), gobstones_folder(), '*.gbs')
+        filename = saveFileName(self.mainW, '*.gbs')
         if filename == PyQt4.QtCore.QString(''):
             return False
         if indexFile == 0:

@@ -7,18 +7,6 @@ def read_file(fn):
     f.close()
     return c
 
-def path_join(*list):
-    path = ""
-    for p in list:
-        path += os.path.join(path, p)
-    return path
-
-def root_path():
-    return os.path.dirname(os.path.dirname(__file__))
-
-def user_path():
-    return expanduser("~")
-
 # Clothing
 
 def clothing_dir_for_file(filepath):

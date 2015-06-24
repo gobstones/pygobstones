@@ -76,8 +76,7 @@ class Results(QtGui.QWidget):
         self.ui.tabLibraryCode.setReadOnly(True)
 
     def saveBoard(self):
-        filename = QtGui.QFileDialog.getSaveFileName(self,
-        i18n('Save as ...'), os.getcwd(), '*.gbb')
+        filename = saveFileName(self, '*.gbb')
         if not filename == QtCore.QString(''):
             filename = filename + '.gbb'
             (filep, filen) = os.path.split(str(filename))

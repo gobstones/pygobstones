@@ -5,7 +5,7 @@ import views.resources
 import boardOption
 from helpOption import *
 from commons.i18n import *
-from commons.utils import root_path
+from commons.qt_utils import saveFileName
 
 class Editor(QtGui.QWidget):
 
@@ -103,8 +103,7 @@ class Editor(QtGui.QWidget):
 
     def saveBoardFromDisk(self):
         self.board = boardToString(self.ui.boardEditor.getEditedBoard())
-        filename = QtGui.QFileDialog.getSaveFileName(self,
-        i18n('Save as ...'), root_path(), '*.gbb')
+        filename = saveFileName(self, '*.gbb')
         if not filename == QtCore.QString(''):
             (filep, filen) = os.path.split(str(filename))
             myFile = open(filename, 'w')
@@ -113,10 +112,8 @@ class Editor(QtGui.QWidget):
         self.reset_combo_persist()
         
     def saveBoardToImage(self):
-        filename = QtGui.QFileDialog.getSaveFileName(self,
-                                                     i18n('Save as ...'), 
-                                                     root_path(), 
-                                                     '*.png')
+        filename = saveFileName(self, '*.png')
+        
         if not filename == QtCore.QString(''):
             self.ui.boardEditor.save_to_image(filename)
         self.reset_combo_persist()

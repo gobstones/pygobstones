@@ -1,5 +1,7 @@
-from PyQt4 import QtCore, QtGui
-from PyQt4 import Qt
+from PyQt4 import QtGui, QtCore
+import commons.paths as paths
+from commons.i18n import i18n 
+import os
 
 def populateTable(table, rows):
 	""" Populates a table with elements. 
@@ -12,3 +14,17 @@ def populateTable(table, rows):
 			for j, col in enumerate(row):
 				table.setItem(i, j, QtGui.QTableWidgetItem(repr(col))) 
 	return table
+
+def openFileName(parent, extensions):
+	filename = QtGui.QFileDialog.getOpenFileName(parent, i18n('Open File'),
+                                                 paths.last_location, extensions)
+	if not filename == QtCore.QString(''):
+		paths.last_location = os.path.dirname(str(filename))
+	return filename
+
+def saveFileName(parent, extensions):
+	filename = QtGui.QFileDialog.getSaveFileName(parent, i18n('Save as ...'),
+                                                 paths.last_location, extensions)
+	if not filename == QtCore.QString(''):
+		paths.last_location = os.path.dirname(str(filename))
+	return filename
