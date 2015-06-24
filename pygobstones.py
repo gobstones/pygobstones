@@ -9,8 +9,10 @@ import sys
 import os
 import platform
 from commons.paths import root_path
+import logging
+import traceback
 
-def main():
+def run_pygobstones():
     app = QtGui.QApplication(sys.argv)
 
     #Get the locale settings
@@ -52,6 +54,27 @@ def main():
     splash.finish(w)
     w.showMaximized()
     sys.exit(app.exec_())
+
+def setup_logger():
+    logger = logging.getLogger()    
+    formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(name)s] %(message)s')
+
+    filehandler = logging.FileHandler(os.path.join(root_path(), "pygobstones.log"))
+    filehandler.setFormatter(formatter)
+    
+    consolehandler = logging.StreamHandler()
+    consolehandler.setFormatter(formatter)
+    
+    logger.addHandler(filehandler) 
+    logger.addHandler(consolehandler)
+    logger.setLevel(logging.WARNING)
+
+def main():
+    setup_logger()
+    try:
+        run_pygobstones()
+    except Exception as e:
+        logging.getLogger().critical(traceback.format_exc(e))
 
 if __name__ == '__main__':
     main()
