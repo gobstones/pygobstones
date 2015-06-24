@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import parseBoard
 import random
-
+import parseBoard
 
 class Board():
 
@@ -268,3 +267,19 @@ class InitialBoardGenerator():
     def setHead(self, x, y):
         self.board.setHead(x, y)
         self.options[2] = 1
+
+
+class RandomBoardGenerator(InitialBoardGenerator):
+    
+    def __init__(self):
+        self.board = Board((1,1), {(0,0):Cell(0,0,0,0)}, (1,1))
+        self.options = [0, 0, 0]
+        self.sizeBoardFunction = self.randomSizeBoard
+        self.headPositionFunction = self.randomHeadBoard
+        self.ballsFunction = self.randomCellsBoard
+        
+    def generate(self):
+        self.sizeBoardFunction(self.board)
+        self.headPositionFunction(self.board)
+        self.ballsFunction(self.board)
+        return self
