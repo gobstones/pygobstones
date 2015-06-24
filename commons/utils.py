@@ -1,5 +1,4 @@
 import os
-from os.path import expanduser
 
 def read_file(fn):
     f = open(fn, 'r')

@@ -1,12 +1,11 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtWebKit import QWebView, QWebPage
 from commons.paths import root_path
 import commons.utils as utils  
 import sys, os
 sys.path.append('..')
-import views.resources
-from commons.i18n import *
+from commons.i18n import i18n
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -129,7 +128,7 @@ class QWebView_(QWebView):
 
 class CommandHelpWidget(QtGui.QDialog):
 
-     def __init__(self):
+    def __init__(self):
         super(CommandHelpWidget, self).__init__()
         self.setModal(True)
         self.setWindowTitle(i18n('User guide editor board'))
@@ -147,14 +146,14 @@ class CommandHelpWidget(QtGui.QDialog):
         vLayout.addWidget(tabs)
         self.setLayout(vLayout)
 
-     def openAndReturnHelpFile(self, path):
+    def openAndReturnHelpFile(self, path):
         theFile = open(path)
         string = QWebView_([line.strip() for line in theFile])
         theFile.close()
         return string
 
 
-     def paintEvent(self, event):
+    def paintEvent(self, event):
         painter = QtGui.QPainter()
         painter.Antialiasing
         painter.begin(self)
