@@ -78,7 +78,8 @@ class Results(QtGui.QWidget):
     def saveBoard(self):
         filename = saveFileName(self, '*.gbb')
         if not filename == QtCore.QString(''):
-            filename = filename + '.gbb'
+            if not filename[-4:] == '.gbb':
+                filename = filename + '.gbb'
             (filep, filen) = os.path.split(str(filename))
             myFile = open(filename, 'w')
             myFile.write(boardToString(self.finalBoard))
