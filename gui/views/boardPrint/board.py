@@ -267,6 +267,7 @@ class InitialBoardGenerator():
     def setHead(self, x, y):
         self.board.setHead(x, y)
         self.options[2] = 1
+        self.headPositionFunction = self.nothingHead
 
 
 class RandomBoardGenerator(InitialBoardGenerator):

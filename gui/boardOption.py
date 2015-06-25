@@ -111,7 +111,7 @@ class BoardOptionsWindow(QtGui.QDialog):
         self.openSelectBoardSizeWindow(self.acceptHeadPosition, 'Head Coordinate')
 
     def accept(self):
-        self.parentWidget().initialBoardGenerator = self.initialBoardGenerator
+        self.parentWidget().boardGenerator = self.initialBoardGenerator
         self.parentWidget().update()
         self.close()
 
@@ -163,7 +163,7 @@ class BoardOptionsWindow(QtGui.QDialog):
         y = self.heightLE.text()
         x = self.widthLE.text()
         if (self.isValidIntAndPosition(x,y)):
-            self.initialBoardGenerator.setHead(int(self.widthLE.text()), int(self.heightLE.text()))
+            self.initialBoardGenerator.setHead(int(x), int(y))
             self.widgetSize.close()
         else:
             ErrorWindow(i18n("You must enter integers less or equal than ({0},{1})").
