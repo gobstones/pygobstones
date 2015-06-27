@@ -7,6 +7,7 @@ from views.boardPrint.parseBoard import *
 from commons.i18n import *
 from commons.utils import clothing_for_file_exists, clothing_dir_for_file
 import views.resources
+from commons.paths import assure_extension
 
 
 class Results(QtGui.QWidget):
@@ -78,8 +79,7 @@ class Results(QtGui.QWidget):
     def saveBoard(self):
         filename = saveFileName(self, '*.gbb')
         if not filename == QtCore.QString(''):
-            if not filename[-4:] == '.gbb':
-                filename = filename + '.gbb'
+            filename = assure_extension(filename, 'gbb')
             (filep, filen) = os.path.split(str(filename))
             myFile = open(filename, 'w')
             myFile.write(boardToString(self.finalBoard))

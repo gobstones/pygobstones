@@ -224,7 +224,7 @@ class BoardOption(object):
 
     def loadBoard(self):
         filename = openFileName(self.parent, '*.gbb')
-        if not filename == PyQt4.QtCore.QString(''):
+        if not filename == "":
             fname = open(filename)
             data = fname.read()
             self.parent.setInitialBoard(data)

@@ -8,7 +8,8 @@ import PyQt4
 import views.resources
 sys.path.append('..')
 from commons.i18n import *
-from commons.paths import root_path, user_path, gobstones_folder
+from commons.paths import root_path, user_path, gobstones_folder,\
+	assure_extension
 from commons.utils import clothing_for_file_exists, clothing_dir_for_file
 from commons.qt_utils import openFileName, saveFileName
 
@@ -90,7 +91,7 @@ class FileOption(object):
 
         filename = openFileName(self.mainW, '*.gbs')
         
-        if not filename == PyQt4.QtCore.QString(''):
+        if not filename == "":
             if not self.wantOpenLibrary(filename):
                 self.moduleFile = filename
                 fname = open(filename)
@@ -238,9 +239,10 @@ class FileOption(object):
     def saveAsFileDialog(self):
         indexFile = self.mainW.ui.tabWidgetEditors.currentIndex()
         filename = saveFileName(self.mainW, '*.gbs')
-        if filename == PyQt4.QtCore.QString(''):
+        if filename == "":
             return False
         if indexFile == 0:
+            filename = assure_extension(filename, 'gbs')
             (filep, filen) = os.path.split(str(filename))
             if filen == "Biblioteca.gbs" or filen == "Biblioteca":
                 QMessageBox.question(self.mainW, i18n('Error saving the file'),
@@ -249,7 +251,6 @@ class FileOption(object):
                         QMessageBox.Ok)
                 return False
             else:
-                filename = self.addExtension(filename)
                 self.moduleFile = filename
                 myFile = open(filename, 'w')
                 myFile.write(self.mainW.ui.textEditFile.toPlainText().toUtf8())
@@ -260,6 +261,7 @@ class FileOption(object):
                 self.loadLibrary()
             
         if indexFile == 1:
+            filename = assure_extension(filename, 'gbs')
             (filep, filen) = os.path.split(str(filename))
             if not filen.startswith('Biblioteca'):
                 QMessageBox.question(self.mainW, i18n('Error saving the file'),
@@ -268,14 +270,13 @@ class FileOption(object):
                         QMessageBox.Ok)
                 return False
             elif not os.path.exists('Biblioteca.gbs'):
-                filename = self.addExtension(filename)
                 self.libraryFile = filename
                 fileLibrary = open(filename, 'w')
                 fileLibrary.write(self.mainW.ui.textEditLibrary.toPlainText().toUtf8())
                 self.setCurrentPathDirectory(os.path.dirname(filename))
                 fileLibrary.close()
                 self.mainW.ui.textEditLibrary.document().setModified(False)
-                self.mainW.ui.tabWidgetEditors.setTabText(1, self.addExtension(filen))
+                self.mainW.ui.tabWidgetEditors.setTabText(1, filen)
             else:
                 self.saveLibrary()
                 
@@ -286,8 +287,8 @@ class FileOption(object):
 
 
     def createInitialsFoldersAndFiles(self):
-        if not os.path.exists('Vestimentas'):
-            path = os.path.join(gobstones_folder(), 'Vestimentas')
+        path = os.path.join(gobstones_folder(), 'Vestimentas')
+        if not os.path.exists(path):
             os.makedirs(path)
             os.makedirs(os.path.join(path, 'Imagenes'))
 
@@ -297,10 +298,4 @@ class FileOption(object):
         libFile.write(self.mainW.ui.textEditLibrary.toPlainText().toUtf8())
         libFile.close()
         self.mainW.ui.textEditLibrary.document().setModified(False)
-
-    def addExtension(self, filename):
-        filename = str(filename)
-        if not filename.endswith('.gbs'):
-            filename = filename + '.gbs'
-        return filename
 
