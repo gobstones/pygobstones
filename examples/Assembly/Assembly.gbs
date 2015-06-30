@@ -1,0 +1,231 @@
+# Assembly: Implementa una máquina virtual simple
+#           que ejecuta un código assembler.
+# Author: Ary Pablo Batista <arypbatista@gmail.com>
+
+type State is record {
+	field recordA
+	field recordB
+	field memory
+	field ip
+}
+
+type Variable is record {
+	field name
+	field value
+}
+
+type RecordID is variant {
+	case RecordA
+	case RecordB
+}
+
+type Operator is variant {
+	case AddOp
+	case SubOp
+	case DivOp
+	case MulOp
+	case EqualOp
+}
+
+type Operation is variant {
+	case LoadVar {
+		field varName
+		field recordId
+	}
+	
+	case LoadConst {
+		field constant
+		field recordId
+	}
+	
+	case SaveVar {
+		field recordId
+		field varName
+	}
+	
+	case SaveConst {
+		field constant
+		field varName
+	}
+	
+	case Apply {
+		field operator
+	}
+	
+	case Label {
+		field name
+	}
+	
+	case JumpIfZero {
+		field label
+	}
+}
+
+function deleteVariable(mem, varName) {
+	newMemory := []
+	foreach variable in mem {
+		if (name(variable) /= varName) {
+			newMemory := newMemory ++ [variable]
+		}
+	}
+	return (newMemory)
+}
+
+function getVariableValue(mem, varName) {
+	foreach variable in mem {
+		if (varName == name(variable)) {
+			varValue := value(variable)
+		}
+	}
+	return (varValue)
+}
+
+function variableExists(mem, varName) {
+	exists := False
+	foreach variable in mem {
+		if (varName == name(variable)) {
+			exists := True
+		}
+	}
+	return (exists)
+}
+
+function setVariable(mem, varName, varValue) {	
+	if (variableExists(mem, varName)) {
+		m := deleteVariable(mem, varName)
+	} else {
+		m := mem
+	}
+	return (m ++ [Variable(name  <- varName,
+										 value <- varValue)])
+}
+
+function len(operations) {
+	length := 0
+	foreach op in operations {
+		length := length + 1
+	}
+	return(length)
+}
+
+function halt(state, operations) {
+	return (ip(state) == len(operations))
+}
+
+function nextOperation(state, operations) {
+	i := 0
+	foreach operation in operations {
+		if (i == ip(state)) {
+			next := operation
+		}
+		i := i+1
+	}
+	return(next)
+}
+
+function evalProgram(initialState, operations) {
+	state := initialState
+	while (not halt(state, operations)) {
+		state := evalOperation(state, nextOperation(state, operations))	
+	}
+	return (state)
+}
+
+function applyOperator(operator, x, y) {
+	return (
+		match (operator) to
+			AddOp -> x + y
+			SubOp -> x - y
+			DivOp -> x div y
+			MulOp -> x * y
+			EqualOp -> iff(x == y, 1, 0)
+	)
+}
+
+function setRecord(state, recordId, val) {
+	return (
+		match (recordId) to 
+			RecordA -> State(state | recordA <- val)
+			RecordB -> State(state | recordB <- val)
+	)
+}
+
+function getRecord(state, recordId) {
+        return (
+                match (recordId) to
+                        RecordA -> recordA(state)
+                        RecordB -> recordB(state)
+        )
+
+}
+
+function incIp(state) {
+	return (State(state | ip <- ip(state)+1))
+}
+
+function iff(b, v1, v2) {
+	if (b) {
+		res := v1
+	} else {
+		res := v2
+	}
+	return (res)
+}
+
+function evalOperation(state, operation) {
+	return ( 
+		incIp(
+                    match (operation) to 
+			LoadVar    -> setRecord(state, recordId(operation), getVariableValue(memory(state), varName(operation)))
+			LoadConst  -> setRecord(state, recordId(operation), constant(operation))
+			SaveVar    -> State(state | memory <- setVariable(memory(state), varName(operation), getRecord(state, recordId(operation))))
+			SaveConst  -> State(state | memory <- setVariable(memory(state), varName(operation), constant(operation)))
+			Apply      -> State(state | recordA <- applyOperator(operator(operation), recordA(state), recordB(state)))
+			Label      -> State(state | memory <- setVariable(memory(state), name(operation), ip(state)))
+		        JumpIfZero -> iff(recordA(state) == 0, State(state | ip <- getVariableValue(memory(state), label(operation))), state)
+		)
+	)
+}
+
+
+/*
+ * Proposito: Evalua el resultado del programa factorial(n)
+ */
+program {
+	return(
+		evalProgram(
+		State(
+			ip <- 0,
+			recordA <- 0, 
+			recordB <- 0, 
+			memory <- [
+				Variable(name <- "n", value <- 6)
+			] ),
+		[
+			# nFact := 1
+			LoadConst(recordId <- RecordB, constant <- 1),
+			SaveVar(recordId <- RecordB, varName <- "nFact"),
+			
+			# while (n != 0) {
+			Label(name <- "continue"),
+			
+			# nFact := nFact * n
+			LoadVar(recordId <- RecordB, varName <- "nFact"),
+			LoadVar(recordId <- RecordA, varName <- "n"),
+			Apply(operator <- MulOp),
+			SaveVar(recordId <- RecordA, varName <- "nFact"),
+			
+			# n := n - 1
+			LoadVar(recordId <- RecordA, varName <- "n"),
+			LoadConst(recordId <- RecordB, constant <- 1),
+			Apply(operator <- SubOp),
+			SaveVar(recordId <- RecordA, varName <- "n"),
+			
+			# } -- Testing while (n != 0)
+			LoadConst(recordId <- RecordB, constant <- 0),
+			Apply(operator <- EqualOp),
+			JumpIfZero(label <- "continue")			
+
+		])
+	)
+}
