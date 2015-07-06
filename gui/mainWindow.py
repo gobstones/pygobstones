@@ -175,10 +175,12 @@ class MainWindow(QtGui.QMainWindow):
         was selected and load it in the first text editor. Additionally
         load library.
         '''
-        self.fileOption.openFiles()
+        if self.fileOption.openFiles():
+            self.fileOpened()
 
     def openNewFileDialog(self):
         self.fileOption.newFile()
+        self.fileOpened()
 
     def closeEvent(self, event):
         self.fileOption.closeApp(event)
@@ -187,10 +189,23 @@ class MainWindow(QtGui.QMainWindow):
         self.boardOption.loadBoard()
 
     def saveFile(self):
-        self.fileOption.saveFile()
+        if self.fileOption.saveFile():
+            self.fileSaved()
 
     def saveAsFileDialog(self):
-        self.fileOption.saveAsFileDialog()
+        if self.fileOption.saveAsFileDialog():
+            self.fileSaved()
+
+    def fileSaved(self):
+        self.updateCompleters()
+        
+    def fileOpened(self):
+        self.updateCompleters()
+        
+    def updateCompleters(self):
+        filename, text = str(self.fileOption.getFileName()), str(self.ui.textEditFile.toPlainText().toUtf8())
+        self.ui.textEditFile.updateCompleter(filename, text)
+        self.ui.textEditLibrary.setCompleter(self.ui.textEditFile.getCompleter())
 
     def initOptions(self):
         self.fileOption = FileOption(self)

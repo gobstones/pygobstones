@@ -179,7 +179,7 @@ class ProgramRun(object):
                 message = self.comm.receive_nowait()
                 
                 if message.header == 'OK':
-                    self.handler.success(message.body[0], message.body[1])  
+                    self.handler.success(*message.body)  
                     self.stop()                  
                 elif message.header == 'FAIL':
                     reduced = message.body

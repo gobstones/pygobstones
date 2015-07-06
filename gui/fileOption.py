@@ -87,7 +87,7 @@ class FileOption(object):
              i18n('There are unsaved files, to load a new module changes will be lost, continue?'),
             QMessageBox.Yes, QMessageBox.Cancel)
             if val == QMessageBox.Cancel:
-                return
+                return False
 
         filename = openFileName(self.mainW, '*.gbs')
         
@@ -101,14 +101,16 @@ class FileOption(object):
                 self.mainW.ui.textEditFile.setPlainText(data)
                 self.setTabsNamesAndLabelButtonNameAndSetCurrentPathDirectory(filename)
                 self.loadLibrary()
-                fname.close()
+                fname.close()                
             else:
                 QMessageBox.question(self.mainW, i18n('Error loading the file'),
                      i18n('Must load a file different to library') + '\n'
                            + i18n('If you want edit the library, use the corresponding tab'),
                             QMessageBox.Ok)
+                return False
         self.createInitialsFoldersAndFiles()
         self.updateClothingOptions()
+        return True
 
     def updateClothingOptions(self):
         if clothing_for_file_exists(str(self.moduleFile)):

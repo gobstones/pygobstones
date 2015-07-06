@@ -1,5 +1,47 @@
 from PyQt4 import QtCore, QtGui
 import sys
+from language.programRun import EjecutionHandler, ProgramRun
+from PyQt4.QtCore import QAbstractItemModel
+import json
+from PyQt4.QtGui import QStringListModel
+
+class GobstonesCompleter(QtGui.QCompleter, EjecutionHandler):
+    BASIC_NAMES = [
+            "Poner", 
+            "Mover",
+            "Sacar",
+            "hayBolitas",
+            "nroBolitas",
+            "puedeMover",
+        ]
+    
+    def __init__(self, parent=None):
+        QtGui.QCompleter.__init__(self, [], parent)
+        self.set_words()
+        self.language = ProgramRun("xgobstones", self)
+        
+    def success(self, names):
+        
+        def format_name(name, about):
+            if about["type"] in ["function", "procedure"]:
+                return "%s(%s)" % (name, ", ".join(about["parameters"]))
+            else:
+                return name
+        
+        self.set_words([ format_name(name, about) for name, about in names.items()])
+        
+    def failure(self, exception):
+        print "There was a problem updating the completer: %s" % (exception.msg,)
+        
+    def set_words(self, more_words=[]):
+        self.words = []
+        self.words.extend(self.BASIC_NAMES)
+        self.words.extend(more_words)
+        self.setModel(QStringListModel(self.words))
+        
+    def update(self, filename="", current_text=""):
+        self.language.run("", current_text, "", self.language.RunMode.NAMES)
+
 
 class GobstonesTextEditor(QtGui.QFrame):
  
@@ -42,12 +84,115 @@ class GobstonesTextEditor(QtGui.QFrame):
  
             self.cursorPositionChanged.connect(self.highlight)
             self.setStyleSheet("font-family: Monospace, Consolas, 'Courier New'; font-weight: 100")
+            
+            self.completer = None
+            self.setCompleter(GobstonesCompleter())
+            self.moveCursor(QtGui.QTextCursor.End)
 
+        def setCompleter(self, completer):
+            if not self.completer is None:
+                self.disconnect(self.completer, QtCore.SIGNAL("activated(const QString&)"), self.insertCompletion)
+            if not completer is None:    
+                completer.setWidget(self)
+                completer.setCompletionMode(QtGui.QCompleter.PopupCompletion)
+                completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+                self.completer = completer
+                self.connect(self.completer,
+                    QtCore.SIGNAL("activated(const QString&)"), self.insertCompletion)
+
+        def updateCompleter(self, filename, current_text):
+            self.completer.update(filename, current_text)
+
+        def insertCompletion(self, completion):
+            tc = self.textCursor()
+            extra = (completion.length() -
+                self.completer.completionPrefix().length())
+            tc.movePosition(QtGui.QTextCursor.Left)
+            tc.movePosition(QtGui.QTextCursor.EndOfWord)
+            tc.insertText(completion.right(extra))
+            self.setTextCursor(tc)
 
         def setTabWidth(self, font, width = 4):
             metrics = QtGui.QFontMetrics(font)
             self.setTabStopWidth(width * metrics.width(' '))
             self.setTabStopWidth(width * metrics.width(' '))
+
+        def textUnderCursor(self):
+            tc = self.textCursor()
+            tc.select(QtGui.QTextCursor.WordUnderCursor)
+            return tc.selectedText()
+    
+        def focusInEvent(self, event):
+            if self.completer:
+                self.completer.setWidget(self);
+            QtGui.QPlainTextEdit.focusInEvent(self, event)
+
+        def handleKeyPress(self, event):
+            """ Handles custom keyPressEvents or calls default event handler """
+            cursor = self.textCursor()
+            if event.key() == QtCore.Qt.Key_Tab and cursor.hasSelection():
+                self.indentSelection()
+            elif event.key() == QtCore.Qt.Key_Backtab and cursor.hasSelection():
+                self.unindentSelection()
+            elif event.key() in [QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return]:
+                super(GobstonesTextEditor.PlainTextEdit, self).keyPressEvent(event)
+                if self.gbseditor.autoIndentation:
+                    self.copyPreviousLineIndentation()
+            else:
+                return super(GobstonesTextEditor.PlainTextEdit, self).keyPressEvent(event)
+    
+        def keyPressEvent(self, event):
+            self.handleCompleter(event)
+            #self.handleKeyPress(event)
+            
+        def handleCompleter(self, event):
+            if self.completer and self.completer.popup().isVisible():
+                if event.key() in (
+                    QtCore.Qt.Key_Enter,
+                    QtCore.Qt.Key_Return,
+                    QtCore.Qt.Key_Escape,
+                    QtCore.Qt.Key_Tab,
+                    QtCore.Qt.Key_Backtab):
+                    event.ignore()
+                    return
+    
+            ## has ctrl-E been pressed??
+            isShortcut = (event.modifiers() == QtCore.Qt.ControlModifier and
+                          event.key() == QtCore.Qt.Key_E)
+            if (not self.completer or not isShortcut):
+                QtGui.QPlainTextEdit.keyPressEvent(self, event)
+    
+            ## ctrl or shift key on it's own??
+            ctrlOrShift = event.modifiers() in (QtCore.Qt.ControlModifier ,
+                    QtCore.Qt.ShiftModifier)
+            if ctrlOrShift and event.text().isEmpty():
+                # ctrl or shift key on it's own
+                return
+    
+            eow = QtCore.QString("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-=") #end of word
+    
+            hasModifier = ((event.modifiers() != QtCore.Qt.NoModifier) and
+                            not ctrlOrShift)
+    
+            completionPrefix = self.textUnderCursor()
+    
+            if (not isShortcut and (hasModifier or event.text().isEmpty() or
+            completionPrefix.length() < 3 or
+            eow.contains(event.text().right(1)))):
+                self.completer.popup().hide()
+                return
+    
+            if (completionPrefix != self.completer.completionPrefix()):
+                self.completer.setCompletionPrefix(completionPrefix)
+                popup = self.completer.popup()
+                popup.setCurrentIndex(
+                    self.completer.completionModel().index(0,0))
+    
+            cr = self.cursorRect()
+            cr.setWidth(self.completer.popup().sizeHintForColumn(0)
+                + self.completer.popup().verticalScrollBar().sizeHint().width())
+            self.completer.complete(cr) ## popup it up!
+
 
         def indentSelection(self):
             tab = "\t"
@@ -137,21 +282,6 @@ class GobstonesTextEditor(QtGui.QFrame):
             # Restore cursor
             self.setSelection(begin, end)
             
-
-        def keyPressEvent(self, event):
-            """ Handles custom keyPressEvents or calls default event handler """
-            cursor = self.textCursor()
-            if event.key() == QtCore.Qt.Key_Tab and cursor.hasSelection():
-                self.indentSelection()
-            elif event.key() == QtCore.Qt.Key_Backtab and cursor.hasSelection():
-                self.unindentSelection()
-            elif event.key() in [QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return]:
-                super(GobstonesTextEditor.PlainTextEdit, self).keyPressEvent(event)
-                if self.gbseditor.autoIndentation:
-                    self.copyPreviousLineIndentation()
-            else:
-                return super(GobstonesTextEditor.PlainTextEdit, self).keyPressEvent(event)
-
         def highlight(self):
             hi_selection = QtGui.QTextEdit.ExtraSelection()
  
@@ -224,6 +354,9 @@ class GobstonesTextEditor(QtGui.QFrame):
 
         self.showEditor()
     
+    def updateCompleter(self, filename, current_text):
+        self.edit.updateCompleter(filename, current_text)
+    
     def showEditor(self):
 
         if self.drawLineNumbers:
@@ -244,6 +377,12 @@ class GobstonesTextEditor(QtGui.QFrame):
         
     def activateAutoIndentation(self, boolean):
         self.autoIndentation = boolean
+ 
+    def getCompleter(self):
+        self.edit.completer
+        
+    def setCompleter(self, completer):
+        self.edit.setCompleter(completer)
  
     def getText(self):
         return unicode(self.edit.toPlainText())

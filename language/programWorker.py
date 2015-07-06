@@ -2,6 +2,7 @@ class ProgramWorker(object):
     class RunMode:
         FULL = 'full'
         ONLY_CHECK = 'only_check'
+        NAMES = 'names'
     def __init__(self, communicator):
         self.communicator = communicator
     def prepare(self):
