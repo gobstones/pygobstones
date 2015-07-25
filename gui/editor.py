@@ -105,7 +105,7 @@ class Editor(QtGui.QWidget):
         self.board = boardToString(self.ui.boardEditor.getEditedBoard())
         filename = saveFileName(self, '*.gbb')
         if not filename == QtCore.QString(''):
-            (filep, filen) = os.path.split(str(filename))
+            (filep, filen) = os.path.split(unicode(filename))
             if not filename[-4:] == '.gbb':
                 filename = filename + '.gbb'
             myFile = open(filename, 'w')

@@ -9,7 +9,7 @@ def read_file(fn):
 # Clothing
 
 def clothing_dir_for_file(filepath):
-        return os.path.join(os.path.dirname(str(filepath)), 'Vestimentas')
+        return os.path.join(os.path.dirname(unicode(filepath)), 'Vestimentas')
 
 def clothing_for_file_exists(filepath):
-    return os.path.exists(clothing_dir_for_file(str(filepath)))    
+    return os.path.exists(clothing_dir_for_file(unicode(filepath)))    

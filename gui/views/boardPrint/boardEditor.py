@@ -177,7 +177,7 @@ class Number(QGraphicsItem):
         
     def paint(self, painter, option, widget):
         bgRect = self.boundingRect()
-        painter.drawText(bgRect, Qt.AlignCenter, str(self.number))
+        painter.drawText(bgRect, Qt.AlignCenter, unicode(self.number))
         
     def boundingRect(self): 
         return QRectF(0, 0, self.__width, self.__height)
@@ -235,4 +235,4 @@ class StoneEditor(QGraphicsItem):
             img = QImage(image)
             painter.drawImage(bgRect, img)
             painter.setPen(QPen(QColor('white')))
-            painter.drawText(bgRect, Qt.AlignCenter, str(self.quantity))
+            painter.drawText(bgRect, Qt.AlignCenter, unicode(self.quantity))

@@ -203,7 +203,7 @@ class MainWindow(QtGui.QMainWindow):
         self.updateCompleters()
         
     def updateCompleters(self):
-        filename, text = str(self.fileOption.getFileName()), str(self.ui.textEditFile.toPlainText().toUtf8())
+        filename, text = unicode(self.fileOption.getFileName()), unicode(self.ui.textEditFile.toPlainText().toUtf8())
         self.ui.textEditFile.updateCompleter(filename, text)
         self.ui.textEditLibrary.setCompleter(self.ui.textEditFile.getCompleter())
 
@@ -229,7 +229,7 @@ class MainWindow(QtGui.QMainWindow):
         self.guiInterpreterHandler.showInLog(i18n(
                                 'Start execution || Languaje: ') + self.lang)
         self.guiInterpreterHandler.log('----------------' +
-               str(datetime.datetime.now())[:19] +
+               unicode(datetime.datetime.now())[:19] +
               '-----------------')
         self.ui.logger.show()
         self.ui.actionStop.setEnabled(True)
@@ -247,7 +247,7 @@ class MainWindow(QtGui.QMainWindow):
         self.guiInterpreterHandler.showInLog(i18n(
                                 'Execution interrupted by the user'))
         self.guiInterpreterHandler.log('----------------' +
-               str(datetime.datetime.now())[:19] +
+               unicode(datetime.datetime.now())[:19] +
               '-----------------')
 
     def resetButtonsRunAndStop(self):
@@ -269,7 +269,7 @@ class MainWindow(QtGui.QMainWindow):
         self.guiInterpreterHandler.showInLog(i18n(
                         'Start check || Languaje: ') + self.lang)
         self.guiInterpreterHandler.log('----------------' +
-               str(datetime.datetime.now())[:19] +
+               unicode(datetime.datetime.now())[:19] +
               '-----------------')
         self.ui.statusbar.showMessage(QtCore.QString(i18n('Checking...')))
         self.checkButton = CheckButton(self)
@@ -344,14 +344,14 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
                 self.mainW.resetButtonsRunAndStop()
                 self.showInLog(i18n('Execution completed'))
                 self.log('----------------'+
-                str(datetime.datetime.now())[:19] +
+                unicode(datetime.datetime.now())[:19] +
                 '-----------------\n')
         else:
             self.mainW.ui.statusbar.showMessage(QtCore.QString
                 (i18n('Execution completed')))
             self.showInLog(i18n('Execution completed'))
             self.log('----------------'+
-                str(datetime.datetime.now())[:19] +
+                unicode(datetime.datetime.now())[:19] +
                 '-----------------\n')
             self.interactiveW.setStatusMessage('    ' + i18n('Execution completed'))
             self.mainW.resetButtonsRunAndStop()
@@ -413,8 +413,8 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
 
     def showRowAndColError(self, exception):
         self.showInLog(i18n('In row: ') +
-        str(exception.area.interval()[0].row) + ' // ' +
-        i18n('column: ') + str(exception.area.interval()[0].col))
+        unicode(exception.area.interval()[0].row) + ' // ' +
+        i18n('column: ') + unicode(exception.area.interval()[0].col))
 
     def interpreter_boom_failure(self, exception):
         if not self.wasStoped:
@@ -422,7 +422,7 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
             self.showInLog('Boom !!!')
             self.log(exception.msg)
             self.log('----------------'+
-            str(datetime.datetime.now())[:19] +
+            unicode(datetime.datetime.now())[:19] +
                 '-----------------\n')
             if not self.interactiveRunning:
                 self.results = Results(self.mainW)
@@ -457,8 +457,8 @@ class RunButton(QtGui.QWidget):
 
     def start(self, interpreter):
         self.actionRun.setEnabled(False)
-        interpreter.run(str(self.mainW.fileOption.getFileName()),
-             str(self.mainW.ui.textEditFile.toPlainText().toUtf8()),
+        interpreter.run(unicode(self.mainW.fileOption.getFileName()),
+             unicode(self.mainW.ui.textEditFile.toPlainText().toUtf8()),
             self.mainW.getInitialBoard())
 
     def stopInterpreter(self):
@@ -477,8 +477,8 @@ class CheckButton(QtGui.QWidget):
     def start(self):
         self.gui = GUIInterpreterHandler_CheckMode(self.mainW)
         self.mainW.programRun.handler = self.gui
-        self.mainW.programRun.run(str(self.mainW.fileOption.getFileName()),
-                             str(self.mainW.ui.textEditFile.toPlainText().toUtf8()),
+        self.mainW.programRun.run(unicode(self.mainW.fileOption.getFileName()),
+                             unicode(self.mainW.ui.textEditFile.toPlainText().toUtf8()),
                              self.mainW.initialBoardGenerator.getStringBoard(),
                              ProgramRun.RunMode.ONLY_CHECK)
 
@@ -489,7 +489,7 @@ class GUIInterpreterHandler_CheckMode(GUIInterpreterHandler):
         self.mainW.ui.statusbar.showMessage(QtCore.QString(i18n('Check completed')))
         self.showInLog(i18n('Check completed, program is OK'))
         self.log('----------------' +
-                 str(datetime.datetime.now())[:19] +
+                 unicode(datetime.datetime.now())[:19] +
                  '-----------------\n')
         self.mainW.resetButtonsRunAndStop()
 
@@ -500,7 +500,7 @@ class GUIInterpreterHandler_CheckMode(GUIInterpreterHandler):
             self.showRowAndColError(exception)
             self.log(exception.msg)
             self.log('----------------' +
-                     str(datetime.datetime.now())[:19] +
+                     unicode(datetime.datetime.now())[:19] +
                      '-----------------\n')
         self.failure = EjecutionFailureHandler(fail_handler).failure
 
@@ -538,7 +538,7 @@ class InteractiveWindow(QtGui.QDialog):
     def onActivated(self, text):        
         if not text == 'Gobstones':
             if clothing_for_file_exists(self.mainW.fileOption.moduleFile):
-                fn = str(text) + ".xml"
+                fn = unicode(text) + ".xml"
                 path = os.path.join(clothing_dir_for_file(self.mainW.fileOption.moduleFile), fn)
                 self.next_clothing = self.current_clothing
                 self.current_clothing = path
@@ -598,7 +598,7 @@ class InteractiveWindow(QtGui.QDialog):
             self.close()
         elif self.pressAKey:
             try:
-                a = str(e.text())
+                a = unicode(e.text())
                 ordinalValue = ord(a)
             except:
                 if e.key() == QtCore.Qt.Key_Left:

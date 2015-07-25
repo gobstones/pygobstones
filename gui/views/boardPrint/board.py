@@ -161,10 +161,10 @@ class Cell():
         return self.stones[color]
 
     def getAllStones(self):
-        return (str(self.stones['blue']),
-                str(self.stones['black']),
-                str(self.stones['red']),
-                str(self.stones['green']),
+        return (unicode(self.stones['blue']),
+                unicode(self.stones['black']),
+                unicode(self.stones['red']),
+                unicode(self.stones['green']),
                 )
 
     def putStone(self, color):
