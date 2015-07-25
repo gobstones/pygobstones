@@ -1,0 +1,12 @@
+program {
+  lastKey := read()
+  while (lastKey /= K_CTRL_D) {
+    switch (lastKey) to
+      --Replaced with interactive program branches
+      1 -> {Skip}      
+      _ -> {Skip}
+    Show()
+    FreeVars()
+    lastKey := read()
+  }
+}

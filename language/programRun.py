@@ -6,7 +6,8 @@ import importlib
 import sys
 import os
 import commons.concurrent as concurrent
-from language.programWorker import ProgramWorker
+import pygobstoneslang
+from pygobstoneslang import ProgramWorker
 
 debug = False
 
@@ -104,35 +105,7 @@ class ProgramRun(object):
         self.handler = handler
         self.comm = None
         self.gobstones_version = gobstones_version
-        self.gbs_language = self.get_gobstones_language(gobstones_version)
-    
-    def get_gobstones_language(self, version):
-        version_package = "implementation" #"v"+ version.replace(".", "_")
-        self.remove_old_language_paths()
-        self.clean_old_language_modules()
-        sys.path.append(os.path.join(os.path.dirname(__file__), version_package))
-        return importlib.import_module("."+version_package, "language")
-    
-    def clean_old_language_modules(self):
-        language_absolutes = ['common', 'lang']
-        language_relatives = [abs + "." for abs in language_absolutes]
-        def is_language_module(module_path):
-            for rel in language_relatives:
-                if module_path.startswith(rel):
-                    return True
-            for abs in language_absolutes:
-                if module_path == abs:
-                    return True
-            return False
-
-        for m in sys.modules.keys():
-            if is_language_module(m):
-                del(sys.modules[m])
-    
-    def remove_old_language_paths(self):
-        for path in sys.path:
-            if path.count(os.path.dirname(__file__)) > 0:
-                sys.path.remove(path)
+        self.gbs_language = pygobstoneslang
     
     def get_worker_class(self):
         return self.gbs_language.GobstonesWorker
