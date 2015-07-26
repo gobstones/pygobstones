@@ -9,7 +9,7 @@ import commons.concurrent as concurrent
 import pygobstoneslang
 from pygobstoneslang import ProgramWorker
 
-debug = False
+debug = False or True
 
 def reverse_list(list):
     return [list.pop() for i in range(len(list))]
@@ -136,7 +136,7 @@ class ProgramRun(object):
         if not self.process is None:
             self.destroy_worker_process()
         self.create_worker_process()
-        self.comm.send('START', (filename, current_text, board_string, run_mode, self.gobstones_version))
+        self.comm.send('START', (str(filename), str(current_text), str(board_string), run_mode, self.gobstones_version))
         self.running = True
         self.timer_init()
         

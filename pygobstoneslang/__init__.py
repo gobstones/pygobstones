@@ -4,7 +4,7 @@ import pygobstoneslang.common.i18n as i18n
 from pygobstoneslang.common.tools import tools
 import pygobstoneslang.lang as lang
 from pygobstoneslang.lang.gbs_api import GobstonesRun
-
+import traceback
 
 class GUIExecutionAPI(lang.ExecutionAPI):
 
@@ -127,7 +127,8 @@ class GobstonesWorker(ProgramWorker):
                 (exception.__class__, (exception.msg, ))
                 )
         else:
+            traceback.print_exc()
             self.communicator.send(
                 'FAIL',
-                (utils.GobstonesException, (unicode(exception),))
+                (utils.GobstonesException, (str(exception),))
                 )
