@@ -10,6 +10,9 @@ def path_join(*path_parts):
 def root_path():
     return os.path.dirname(os.path.dirname(__file__))
 
+def pygobstones_user_path():
+    return os.path.join(user_path(), ".pygobstones")
+
 def user_path():
     return expanduser("~")
 
