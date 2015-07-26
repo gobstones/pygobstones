@@ -4,8 +4,8 @@ from views.boardPrint.boardEditor import *
 import views.resources
 import boardOption
 from helpOption import *
-from commons.i18n import *
-from commons.qt_utils import saveFileName
+from pygobstones.commons.i18n import *
+from pygobstones.commons.qt_utils import saveFileName
 
 class Editor(QtGui.QWidget):
 

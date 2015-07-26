@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtGui
-from commons.i18n import *
+from pygobstones.commons.i18n import *
 
 
 class ErrorWindow(QtGui.QDialog):

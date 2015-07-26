@@ -1,4 +1,4 @@
-import commons.concurrent as concurrent
+import pygobstones.commons.concurrent as concurrent
 
 class Message:
     def __init__(self, header, body = None):

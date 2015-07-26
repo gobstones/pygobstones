@@ -8,7 +8,7 @@
 
 from PyQt4 import QtCore, QtGui
 from boardPrint.boardEditor import *
-from commons.i18n import i18n
+from pygobstones.commons.i18n import i18n
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8

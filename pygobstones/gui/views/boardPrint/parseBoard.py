@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from gui.views.boardPrint.board import Board, Cell
+from board import Board, Cell
 import re
 
 

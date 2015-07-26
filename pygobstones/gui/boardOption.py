@@ -10,13 +10,13 @@ import views.resources
 from errorWindow import *
 from views.boardOption import *
 sys.path.append('..')
-from commons.i18n import *
-from commons.paths import root_path
+from pygobstones.commons.i18n import *
+from pygobstones.commons.paths import root_path
 from views.boardPrint.parseBoard import *
 from editor import *
 from views.viewEditor import *
 from views.boardPrint.boardEditor import *
-from commons.qt_utils import openFileName
+from pygobstones.commons.qt_utils import openFileName
 
 
 class BoardOptionsWindow(QtGui.QDialog):

@@ -50,7 +50,7 @@ setup(
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Interpreters',
-	'Topic :: Text Editors :: Integrated Development Environments (IDE)',
+        'Topic :: Text Editors :: Integrated Development Environments (IDE)',
 
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
@@ -86,6 +86,18 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_data={
+	'pygobstones': [
+                    'version',
+                    'about_files/about.html',
+                    'about_files/authors.html',
+                    'about_files/command_editor.html',
+                    'about_files/history.html',
+                    'about_files/style.css',
+                    'commons/gobstones.png',
+                    'commons/gobstones_huayra.png',
+                    'commons/ubuntu.ttf',
+                    'commons/logo.png',
+                    ]
     },
 
     # Although 'package_data' is the preferred approach, in some case you may

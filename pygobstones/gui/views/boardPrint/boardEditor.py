@@ -8,7 +8,7 @@ from PyQt4.QtGui import *
 from board import *
 from parseBoard import *
 import resources
-import gui
+import pygobstones.gui as gui
 
 class BoardEditor(QGraphicsView):
     def __init__(self, parent):

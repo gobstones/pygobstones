@@ -5,11 +5,11 @@ import sys
 import os
 import resources
 from parseXML import ParseXML
-import gui
-from gui.errorWindow import *
+import pygobstones.gui as gui
+from pygobstones.gui.errorWindow import *
 from xml.etree.ElementTree import ParseError
-from commons.paths import root_path
-from commons.utils import clothing_for_file_exists, clothing_dir_for_file
+from pygobstones.commons.paths import root_path
+from pygobstones.commons.utils import clothing_for_file_exists, clothing_dir_for_file
 
 class BoardViewer(QtGui.QWidget):
 

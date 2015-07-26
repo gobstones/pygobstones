@@ -11,12 +11,12 @@ from .preferencesWindow import PreferencesWindow
 from .editOption import EditOption
 from .boardOption import *
 from .helpOption import HelpOption
-from language.programRun import *
+from pygobstones.language.programRun import *
 from views.boardPrint.board import *
 from views.boardPrint.boardViewer import *
 from resultsMainWindow import *
-from commons.i18n import *
-from commons.paths import root_path
+from pygobstones.commons.i18n import *
+from pygobstones.commons.paths import root_path
 from views.boardPrint.parseBoard import *
 import time
 import views.resources

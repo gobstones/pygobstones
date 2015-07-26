@@ -7,11 +7,11 @@ from PyQt4.QtGui import QMessageBox
 import PyQt4
 import views.resources
 sys.path.append('..')
-from commons.i18n import *
-from commons.paths import root_path, user_path, gobstones_folder,\
+from pygobstones.commons.i18n import *
+from pygobstones.commons.paths import root_path, user_path, gobstones_folder,\
 	assure_extension
-from commons.utils import clothing_for_file_exists, clothing_dir_for_file
-from commons.qt_utils import openFileName, saveFileName
+from pygobstones.commons.utils import clothing_for_file_exists, clothing_dir_for_file
+from pygobstones.commons.qt_utils import openFileName, saveFileName
 
 class FileOption(object):
 

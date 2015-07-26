@@ -2,8 +2,8 @@
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
-from commons.i18n import *
-import gui
+from pygobstones.commons.i18n import *
+import pygobstones.gui as gui
 
 
 class PreferencesWindow(QtGui.QDialog):

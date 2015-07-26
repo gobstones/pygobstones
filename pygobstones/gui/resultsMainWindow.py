@@ -4,10 +4,10 @@ from PyQt4 import QtCore
 from views.boardPrint.board import *
 from views.boardPrint.boardViewer import *
 from views.boardPrint.parseBoard import *
-from commons.i18n import *
-from commons.utils import clothing_for_file_exists, clothing_dir_for_file
+from pygobstones.commons.i18n import *
+from pygobstones.commons.utils import clothing_for_file_exists, clothing_dir_for_file
 import views.resources
-from commons.paths import assure_extension
+from pygobstones.commons.paths import assure_extension
 
 
 class Results(QtGui.QWidget):

@@ -1,18 +1,14 @@
 from PyQt4 import QtCore
-import commons.messaging as messaging
-from commons.utils import read_file
+import pygobstones.commons.messaging as messaging
 import Queue as queue
-import importlib
-import sys
-import os
-import commons.concurrent as concurrent
+import pygobstones.commons.concurrent as concurrent
 import pygobstoneslang
 from pygobstoneslang import ProgramWorker
 
 debug = False or True
 
-def reverse_list(list):
-    return [list.pop() for i in range(len(list))]
+def reverse_list(lst):
+    return [lst.pop() for _ in range(len(lst))]
 
 class EjecutionHandler(object):
     def success(self, board_string, result):

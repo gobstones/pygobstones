@@ -13,8 +13,8 @@ from PyQt4 import Qt
 import sys
 import os
 sys.path.append('..')
-from commons.i18n import *
-from commons.qt_utils import *
+from pygobstones.commons.i18n import *
+from pygobstones.commons.qt_utils import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8

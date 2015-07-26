@@ -1,7 +1,7 @@
  # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
 import sys
-from commons.i18n import *
+from pygobstones.commons.i18n import *
 sys.path.append('..')
 import views.resources
 

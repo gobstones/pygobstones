@@ -8,7 +8,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui
-from commons.i18n import *
+from pygobstones.commons.i18n import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8

@@ -10,8 +10,8 @@ from PyQt4 import QtCore, QtGui
 import sys
 import resources
 sys.path.append('..')
-from commons.i18n import *
-from gui.textEditor import *
+from pygobstones.commons.i18n import *
+from pygobstones.gui.textEditor import *
 
  
 

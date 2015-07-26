@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtWebKit import QWebView, QWebPage
-from commons.paths import root_path
-import commons.utils as utils  
+from pygobstones.commons.paths import root_path
+import pygobstones.commons.utils as utils  
 import sys, os
 sys.path.append('..')
-from commons.i18n import i18n
+from pygobstones.commons.i18n import i18n
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8

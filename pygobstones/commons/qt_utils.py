@@ -1,6 +1,6 @@
 from PyQt4 import QtGui, QtCore
-import commons.paths as paths
-from commons.i18n import i18n
+import pygobstones.commons.paths as paths
+from pygobstones.commons.i18n import i18n
 import os
 
 def populateTable(table, rows):

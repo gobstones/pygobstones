@@ -1,6 +1,6 @@
 from PyQt4 import QtCore, QtGui
 import sys
-from language.programRun import EjecutionHandler, ProgramRun
+from pygobstones.language.programRun import EjecutionHandler, ProgramRun
 from PyQt4.QtCore import QAbstractItemModel
 import json
 from PyQt4.QtGui import QStringListModel
