@@ -8,7 +8,7 @@ from PyQt4.QtSvg import QSvgWidget
 import sys
 import os
 import platform
-from commons.paths import root_path
+from commons.paths import root_path, pygobstones_user_path
 import logging
 import traceback
 
@@ -59,7 +59,10 @@ def setup_logger():
     logger = logging.getLogger()    
     formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(name)s] %(message)s')
 
-    filehandler = logging.FileHandler(os.path.join(root_path(), "pygobstones.log"))
+    if not os.path.exists(pygobstones_user_path()):
+        os.mkdir(pygobstones_user_path())
+
+    filehandler = logging.FileHandler(os.path.join(pygobstones_user_path(), "pygobstones.log"))
     filehandler.setFormatter(formatter)
     
     consolehandler = logging.StreamHandler()
