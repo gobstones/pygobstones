@@ -132,7 +132,7 @@ class ProgramRun(object):
         if not self.process is None:
             self.destroy_worker_process()
         self.create_worker_process()
-        self.comm.send('START', (str(filename), str(current_text), str(board_string), run_mode, self.gobstones_version))
+        self.comm.send('START', (unicode(filename), str(current_text), str(board_string), run_mode, self.gobstones_version))
         self.running = True
         self.timer_init()
         
