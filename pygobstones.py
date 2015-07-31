@@ -1,4 +1,6 @@
 #!/usr/bin/python
 
-import os
-os.system("python -m pygobstones")
+import pygobstoneslang
+from pygobstones.pygobstones import main
+
+main()
