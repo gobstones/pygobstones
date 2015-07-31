@@ -5,7 +5,7 @@ import pygobstones.commons.concurrent as concurrent
 import pygobstoneslang
 from pygobstoneslang import ProgramWorker
 
-debug = False or True
+debug = False
 
 def reverse_list(lst):
     return [lst.pop() for _ in range(len(lst))]
@@ -161,9 +161,7 @@ class ProgramRun(object):
                 elif message.header == 'PARTIAL':
                     self.handler.partial(message.body)
                 else:
-                    print(message)
-                    assert False
-                    return
+                    print("GUI got an unexpected message '%s:%s'" %  (message.header, message.body))
         except queue.Empty as e:
             self.timer.start()
 
