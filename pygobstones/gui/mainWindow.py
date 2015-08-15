@@ -203,7 +203,7 @@ class MainWindow(QtGui.QMainWindow):
         self.updateCompleters()
         
     def updateCompleters(self):
-        filename, text = unicode(self.fileOption.getFileName()), unicode(self.ui.textEditFile.toPlainText().toUtf8())
+        filename, text = unicode(self.fileOption.getFileName()), self.ui.textEditFile.toPlainText().toUtf8()
         self.ui.textEditFile.updateCompleter(filename, text)
         self.ui.textEditLibrary.setCompleter(self.ui.textEditFile.getCompleter())
 
@@ -458,7 +458,7 @@ class RunButton(QtGui.QWidget):
     def start(self, interpreter):
         self.actionRun.setEnabled(False)
         interpreter.run(unicode(self.mainW.fileOption.getFileName()),
-             unicode(self.mainW.ui.textEditFile.toPlainText().toUtf8()),
+            self.mainW.ui.textEditFile.toPlainText().toUtf8(),
             self.mainW.getInitialBoard())
 
     def stopInterpreter(self):
