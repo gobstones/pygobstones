@@ -521,6 +521,7 @@ class InteractiveWindow(QtGui.QDialog):
         self.currentImage = ':/ballGreen.png'
         self.setStyleSheet( "InteractiveWindow{background-image:url(':/backgroundWidget.png');}")
         self.load_views = None
+        self.forceQuit = False
 
     def init_switcher(self):
         if len(self.filesNames) == 1:
@@ -593,10 +594,22 @@ class InteractiveWindow(QtGui.QDialog):
         self.update()
 
     def keyPressEvent(self, e):
-        if e.key() == QtCore.Qt.Key_Escape:
-            super(InteractiveWindow, self).keyPressEvent(e)
-            self.close()
+        modifiers = QtGui.QApplication.keyboardModifiers()
+        if e.key() == QtCore.Qt.Key_D and modifiers.testFlag(QtCore.Qt.ControlModifier):
+            
+            a = unicode(e.text())
+            ordinalValue = ord(a)
+            self.setProcessingAKeyState()
+            self.mainW.programRun.send_input(ordinalValue)
+            
+            if self.forceQuit:
+                super(InteractiveWindow, self).keyPressEvent(e)
+                self.close()
+                
+            self.forceQuit = True
         elif self.pressAKey:
+            if e.key() != QtCore.Qt.Key_Control:
+                self.forceQuit = False
             try:
                 a = unicode(e.text())
                 ordinalValue = ord(a)
