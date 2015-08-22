@@ -20,6 +20,7 @@ from pygobstones.commons.paths import root_path
 from views.boardPrint.parseBoard import *
 import time
 import views.resources
+import logging
 
 GOBSTONES = 'Gobstones 3.0.0'
 XGOBSTONES = 'XGobstones 1.0.0'
@@ -28,6 +29,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.logger = logging.getLogger()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.initOptions()
@@ -198,12 +200,16 @@ class MainWindow(QtGui.QMainWindow):
 
     def fileSaved(self):
         self.updateCompleters()
-        
+
     def fileOpened(self):
         self.updateCompleters()
-        
+
+    def programText(self):
+        program_text = unicode(self.ui.textEditFile.toPlainText())
+        return program_text
+
     def updateCompleters(self):
-        filename, text = unicode(self.fileOption.getFileName()), unicode(self.ui.textEditFile.toPlainText().toUtf8())
+        filename, text = unicode(self.fileOption.getFileName()), self.programText()
         self.ui.textEditFile.updateCompleter(filename, text)
         self.ui.textEditLibrary.setCompleter(self.ui.textEditFile.getCompleter())
 
@@ -376,7 +382,7 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
     def log(self, msg):
         if not self.wasStoped:
             loggermsg = self.mainW.ui.logger.document().toPlainText()
-            self.mainW.ui.logger.setText(loggermsg + '\n -> ' + msg.decode('utf8'))
+            self.mainW.ui.logger.setText(loggermsg + '\n -> %s' % msg)
             self.mainW.ui.logger.moveCursor(QtGui.QTextCursor.End)
 
     def showInLog(self, msgDecode):
@@ -398,7 +404,7 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
         if not self.wasStoped:
             self.mainW.ui.statusbar.showMessage(QtCore.QString
                 (i18n('Was occurred an error')))
-            self.showInLog(i18n('Was occurred an error'))            
+            self.showInLog(i18n('Was occurred an error'))
             self.log(exception.msg)
             self.mainW.resetButtonsRunAndStop()
 
@@ -429,7 +435,7 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
                 self.results.setInitialBoard(BoardViewer(self,
                 self.mainW.initialBoardGenerator.board, self.mainW.getClothing()))
                 self.results.setFinalBoard(BoardViewerError())
-                self.results.setRetVars(None)                
+                self.results.setRetVars(None)
                 self.results.ui.tabWidgetResults.setCurrentIndex(2)
                 self.setCodeInResults()
                 self.results.show()
@@ -447,6 +453,7 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
             i18n('### LIBRARY CODE ###\n\n') + self.mainW.ui.textEditLibrary.document().toPlainText())
         self.results.setSourceCode(fileCode, libraryCode)
 
+
 class RunButton(QtGui.QWidget):
 
     def __init__(self, mainW, actionRun, actionStop):
@@ -458,7 +465,7 @@ class RunButton(QtGui.QWidget):
     def start(self, interpreter):
         self.actionRun.setEnabled(False)
         interpreter.run(unicode(self.mainW.fileOption.getFileName()),
-             unicode(self.mainW.ui.textEditFile.toPlainText().toUtf8()),
+            self.mainW.programText(),
             self.mainW.getInitialBoard())
 
     def stopInterpreter(self):
@@ -478,7 +485,7 @@ class CheckButton(QtGui.QWidget):
         self.gui = GUIInterpreterHandler_CheckMode(self.mainW)
         self.mainW.programRun.handler = self.gui
         self.mainW.programRun.run(unicode(self.mainW.fileOption.getFileName()),
-                             unicode(self.mainW.ui.textEditFile.toPlainText().toUtf8()),
+                             self.mainW.programText(),
                              self.mainW.initialBoardGenerator.getStringBoard(),
                              ProgramRun.RunMode.ONLY_CHECK)
 
@@ -536,7 +543,7 @@ class InteractiveWindow(QtGui.QDialog):
                 self.next_clothing = 'Gobstones.xml'
                 self.switcher = Switcher(i18n('Disable clothing'), i18n('Enable clothing'), self.ui.pushButton)
 
-    def onActivated(self, text):        
+    def onActivated(self, text):
         if not text == 'Gobstones':
             if clothing_for_file_exists(self.mainW.fileOption.moduleFile):
                 fn = unicode(text) + ".xml"
@@ -596,16 +603,16 @@ class InteractiveWindow(QtGui.QDialog):
     def keyPressEvent(self, e):
         modifiers = QtGui.QApplication.keyboardModifiers()
         if e.key() == QtCore.Qt.Key_D and modifiers.testFlag(QtCore.Qt.ControlModifier):
-            
+
             a = unicode(e.text())
             ordinalValue = ord(a)
             self.setProcessingAKeyState()
             self.mainW.programRun.send_input(ordinalValue)
-            
+
             if self.forceQuit:
                 super(InteractiveWindow, self).keyPressEvent(e)
                 self.close()
-                
+
             self.forceQuit = True
         elif self.pressAKey:
             if e.key() != QtCore.Qt.Key_Control:
