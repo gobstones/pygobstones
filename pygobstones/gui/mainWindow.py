@@ -198,10 +198,10 @@ class MainWindow(QtGui.QMainWindow):
 
     def fileSaved(self):
         self.updateCompleters()
-        
+
     def fileOpened(self):
         self.updateCompleters()
-        
+
     def updateCompleters(self):
         filename, text = unicode(self.fileOption.getFileName()), self.ui.textEditFile.toPlainText().toUtf8()
         self.ui.textEditFile.updateCompleter(filename, text)
@@ -376,7 +376,7 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
     def log(self, msg):
         if not self.wasStoped:
             loggermsg = self.mainW.ui.logger.document().toPlainText()
-            self.mainW.ui.logger.setText(loggermsg + '\n -> ' + msg.decode('utf8'))
+            self.mainW.ui.logger.setText(loggermsg + '\n -> %s' % msg)
             self.mainW.ui.logger.moveCursor(QtGui.QTextCursor.End)
 
     def showInLog(self, msgDecode):
@@ -398,7 +398,7 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
         if not self.wasStoped:
             self.mainW.ui.statusbar.showMessage(QtCore.QString
                 (i18n('Was occurred an error')))
-            self.showInLog(i18n('Was occurred an error'))            
+            self.showInLog(i18n('Was occurred an error'))
             self.log(exception.msg)
             self.mainW.resetButtonsRunAndStop()
 
@@ -429,7 +429,7 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
                 self.results.setInitialBoard(BoardViewer(self,
                 self.mainW.initialBoardGenerator.board, self.mainW.getClothing()))
                 self.results.setFinalBoard(BoardViewerError())
-                self.results.setRetVars(None)                
+                self.results.setRetVars(None)
                 self.results.ui.tabWidgetResults.setCurrentIndex(2)
                 self.setCodeInResults()
                 self.results.show()
@@ -535,7 +535,7 @@ class InteractiveWindow(QtGui.QDialog):
                 self.next_clothing = 'Gobstones.xml'
                 self.switcher = Switcher(i18n('Disable clothing'), i18n('Enable clothing'), self.ui.pushButton)
 
-    def onActivated(self, text):        
+    def onActivated(self, text):
         if not text == 'Gobstones':
             if clothing_for_file_exists(self.mainW.fileOption.moduleFile):
                 fn = unicode(text) + ".xml"
