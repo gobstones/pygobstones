@@ -126,28 +126,28 @@ class Board():
             return 'down_right_translucent'
         else:
             return 'cell_translucent'
-        
+
     def topOnUniqueColumn(self, x, y):
-        return self.getX() == 1 and y == self.getY() - 1 
-        
+        return self.getX() == 1 and y == self.getY() - 1
+
     def downOnUniqueColumn(self, x, y):
         return self.getX() == 1 and y == 0
-    
+
     def leftOnUniqueRow(self, x, y):
         return self.getY() == 1 and x == 0
-    
+
     def rightOnUniqueRow(self, x, y):
         return self.getY() == 1 and x == self.getX() - 1
-    
+
     def isUpLeft(self, x, y):
         return x == 0 and y == self.getY() - 1
 
     def isUpRight(self, x, y):
         return x == self.getX() - 1 and y == self.getY() - 1
-    
+
     def isDownLeft(self, x, y):
-        return x == 0 and y == 0 
-    
+        return x == 0 and y == 0
+
     def isDownRight(self, x, y):
         return x == self.getX() - 1 and y == 0
 
@@ -247,8 +247,8 @@ class InitialBoardGenerator():
         self.options[2] = 2
 
     def randomSizeBoard(self, board):
-        x = random.randint(1, 20)
-        y = random.randint(1, 20)
+        x = random.randint(3, 20)
+        y = random.randint(3, 20)
         self.options[1] = 2
         board.setSize(x, y)
 
@@ -271,14 +271,19 @@ class InitialBoardGenerator():
 
 
 class RandomBoardGenerator(InitialBoardGenerator):
-    
-    def __init__(self):
-        self.board = Board((1,1), {(0,0):Cell(0,0,0,0)}, (1,1))
+
+    def __init__(self, size=(3,3)):
+        cells = {}
+        for y in range(size[0]):
+            for x in range(size[1]):
+                cells[(y,x)] = Cell(0,0,0,0)
+
+        self.board = Board(size, cells, (1,1))
         self.options = [0, 0, 0]
         self.sizeBoardFunction = self.randomSizeBoard
         self.headPositionFunction = self.randomHeadBoard
         self.ballsFunction = self.randomCellsBoard
-        
+
     def generate(self):
         self.sizeBoardFunction(self.board)
         self.headPositionFunction(self.board)
