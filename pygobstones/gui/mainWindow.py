@@ -20,6 +20,7 @@ from pygobstones.commons.paths import root_path
 from views.boardPrint.parseBoard import *
 import time
 import views.resources
+import logging
 
 GOBSTONES = 'Gobstones 3.0.0'
 XGOBSTONES = 'XGobstones 1.0.0'
@@ -28,6 +29,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.logger = logging.getLogger()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.initOptions()
@@ -202,8 +204,12 @@ class MainWindow(QtGui.QMainWindow):
     def fileOpened(self):
         self.updateCompleters()
 
+    def programText(self):
+        program_text = unicode(self.ui.textEditFile.toPlainText())
+        return program_text
+
     def updateCompleters(self):
-        filename, text = unicode(self.fileOption.getFileName()), self.ui.textEditFile.toPlainText().toUtf8()
+        filename, text = unicode(self.fileOption.getFileName()), self.programText()
         self.ui.textEditFile.updateCompleter(filename, text)
         self.ui.textEditLibrary.setCompleter(self.ui.textEditFile.getCompleter())
 
@@ -447,6 +453,7 @@ class GUIInterpreterHandler(EjecutionFailureHandler, EjecutionHandler):
             i18n('### LIBRARY CODE ###\n\n') + self.mainW.ui.textEditLibrary.document().toPlainText())
         self.results.setSourceCode(fileCode, libraryCode)
 
+
 class RunButton(QtGui.QWidget):
 
     def __init__(self, mainW, actionRun, actionStop):
@@ -458,7 +465,7 @@ class RunButton(QtGui.QWidget):
     def start(self, interpreter):
         self.actionRun.setEnabled(False)
         interpreter.run(unicode(self.mainW.fileOption.getFileName()),
-            self.mainW.ui.textEditFile.toPlainText().toUtf8(),
+            self.mainW.programText(),
             self.mainW.getInitialBoard())
 
     def stopInterpreter(self):
@@ -478,7 +485,7 @@ class CheckButton(QtGui.QWidget):
         self.gui = GUIInterpreterHandler_CheckMode(self.mainW)
         self.mainW.programRun.handler = self.gui
         self.mainW.programRun.run(unicode(self.mainW.fileOption.getFileName()),
-                             unicode(self.mainW.ui.textEditFile.toPlainText().toUtf8()),
+                             self.mainW.programText(),
                              self.mainW.initialBoardGenerator.getStringBoard(),
                              ProgramRun.RunMode.ONLY_CHECK)
 
@@ -521,6 +528,7 @@ class InteractiveWindow(QtGui.QDialog):
         self.currentImage = ':/ballGreen.png'
         self.setStyleSheet( "InteractiveWindow{background-image:url(':/backgroundWidget.png');}")
         self.load_views = None
+        self.forceQuit = False
 
     def init_switcher(self):
         if len(self.filesNames) == 1:
@@ -593,10 +601,22 @@ class InteractiveWindow(QtGui.QDialog):
         self.update()
 
     def keyPressEvent(self, e):
-        if e.key() == QtCore.Qt.Key_Escape:
-            super(InteractiveWindow, self).keyPressEvent(e)
-            self.close()
+        modifiers = QtGui.QApplication.keyboardModifiers()
+        if e.key() == QtCore.Qt.Key_D and modifiers.testFlag(QtCore.Qt.ControlModifier):
+
+            a = unicode(e.text())
+            ordinalValue = ord(a)
+            self.setProcessingAKeyState()
+            self.mainW.programRun.send_input(ordinalValue)
+
+            if self.forceQuit:
+                super(InteractiveWindow, self).keyPressEvent(e)
+                self.close()
+
+            self.forceQuit = True
         elif self.pressAKey:
+            if e.key() != QtCore.Qt.Key_Control:
+                self.forceQuit = False
             try:
                 a = unicode(e.text())
                 ordinalValue = ord(a)
