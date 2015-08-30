@@ -1,90 +1,94 @@
 from PyQt4 import QtCore, QtGui
 import sys
-from pygobstones.language.programRun import EjecutionHandler, ProgramRun
+import pygobstoneslang.lang as lang
 from PyQt4.QtCore import QAbstractItemModel
 import json
 from PyQt4.QtGui import QStringListModel
 
-class GobstonesCompleter(QtGui.QCompleter, EjecutionHandler):
+
+class GobstonesCompleter(QtGui.QCompleter):
     BASIC_NAMES = [
-            "Poner", 
+            "Poner",
             "Mover",
             "Sacar",
             "hayBolitas",
             "nroBolitas",
             "puedeMover",
         ]
-    
+
     def __init__(self, parent=None):
         QtGui.QCompleter.__init__(self, [], parent)
         self.set_words()
-        self.language = ProgramRun("xgobstones", self)
-        
+        self.gobstones = lang.Gobstones(lang.GobstonesOptions(lang_version="xgobstones"))
+
     def success(self, names):
-        
+
         def format_name(name, about):
             if about["type"] in ["function", "procedure"]:
                 return "%s(%s)" % (name, ", ".join(about["parameters"]))
             else:
                 return name
-        
+
         self.set_words([ format_name(name, about) for name, about in names.items()])
-        
+
     def failure(self, exception):
-        print "There was a problem updating the completer: %s" % (exception.msg,)
-        
+        print "There was a problem updating the completer: %s" % exception
+
     def set_words(self, more_words=[]):
         self.words = []
         self.words.extend(self.BASIC_NAMES)
         self.words.extend(more_words)
         self.setModel(QStringListModel(self.words))
-        
+
     def update(self, filename="", current_text=""):
-        self.language.run("", current_text, "", self.language.RunMode.NAMES)
+        try:
+            self.success(self.gobstones.parse_names(filename, current_text))
+        except Exception as e:
+            self.failure(e)
 
 
 class GobstonesTextEditor(QtGui.QFrame):
- 
+
     class NumberBar(QtGui.QWidget):
- 
+
         def __init__(self, edit):
             QtGui.QWidget.__init__(self, edit)
- 
+
             self.edit = edit
             self.adjustWidth(2)
- 
+
         def paintEvent(self, event):
             if self.edit.drawLineNumbers:
-                self.edit.numberbarPaint(self, event)       
+                self.edit.numberbarPaint(self, event)
             QtGui.QWidget.paintEvent(self, event)
- 
+
         def adjustWidth(self, count):
             width = self.fontMetrics().width(unicode(9999))
             #width = self.fontMetrics().width(unicode(count))
             if self.width() != width:
                 self.setFixedWidth(width)
- 
+
         def updateContents(self, rect, scroll):
             if scroll:
                 self.scroll(0, scroll)
             else:
                 self.update()
- 
- 
+
+
     class PlainTextEdit(QtGui.QPlainTextEdit):
- 
+
         def __init__(self, gbseditor, *args):
             QtGui.QPlainTextEdit.__init__(self, *args)
- 
+
             self.gbseditor = gbseditor
             self.drawLineNumbers = True
             self.setFrameStyle(QtGui.QFrame.NoFrame)
             self.highlight()
             #self.setLineWrapMode(QPlainTextEdit.NoWrap)
- 
+
             self.cursorPositionChanged.connect(self.highlight)
             self.setStyleSheet("font-family: Monospace, Consolas, 'Courier New'; font-weight: 100")
-            
+
             self.completer = None
             self.setCompleter(GobstonesCompleter())
             self.moveCursor(QtGui.QTextCursor.End)
@@ -92,7 +96,7 @@ class GobstonesTextEditor(QtGui.QFrame):
         def setCompleter(self, completer):
             if not self.completer is None:
                 self.disconnect(self.completer, QtCore.SIGNAL("activated(const QString&)"), self.insertCompletion)
-            if not completer is None:    
+            if not completer is None:
                 completer.setWidget(self)
                 completer.setCompletionMode(QtGui.QCompleter.PopupCompletion)
                 completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
@@ -121,7 +125,7 @@ class GobstonesTextEditor(QtGui.QFrame):
             tc = self.textCursor()
             tc.select(QtGui.QTextCursor.WordUnderCursor)
             return tc.selectedText()
-    
+
         def focusInEvent(self, event):
             if self.completer:
                 self.completer.setWidget(self);
@@ -140,11 +144,11 @@ class GobstonesTextEditor(QtGui.QFrame):
                     self.copyPreviousLineIndentation()
             else:
                 return super(GobstonesTextEditor.PlainTextEdit, self).keyPressEvent(event)
-    
+
         def keyPressEvent(self, event):
             self.handleCompleter(event)
             #self.handleKeyPress(event)
-            
+
         def handleCompleter(self, event):
             if self.completer and self.completer.popup().isVisible():
                 if event.key() in (
@@ -155,39 +159,39 @@ class GobstonesTextEditor(QtGui.QFrame):
                     QtCore.Qt.Key_Backtab):
                     event.ignore()
                     return
-    
+
             ## has ctrl-E been pressed??
             isShortcut = (event.modifiers() == QtCore.Qt.ControlModifier and
                           event.key() == QtCore.Qt.Key_E)
             if (not self.completer or not isShortcut):
                 QtGui.QPlainTextEdit.keyPressEvent(self, event)
-    
+
             ## ctrl or shift key on it's own??
             ctrlOrShift = event.modifiers() in (QtCore.Qt.ControlModifier ,
                     QtCore.Qt.ShiftModifier)
             if ctrlOrShift and event.text().isEmpty():
                 # ctrl or shift key on it's own
                 return
-    
+
             eow = QtCore.QString("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-=") #end of word
-    
+
             hasModifier = ((event.modifiers() != QtCore.Qt.NoModifier) and
                             not ctrlOrShift)
-    
+
             completionPrefix = self.textUnderCursor()
-    
+
             if (not isShortcut and (hasModifier or event.text().isEmpty() or
             completionPrefix.length() < 3 or
             eow.contains(event.text().right(1)))):
                 self.completer.popup().hide()
                 return
-    
+
             if (completionPrefix != self.completer.completionPrefix()):
                 self.completer.setCompletionPrefix(completionPrefix)
                 popup = self.completer.popup()
                 popup.setCurrentIndex(
                     self.completer.completionModel().index(0,0))
-    
+
             cr = self.cursorRect()
             cr.setWidth(self.completer.popup().sizeHintForColumn(0)
                 + self.completer.popup().verticalScrollBar().sizeHint().width())
@@ -200,9 +204,9 @@ class GobstonesTextEditor(QtGui.QFrame):
             # backup selection
             begin, end = cursor.selectionStart(), cursor.selectionEnd()
             # Add one indentation per line
-            cursor.setPosition(begin)                                                       
-            cursor.movePosition(cursor.StartOfLine) 
-            while cursor.position() < end:                    
+            cursor.setPosition(begin)
+            cursor.movePosition(cursor.StartOfLine)
+            while cursor.position() < end:
                 cursor.movePosition(cursor.StartOfLine)
                 cursor.insertText(tab)
                 end += 1
@@ -214,29 +218,29 @@ class GobstonesTextEditor(QtGui.QFrame):
             end += 1
             # Restore selection
             self.setSelection(begin, end)
-            
+
         def unindentSelection(self):
             tab = "\t"
             cursor = self.textCursor()
             # backup selection
-            begin, end = cursor.selectionStart(), cursor.selectionEnd()                                                       
+            begin, end = cursor.selectionStart(), cursor.selectionEnd()
             # Delete one indentation per line
             cursor.setPosition(begin)
-            cursor.movePosition(cursor.StartOfLine) 
-            while cursor.position() < end:                    
+            cursor.movePosition(cursor.StartOfLine)
+            while cursor.position() < end:
                 cursor.movePosition(cursor.StartOfLine)
                 cursor.setPosition(cursor.position()+1,QtGui.QTextCursor.KeepAnchor)
                 if cursor.hasSelection() and cursor.selectedText() == tab:
                     cursor.removeSelectedText()
-                    end -= 1                    
+                    end -= 1
                 cursor.movePosition(cursor.Down)
                 cursor.movePosition(cursor.EndOfLine)
-            # Unindent last line   
+            # Unindent last line
             cursor.movePosition(cursor.StartOfLine)
             cursor.setPosition(cursor.position()+1,QtGui.QTextCursor.KeepAnchor)
             if cursor.hasSelection() and cursor.selectedText() == tab:
                 cursor.removeSelectedText()
-                end -= 1                    
+                end -= 1
             # Restore selection
             self.setSelection(begin, end)
 
@@ -257,7 +261,7 @@ class GobstonesTextEditor(QtGui.QFrame):
             cursor.movePosition(cursor.Right, cursor.KeepAnchor)
             tabs = 0
             while cursor.selectedText() == tab and cursor.position() < lineEnd:
-                tabs += 1                        
+                tabs += 1
                 cursor.movePosition(cursor.Right)
                 cursor.movePosition(cursor.Left)
                 cursor.movePosition(cursor.Right, cursor.KeepAnchor)
@@ -266,7 +270,7 @@ class GobstonesTextEditor(QtGui.QFrame):
             # Restore cursor
             self.setSelection(begin, end)
             return tabs
-            
+
 
         def copyPreviousLineIndentation(self):
             cursor = self.textCursor()
@@ -281,38 +285,38 @@ class GobstonesTextEditor(QtGui.QFrame):
             cursor.insertText('\t'*indentation)
             # Restore cursor
             self.setSelection(begin, end)
-            
+
         def highlight(self):
             hi_selection = QtGui.QTextEdit.ExtraSelection()
- 
+
             hi_selection.format.setBackground(self.palette().alternateBase())
             hi_selection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, QtCore.QVariant(True))
             hi_selection.cursor = self.textCursor()
             hi_selection.cursor.clearSelection()
- 
+
             self.setExtraSelections([hi_selection])
- 
+
         def numberbarPaint(self, number_bar, event):
 
             font_metrics = self.fontMetrics()
             current_line = self.document().findBlock(self.textCursor().position()).blockNumber() + 1
- 
+
             block = self.firstVisibleBlock()
             line_count = block.blockNumber()
             painter = QtGui.QPainter(number_bar)
             painter.fillRect(event.rect(), self.palette().base())
- 
+
             # Iterate over all visible text blocks in the document.
 
             while block.isValid():
                 line_count += 1
                 block_top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
- 
+
                 # Check if the position of the block is out side of the visible
                 # area.
                 if not block.isVisible():
                     break
- 
+
                 # We want the line number for the selected line to be bold.
                 if line_count == current_line:
                     font = painter.font()
@@ -322,7 +326,7 @@ class GobstonesTextEditor(QtGui.QFrame):
                     font = painter.font()
                     font.setBold(False)
                     painter.setFont(font)
-                
+
                 # Draw the line number right justified at the position of the line.
                 paint_rect = QtCore.QRect(0, block_top, number_bar.width(), font_metrics.height())
                 painter.fillRect(paint_rect, QtGui.QColor('#F0F0F0'))
@@ -331,18 +335,18 @@ class GobstonesTextEditor(QtGui.QFrame):
                 painter.drawText(paint_rect, QtCore.Qt.AlignRight, unicode(line_count))
                 block = block.next()
             painter.end()
- 
+
     def __init__(self, mainw, *args):
         QtGui.QFrame.__init__(self, *args)
         self.drawLineNumbers = True
         self.mainw = mainw
-    
+
         self.setFrameStyle(QtGui.QFrame.StyledPanel |QtGui.QFrame.Sunken)
-        self.edit = self.PlainTextEdit(self)        
+        self.edit = self.PlainTextEdit(self)
         self.number_bar = self.NumberBar(self.edit)
 
         self.autoIndentation = False
-        
+
         hbox = QtGui.QHBoxLayout(self)
         hbox.setSpacing(0)
         hbox.setMargin(0)
@@ -353,10 +357,10 @@ class GobstonesTextEditor(QtGui.QFrame):
         self.edit.updateRequest.connect(self.number_bar.updateContents)
 
         self.showEditor()
-    
+
     def updateCompleter(self, filename, current_text):
         self.edit.updateCompleter(filename, current_text)
-    
+
     def showEditor(self):
 
         if self.drawLineNumbers:
@@ -367,35 +371,35 @@ class GobstonesTextEditor(QtGui.QFrame):
             self.number_bar.setVisible(False)
             self.edit.blockCountChanged.disconnect(self.number_bar.adjustWidth)
             self.edit.updateRequest.disconnect(self.number_bar.updateContents)
-        
+
         self.update()
 
     def activateLineNumbers(self, boolean):
         self.drawLineNumbers = boolean
         self.edit.drawLineNumbers = boolean
         self.showEditor()
-        
+
     def activateAutoIndentation(self, boolean):
         self.autoIndentation = boolean
- 
+
     def getCompleter(self):
         self.edit.completer
-        
+
     def setCompleter(self, completer):
         self.edit.setCompleter(completer)
- 
+
     def getText(self):
         return unicode(self.edit.toPlainText())
- 
+
     def setText(self, text):
         self.edit.setPlainText(text)
- 
+
     def isModified(self):
         return self.edit.document().isModified()
- 
+
     def setModified(self, modified):
         self.edit.document().setModified(modified)
- 
+
     def setLineWrapMode(self, mode):
         self.edit.setLineWrapMode(mode)
 
@@ -446,17 +450,17 @@ class GobstonesTextEditor(QtGui.QFrame):
 
 
 class HighlightingRule(object):
-    
+
     def __init__(self, format):
         self.format = format
 
 
 class HighlightingBasicRule(HighlightingRule):
-    
+
     def __init__(self, text, format):
         super(HighlightingBasicRule, self).__init__(format)
         self.text = text
-        
+
     def __repr__(self):
         return text
 
@@ -471,29 +475,29 @@ class HighlightingBlockRule(HighlightingRule):
 
     def __repr__(self):
         return self.begin + "<block>" + self.end
-     
-    
+
+
 class HighlightingRegExpRule(HighlightingRule):
-  
+
     def __init__( self, pattern, format ):
         super(HighlightingRegExpRule, self).__init__(format)
         if isinstance(pattern, QtCore.QRegExp):
             self.pattern = pattern
         else:
             self.pattern = QtCore.QRegExp(pattern)
-            
+
     def __repr__(self):
         return unicode(self.pattern.pattern())
 
 
 class BlockState:
     UNSET = -1
-    NONE = 0 
+    NONE = 0
     IN_PYCOMMENT = 1
     IN_CCOMMENT = 2
-    IN_HSCOMMENT = 3   
-    
-    
+    IN_HSCOMMENT = 3
+
+
 def map_regexp(patterns):
     f = lambda w: QtCore.QRegExp("\\b" + w + "\\b")
     return map(f, patterns)
@@ -509,7 +513,7 @@ class GobstonesHighlighter( QtGui.QSyntaxHighlighter ):
         super(GobstonesHighlighter, self).__init__(parent)
         self.parent = parent
         self.create_rules()
-      
+
     def create_rules(self):
         keyword_format = QtGui.QTextCharFormat()
         operators_format = QtGui.QTextCharFormat()
@@ -521,13 +525,13 @@ class GobstonesHighlighter( QtGui.QSyntaxHighlighter ):
         comment = QtGui.QTextCharFormat()
         value = QtGui.QTextCharFormat()
         self.highlightingRules = []
-        
+
         # number
         brush = QtGui.QBrush( QtGui.QColor("#e69138"), QtCore.Qt.SolidPattern )
         number.setForeground( brush )
         rule = HighlightingRegExpRule( "\\b[0-9]+\\b", number )
         self.highlightingRules.append( rule )
-        
+
         #values
         brush = QtGui.QBrush( QtGui.QColor("#e69138"), QtCore.Qt.SolidPattern )
         value.setForeground( brush )
@@ -538,18 +542,18 @@ class GobstonesHighlighter( QtGui.QSyntaxHighlighter ):
           pattern = QtCore.QRegExp("\\b" + word + "\\b")
           rule = HighlightingRegExpRule( pattern, value )
           self.highlightingRules.append( rule )
-        
+
         #nativeExpressions
         brush = QtGui.QBrush( QtGui.QColor("#a61c00"), QtCore.Qt.SolidPattern )
         nativeExpression_format.setForeground( brush )
         nativeExpressions = QtCore.QStringList( [ "nroBolitas", "hayBolitas", "puedeMover",
                                                   "minBool", "maxBool", "minDir", "maxDir", "minColor",
-                                                  "maxColor", "siguiente", "previo", "opuesto", 
+                                                  "maxColor", "siguiente", "previo", "opuesto",
                                                   "div", "mod", "not"] )
-        
+
         self.highlightingRules.extend(gen_highlighting_rules(map_regexp(nativeExpressions) + ["&&", "\|\|", "\+", "\-", "\*", "\^",
                                                   "<", ">", "==", "<=", ">=", "/=", "\.\."], nativeExpression_format, HighlightingRegExpRule))
-        
+
         # keyword
         brush = QtGui.QBrush( QtGui.QColor("#3c78d8"), QtCore.Qt.SolidPattern )
         keyword_format.setForeground( brush )
@@ -557,39 +561,39 @@ class GobstonesHighlighter( QtGui.QSyntaxHighlighter ):
         keywords = QtCore.QStringList( [ "foreach", "else", "repeat", "if", "then", "in",
                                   "return", "while", "Skip", "from",
                                   "import", "switch", "to"] )
-        
+
         self.highlightingRules.extend(gen_highlighting_rules(map_regexp(keywords) + [":="], keyword_format, HighlightingRegExpRule))
-        
+
         # nativeCommands
         brush = QtGui.QBrush( QtGui.QColor("#3c78d8"), QtCore.Qt.SolidPattern )
         nativeCommand_format.setForeground( brush )
         nativeCommands = QtCore.QStringList( [ "Poner", "Sacar", "Mover",
                                                "IrAlBorde", "VaciarTablero" ] )
-        
+
         self.highlightingRules.extend(gen_highlighting_rules(map_regexp(nativeCommands), nativeCommand_format, HighlightingRegExpRule))
-        
+
         # definitions
         brush = QtGui.QBrush( QtGui.QColor("#7029B5"), QtCore.Qt.SolidPattern )
         definitions_format.setForeground( brush )
         definitions_format.setFontWeight(QtGui.QFont.Bold)
         definitions = QtCore.QStringList( [ "interactive", "program", "procedure", "function" ] )
-        
+
         self.highlightingRules.extend(gen_highlighting_rules(map_regexp(definitions), definitions_format, HighlightingRegExpRule))
-        
+
         # delimiter
         brush = QtGui.QBrush( QtCore.Qt.black, QtCore.Qt.SolidPattern )
         pattern = QtCore.QRegExp( "[\)\(]+|[\{\}]+|[][]+" )
         delimiter.setForeground( brush )
         rule = HighlightingRegExpRule( pattern, delimiter )
         self.highlightingRules.append( rule )
-        
-        # comments      
+
+        # comments
         brush = QtGui.QBrush(QtGui.QColor("#6aa84f"), QtCore.Qt.SolidPattern)
         comment.setForeground(brush)
         self.highlightingRules.extend([HighlightingRegExpRule("--[^\n]*", comment),
                                        HighlightingRegExpRule("//[^\n]*", comment),
                                        HighlightingRegExpRule("#[^\n]*", comment),])
-        
+
         # Block comments
         self.highlightingRules.extend([HighlightingBlockRule('{-', '-}', comment, BlockState.IN_HSCOMMENT),
                                        HighlightingBlockRule('/*', '*/', comment, BlockState.IN_CCOMMENT),
@@ -602,7 +606,7 @@ class GobstonesHighlighter( QtGui.QSyntaxHighlighter ):
         begin_comment_index = len(text)
         end_comment_index = None
         comment_format = None
-        
+
         for rule in self.highlightingRules:
             if isinstance(rule, HighlightingBlockRule):
                 if prev_block_state == rule.expected_state:
@@ -612,7 +616,7 @@ class GobstonesHighlighter( QtGui.QSyntaxHighlighter ):
                         block_state = rule.expected_state
                     else:
                         block_state = BlockState.NONE
-                        end_comment_index = text.lastIndexOf(rule.end) + len(rule.end)  
+                        end_comment_index = text.lastIndexOf(rule.end) + len(rule.end)
                     comment_format = rule.format
                 elif prev_block_state <= BlockState.NONE and text.indexOf(rule.begin) != -1 and text.indexOf(rule.begin) < begin_comment_index:
                     begin_comment_index = text.indexOf(rule.begin)
@@ -621,7 +625,7 @@ class GobstonesHighlighter( QtGui.QSyntaxHighlighter ):
                         block_state = rule.expected_state
                     else:
                         end_comment_index = text.lastIndexOf(rule.end) + len(rule.end)
-                        block_state = BlockState.NONE        
+                        block_state = BlockState.NONE
                     comment_format = rule.format
                 else:
                     pass
@@ -641,39 +645,37 @@ class GobstonesHighlighter( QtGui.QSyntaxHighlighter ):
                     index = text.indexOf(s, index + length )
             else:
                 assert False
-                
+
         if not comment_format is None:
             self.setFormat(begin_comment_index, end_comment_index, comment_format)
-        
+
         if prev_block_state > BlockState.NONE and block_state <= BlockState.NONE and comment_format is None:
             block_state = prev_block_state
             comment_rule = filter(lambda r: isinstance(r, HighlightingBlockRule) and r.expected_state == block_state, self.highlightingRules)[0]
             self.setFormat(0, len(text), comment_rule.format)
-            
+
         self.setCurrentBlockState(block_state)
 
 
 
 class XGobstonesHighlighter(GobstonesHighlighter):
-    
+
     def create_rules(self):
         super(XGobstonesHighlighter, self).create_rules()
-        
+
         # keyword
         brush = QtGui.QBrush( QtGui.QColor("#3c78d8"), QtCore.Qt.SolidPattern )
         keyword_format = QtGui.QTextCharFormat()
         keyword_format.setForeground( brush )
         keyword_format.setFontWeight(QtGui.QFont.Bold)
         keywords = QtCore.QStringList( [ "type", "record", "is", "field", "variant", "case"] )
-        
+
         self.highlightingRules.extend(gen_highlighting_rules(map_regexp(keywords) + ["<-"], keyword_format, HighlightingRegExpRule))
-        
+
         #nativeExpressions
         brush = QtGui.QBrush( QtGui.QColor("#a61c00"), QtCore.Qt.SolidPattern )
         nativeExpression_format = QtGui.QTextCharFormat()
         nativeExpression_format.setForeground( brush )
         nativeExpressions = QtCore.QStringList( [ "head", "tail", "init", "last", "concat", "isEmpty"] )
-        
+
         self.highlightingRules.extend(gen_highlighting_rules(map_regexp(nativeExpressions) + ["\+\+", "\[", "\]"], nativeExpression_format, HighlightingRegExpRule))
-    
-        
