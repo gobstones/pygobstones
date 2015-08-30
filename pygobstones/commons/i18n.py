@@ -146,7 +146,7 @@ ES = {
     'Final Board': 'Tablero Final',
 
     'Source Code': 'Código Fuente'.decode('utf8'),
-    
+
     'Return Values': 'Valores de retorno'.decode('utf8'),
 
     'Save Final Board': 'Guardar tablero final',
@@ -294,7 +294,7 @@ ES = {
     "Press a key to continue": 'Presione una tecla para continuar',
 
     "Processing a key, wait": 'Procesando tecla, espere',
-    
+
     'The file must be named "Library"': "El archivo debe llamarse 'Biblioteca'",
 
     "Board Editor": 'Editor de Tableros',
@@ -302,7 +302,7 @@ ES = {
     "Load from disk": 'Cargar desde disco',
 
     "Save board to disk": 'Guardar en disco',
-    
+
     "Save board to image": 'Guardar como imagen',
 
     "Open board options": 'Abrir opciones de tablero',
@@ -331,7 +331,7 @@ ES = {
     'User Options': 'Opciones de usuario',
 
     'height': 'altura',
-    
+
     'weight': 'ancho',
 
     'Board': 'Tablero',

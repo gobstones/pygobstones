@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from PyQt4 import QtGui, QtCore
 import pygobstones.commons.paths as paths
 from pygobstones.commons.i18n import i18n
