@@ -205,8 +205,7 @@ class MainWindow(QtGui.QMainWindow):
         self.updateCompleters()
 
     def programText(self):
-        program_text = unicode(self.ui.textEditFile.toPlainText()).decode("utf8")
-        return program_text
+        return unicode(self.ui.textEditFile.toPlainText())
 
     def updateCompleters(self):
         filename, text = unicode(self.fileOption.getFileName()), self.programText()

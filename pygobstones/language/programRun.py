@@ -169,13 +169,13 @@ class ProgramRun(object):
                     self.stop()
                 elif message.header == 'FAIL':
                     reduced = message.body
-                    args = [a.decode("utf8") if isinstance(a, str) else a for a in list(reduced[1])]
+                    args = list(reduced[1])
                     self.handler.failure(reduced[0](*args))
                     self.stop()
                 elif message.header == 'READ_REQUEST':
                     self.handler.read_request()
                 elif message.header == 'LOG':
-                    self.handler.log(message.body.decode("utf8"))
+                    self.handler.log(message.body)
                 elif message.header == 'PARTIAL':
                     self.handler.partial(message.body)
                 else:
