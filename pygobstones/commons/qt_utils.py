@@ -17,17 +17,17 @@ def populateTable(table, rows):
 	return table
 
 def openFileName(parent, extensions):
-	filename = unicode(QtGui.QFileDialog.getOpenFileName(parent, i18n('Open File'),
+	filename = str(QtGui.QFileDialog.getOpenFileName(parent, i18n('Open File'),
                                                  	 paths.last_location, extensions))
 	if not filename == QtCore.QString(''):
-		paths.last_location = os.path.dirname(unicode(filename))
+		paths.last_location = os.path.dirname(str(filename))
 	return filename
 
 def saveFileName(parent, extensions):
-	filename = unicode(QtGui.QFileDialog.getSaveFileName(parent,
+	filename = str(QtGui.QFileDialog.getSaveFileName(parent,
 													 i18n('Save as ...'),
                                                      paths.last_location,
 													 extensions))
 	if not filename == QtCore.QString(''):
-		paths.last_location = os.path.dirname(unicode(filename))
+		paths.last_location = os.path.dirname(str(filename))
 	return filename

@@ -5,42 +5,42 @@ Dictionaries containing all translations of the phrases and words used in Pygobs
 '''
 
 ES = {
-    'Current working directory:': 'Directorio actual de trabajo: '.decode('utf8'),
+    'Current working directory:': 'Directorio actual de trabajo: ',
 
-    '-- New Library': '-- Nueva Biblioteca'.decode('utf8'),
+    '-- New Library': '-- Nueva Biblioteca',
 
     'There are unsaved files, to load a new module changes will be lost, continue?':
-         'Hay archivos sin guardar, al cargar un nuevo módulo se perderán los cambios, ¿desea continuar?'.decode('utf8'),
+         'Hay archivos sin guardar, al cargar un nuevo módulo se perderán los cambios, ¿desea continuar?',
 
-    'Warning!': 'Atención!'.decode('utf8'),
+    'Warning!': 'Atención!',
 
-    'Save changes?': '¿Salvar cambios?'.decode('utf8'),
+    'Save changes?': '¿Salvar cambios?',
 
     'View Results' : 'Mostrar Resultados',
 
     'The file %s was changed, Do you save changes?':
-         'El archivo " %s " ha cambiado, ¿Desea guardar los cambios?'.decode('utf8'),
+         'El archivo " %s " ha cambiado, ¿Desea guardar los cambios?',
 
-    'Error loading the file': 'Error al cargar el archivo'.decode('utf8'),
+    'Error loading the file': 'Error al cargar el archivo',
 
     'Must load a file different to library':
-        'Debe cargar un archivo distinto a la Biblioteca'.decode('utf8'),
+        'Debe cargar un archivo distinto a la Biblioteca',
 
     'If you want edit the library, use the corresponding tab':
-        'Si desea editar la Biblioteca, use la pestaña correspondiente'.decode('utf8'),
+        'Si desea editar la Biblioteca, use la pestaña correspondiente',
 
     'Open File': 'Abrir Archivo',
 
     'There are unsaved files, you want to close the application?':
-        'Hay archivos sin salvar, ¿Desea cerrar la aplicación?'.decode('utf8'),
+        'Hay archivos sin salvar, ¿Desea cerrar la aplicación?',
 
-    'Empty': 'Sin Título'.decode('utf8'),
+    'Empty': 'Sin Título',
 
     'Save as ...': 'Guardar Como ...',
 
     'Open Edit Board': 'Abrir Editor de Tableros',
 
-    'Untitled': 'Sin Título'.decode('utf8'),
+    'Untitled': 'Sin Título',
 
     'File': 'Archivo',
 
@@ -71,7 +71,7 @@ ES = {
     'Save as...': 'Guardar como...',
 
     'Save the current file and allows put a name and choose the location':
-        'Guarda el archivo actual, permite ponerle un nombre y elegir la ubicación'.decode('utf8'),
+        'Guarda el archivo actual, permite ponerle un nombre y elegir la ubicación',
 
     'Undo': 'Deshacer',
 
@@ -94,12 +94,12 @@ ES = {
     'Stop': 'Detener',
 
     'Stops execution of the current program':
-        'Detiene la ejecución del programa actual'.decode('utf8'),
+        'Detiene la ejecución del programa actual',
 
     'Check': 'Chequear',
 
     'Checks if the program is well-formed':
-        'Chequea si el programa está bien formado'.decode('utf8'),
+        'Chequea si el programa está bien formado',
 
     'Manual': 'Manual',
 
@@ -111,17 +111,17 @@ ES = {
 
     'Exit': 'Salir',
 
-    'Closes the application': 'Cierra la aplicación'.decode('utf8'),
+    'Closes the application': 'Cierra la aplicación',
 
     'Board editor': 'Editor de Tableros',
 
     'Processing...': 'Procesando...',
 
     'Execution interrupted by the user':
-    'Ejecución interrumpida por el usuario'.decode('utf8'),
+    'Ejecución interrumpida por el usuario',
 
     'Execution completed':
-    'Ejecución finalizada'.decode('utf8'),
+    'Ejecución finalizada',
 
     'Open board editor':
     'Abre el editor de tableros',
@@ -137,7 +137,7 @@ ES = {
 
     'Head': 'Cabezal',
 
-    'Size': 'Tamaño'.decode('utf8'),
+    'Size': 'Tamaño',
 
     'Save in file the final board': 'Guardar en un archivo el tablero final',
 
@@ -145,13 +145,13 @@ ES = {
 
     'Final Board': 'Tablero Final',
 
-    'Source Code': 'Código Fuente'.decode('utf8'),
+    'Source Code': 'Código Fuente',
 
-    'Return Values': 'Valores de retorno'.decode('utf8'),
+    'Return Values': 'Valores de retorno',
 
     'Save Final Board': 'Guardar tablero final',
 
-    'Gobstones Standard': 'Gobstones Estándar'.decode('utf8'),
+    'Gobstones Standard': 'Gobstones Estándar',
 
     'Load board': 'Cargar tablero',
 
@@ -169,7 +169,7 @@ ES = {
 
     'Change the Gobstones Language': 'Cambiar el lenguaje Gobstones',
 
-    'Board Size': 'Dimensiones de Tablero'.decode('utf8'),
+    'Board Size': 'Dimensiones de Tablero',
 
     'input': 'ingrese',
 
@@ -179,9 +179,9 @@ ES = {
 
     'Accept': 'Aceptar',
 
-    '### FILE CODE ###\n\n': '### CÓDIGO FUENTE DE ARCHIVO EJECUTADO ###\n\n'.decode('utf8'),
+    '### FILE CODE ###\n\n': '### CÓDIGO FUENTE DE ARCHIVO EJECUTADO ###\n\n',
 
-    '### LIBRARY CODE ###\n\n': '### CÓDIGO FUENTE DE ARCHIVO BIBLIOTECA ###\n\n'.decode('utf8'),
+    '### LIBRARY CODE ###\n\n': '### CÓDIGO FUENTE DE ARCHIVO BIBLIOTECA ###\n\n',
 
     'Preferences': 'Preferencias',
 
@@ -189,12 +189,12 @@ ES = {
 
     'show rose of winds image': 'Mostrar imagen de rosa de los vientos',
 
-    'show cell numbers': 'Mostrar números de celdas'.decode('utf8'),
+    'show cell numbers': 'Mostrar números de celdas',
 
     'Was occurred an error': 'Se produjo un error',
 
     'The file <{0}> has an error\n in line: {1} - column: {2}':
-        'El archivo <{0}> contiene un error\n en línea: {1} - columna: {2}'.decode('utf8'),
+        'El archivo <{0}> contiene un error\n en línea: {1} - columna: {2}',
 
     "You must enter integers less or equal than ({0},{1})":
         "Debe ingresar enteros menores o iguales a ({0},{1})",
@@ -203,7 +203,7 @@ ES = {
 
     'The languaje was changed to ': 'El Lenguaje ha sido cambiado a ',
 
-    'Start execution || Languaje: ': 'Comienza ejecución || Lenguaje: '.decode('utf8'),
+    'Start execution || Languaje: ': 'Comienza ejecución || Lenguaje: ',
 
     'Start check || Languaje: ': 'Comienza chequeo || Lenguaje: ',
 
@@ -213,7 +213,7 @@ ES = {
 
     'Check completed, program is OK': 'Chequeo completo, el programa es correcto',
 
-    'Check failed': 'Ocurrió un problema en el Chequeo'.decode('utf8'),
+    'Check failed': 'Ocurrió un problema en el Chequeo',
 
     'Error saving the file': 'Error al guardar el archivo',
 
@@ -312,7 +312,7 @@ ES = {
     "Load Initial Board": 'Cargar tablero inicial',
 
     "Set current edited board as initial board for the next run":
-        'Setear tablero en edición como tablero inicial en la próxima corrida'.decode('utf8'),
+        'Setear tablero en edición como tablero inicial en la próxima corrida',
 
     "Set as initial board": 'Setear como tablero inicial',
 
@@ -338,9 +338,9 @@ ES = {
 
     "commands enables": 'Comandos disponibles',
 
-    'User guide editor board': 'Guía del usuario para editor de tableros'.decode('utf8'),
+    'User guide editor board': 'Guía del usuario para editor de tableros',
 
-    'show line numbers': 'Mostrar números de linea'.decode('utf8'),
+    'show line numbers': 'Mostrar números de linea',
 
     }
 

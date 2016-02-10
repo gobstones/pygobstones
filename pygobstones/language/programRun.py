@@ -141,10 +141,10 @@ class ProgramRun(object):
         if not self.process is None:
             self.destroy_worker_process()
         self.create_worker_process()
-        
+
         self.comm.send('START', (
             filename,
-            current_text.encode('ascii', 'ignore'),
+            current_text,
             board_string,
             run_mode,
             self.gobstones_version

@@ -105,17 +105,17 @@ class Editor(QtGui.QWidget):
         self.board = boardToString(self.ui.boardEditor.getEditedBoard())
         filename = saveFileName(self, '*.gbb')
         if not filename == QtCore.QString(''):
-            (filep, filen) = os.path.split(unicode(filename))
+            (filep, filen) = os.path.split(str(filename))
             if not filename[-4:] == '.gbb':
                 filename = filename + '.gbb'
             myFile = open(filename, 'w')
             myFile.write(self.board)
             myFile.close()
         self.reset_combo_persist()
-        
+
     def saveBoardToImage(self):
         filename = saveFileName(self, '*.png')
-        
+
         if not filename == QtCore.QString(''):
             self.ui.boardEditor.save_to_image(filename)
         self.reset_combo_persist()

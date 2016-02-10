@@ -159,9 +159,9 @@ class BoardViewer(QtGui.QWidget):
 
     def closeResultsAndShowTheXMLError(self, lineColumn):
         self.mainW.results.close()
-        (filepath, filename) = os.path.split(unicode(self.clothing))
+        (filepath, filename) = os.path.split(str(self.clothing))
         ErrorWindow(i18n('The file <{0}> has an error\n in line: {1} - column: {2}').
-            format(unicode(filename),lineColumn[0],lineColumn[1]))
+            format(str(filename),lineColumn[0],lineColumn[1]))
 
     def drawRoseOfWinds(self, painter):
         if gui.mainWindow.MainWindow.getPreference('roseOfWinds'):
@@ -188,7 +188,7 @@ class BoardViewer(QtGui.QWidget):
         x0 = self.newSide + self.offset
         for x in range (self.board.getX()):
             area = QtCore.QRect(x0, y0, self.newSide, self.newSide/2)
-            painter.drawText(area, QtCore.Qt.AlignCenter, unicode(x))
+            painter.drawText(area, QtCore.Qt.AlignCenter, str(x))
             x0 = x0 + self.newSide
 
     def drawCellNumbersOnBottom(self, painter):
@@ -197,7 +197,7 @@ class BoardViewer(QtGui.QWidget):
         x0 = self.newSide + self.offset
         for x in range (self.board.getX()):
             area = QtCore.QRect(x0, y0, self.newSide, self.newSide/2)
-            painter.drawText(area, QtCore.Qt.AlignCenter, unicode(x))
+            painter.drawText(area, QtCore.Qt.AlignCenter, str(x))
             x0 = x0 + self.newSide
 
     def drawCellNumbersOnLeft(self, painter):
@@ -206,7 +206,7 @@ class BoardViewer(QtGui.QWidget):
         x0 = self.newSide/2 + self.offset
         for x in range (self.board.getY()):
             area = QtCore.QRect(x0, y0, self.newSide/2, self.newSide)
-            painter.drawText(area, QtCore.Qt.AlignCenter, unicode(x))
+            painter.drawText(area, QtCore.Qt.AlignCenter, str(x))
             y0 = y0 - self.newSide
 
     def drawCellNumbersOnRight(self, painter):
@@ -215,7 +215,7 @@ class BoardViewer(QtGui.QWidget):
         x0 = (self.newSide * self.board.getX() + self.newSide) + self.offset
         for x in range (self.board.getY()):
             area = QtCore.QRect(x0, y0, self.newSide/2, self.newSide)
-            painter.drawText(area, QtCore.Qt.AlignCenter, unicode(x))
+            painter.drawText(area, QtCore.Qt.AlignCenter, str(x))
             y0 = y0 - self.newSide
 
     def keyPressEvent(self, e):
@@ -379,7 +379,7 @@ class GobstonesStandard(GobstonesBoardPainter):
             pen.setWidth(2)
             painter.setPen(pen)
 
-            painter.drawText(stoneArea, QtCore.Qt.AlignCenter, unicode(quantity))
+            painter.drawText(stoneArea, QtCore.Qt.AlignCenter, str(quantity))
 
 
 class BoardViewerError(QtGui.QWidget):

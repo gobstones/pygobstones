@@ -128,17 +128,17 @@ def boardToString(board):
 
 
 def getSizeString(board):
-    return 'size ' + unicode(board.size[0]) + ' ' + unicode(board.size[1]) + '\n'
+    return 'size ' + str(board.size[0]) + ' ' + str(board.size[1]) + '\n'
 
 
 def getHeadString(board):
-    return 'head ' + unicode(board.head[0]) + ' ' + unicode(board.head[1]) + '\n'
+    return 'head ' + str(board.head[0]) + ' ' + str(board.head[1]) + '\n'
 
 
 def getCellsStrings(board):
     text = ''
     for pos in board.cells.keys():
-        text = text + 'cell ' + unicode(pos[0]) + ' ' + unicode(pos[1]) + ' ' + getQuantities(board.cells[pos].stones)
+        text = text + 'cell ' + str(pos[0]) + ' ' + str(pos[1]) + ' ' + getQuantities(board.cells[pos].stones)
     return text
 
 
@@ -146,11 +146,11 @@ def getQuantities(dict_colours):
     text = ''
     for c in ['blue', 'black', 'red', 'green']:
         if c == 'blue':
-            text = text + 'Azul ' + unicode(dict_colours[c]) + ' '
+            text = text + 'Azul ' + str(dict_colours[c]) + ' '
         elif c == 'black':
-            text = text + 'Negro ' + unicode(dict_colours[c]) + ' '
+            text = text + 'Negro ' + str(dict_colours[c]) + ' '
         elif c == 'red':
-            text = text + 'Rojo ' + unicode(dict_colours[c]) + ' '
+            text = text + 'Rojo ' + str(dict_colours[c]) + ' '
         elif c == 'green':
-            text = text + 'Verde ' + unicode(dict_colours[c]) + '\n'
+            text = text + 'Verde ' + str(dict_colours[c]) + '\n'
     return text

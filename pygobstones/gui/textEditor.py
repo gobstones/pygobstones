@@ -63,8 +63,8 @@ class GobstonesTextEditor(QtGui.QFrame):
             QtGui.QWidget.paintEvent(self, event)
 
         def adjustWidth(self, count):
-            width = self.fontMetrics().width(unicode(9999))
-            #width = self.fontMetrics().width(unicode(count))
+            width = self.fontMetrics().width(str(9999))
+            #width = self.fontMetrics().width(str(count))
             if self.width() != width:
                 self.setFixedWidth(width)
 
@@ -332,7 +332,7 @@ class GobstonesTextEditor(QtGui.QFrame):
                 painter.fillRect(paint_rect, QtGui.QColor('#F0F0F0'))
                 pen = QtGui.QPen(QtGui.QColor('#777777'))
                 painter.setPen(pen)
-                painter.drawText(paint_rect, QtCore.Qt.AlignRight, unicode(line_count))
+                painter.drawText(paint_rect, QtCore.Qt.AlignRight, str(line_count))
                 block = block.next()
             painter.end()
 
@@ -389,7 +389,7 @@ class GobstonesTextEditor(QtGui.QFrame):
         self.edit.setCompleter(completer)
 
     def getText(self):
-        return unicode(self.edit.toPlainText())
+        return str(self.edit.toPlainText())
 
     def setText(self, text):
         self.edit.setPlainText(text)
@@ -487,7 +487,7 @@ class HighlightingRegExpRule(HighlightingRule):
             self.pattern = QtCore.QRegExp(pattern)
 
     def __repr__(self):
-        return unicode(self.pattern.pattern())
+        return str(self.pattern.pattern())
 
 
 class BlockState:

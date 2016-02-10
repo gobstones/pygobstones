@@ -16,7 +16,7 @@ def run_pygobstones():
     app = QtGui.QApplication(sys.argv)
 
     #Get the locale settings
-    locale = unicode(QtCore.QLocale.system().name())
+    locale = str(QtCore.QLocale.system().name())
 
     # This is to make Qt use locale configuration; i.e. Standard Buttons
     # in your system's language.

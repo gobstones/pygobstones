@@ -80,7 +80,7 @@ class Results(QtGui.QWidget):
         filename = saveFileName(self, '*.gbb')
         if not filename == QtCore.QString(''):
             filename = assure_extension(filename, 'gbb')
-            (filep, filen) = os.path.split(unicode(filename))
+            (filep, filen) = os.path.split(str(filename))
             myFile = open(filename, 'w')
             myFile.write(boardToString(self.finalBoard))
             myFile.close()
@@ -114,7 +114,7 @@ class Results(QtGui.QWidget):
 
     def loadViewAlternatives(self):
         self.filesNames = ['Gobstones', 'PixelBoard']
-        program_file = unicode(self.main_window.fileOption.moduleFile)
+        program_file = str(self.main_window.fileOption.moduleFile)
         if clothing_for_file_exists(program_file):
             path = clothing_dir_for_file(program_file)
             files = os.listdir(path)
@@ -140,9 +140,9 @@ class Results(QtGui.QWidget):
     def onActivated(self, text):
         # [TODO] Abstract the method with the onActivated in Interactive
         if not text == 'Gobstones':
-            program_file = unicode(self.main_window.fileOption.moduleFile)
+            program_file = str(self.main_window.fileOption.moduleFile)
             if clothing_for_file_exists(program_file):
-                fn = unicode(text) + ".xml"
+                fn = str(text) + ".xml"
                 path = os.path.join(clothing_dir_for_file(program_file), fn)
                 self.ui.tabWidgetResults.widget(0).setClothing(path)
                 self.ui.tabWidgetResults.widget(0).update()
